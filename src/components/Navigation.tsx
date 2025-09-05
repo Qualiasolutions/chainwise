@@ -11,6 +11,7 @@ import {
   TrendingUp, 
   BookOpen, 
   Briefcase,
+  ShoppingCart,
   Moon,
   Sun,
   User,
@@ -35,6 +36,7 @@ const mainNavItems = [
   { name: 'Chat', url: '/chat', icon: MessageSquare },
   { name: 'Market', url: '/dashboard', icon: TrendingUp },
   { name: 'Portfolio', url: '/portfolio', icon: Briefcase },
+  { name: 'Marketplace', url: '/marketplace', icon: ShoppingCart },
   { name: 'Learn', url: '/learn', icon: BookOpen },
 ]
 

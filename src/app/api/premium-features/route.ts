@@ -6,46 +6,66 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     const supabase = createClient()
-    const { searchParams } = new URL(request.url)
-    const category = searchParams.get('category')
     
-    // Build query
-    let query = supabase
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    // Get user's current tier
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('subscription_tier, credits_balance')
+      .eq('id', user.id)
+      .single()
+    
+    if (userError || !userData) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Get all active premium features
+    const { data: features, error: featuresError } = await supabase
       .from('premium_features')
       .select('*')
       .eq('is_active', true)
-    
-    if (category) {
-      query = query.eq('category', category)
-    }
-    
-    const { data: features, error } = await query.order('name')
-    
-    if (error) {
-      console.error('Error fetching premium features:', error)
+      .order('category')
+      .order('credit_cost')
+
+    if (featuresError) {
+      console.error('Error fetching premium features:', featuresError)
       return NextResponse.json(
-        { error: 'Failed to fetch premium features' },
+        { error: 'Failed to fetch features' },
         { status: 500 }
       )
     }
 
     // Group features by category
-    const categorized = features?.reduce((acc, feature) => {
-      const cat = feature.category
-      if (!acc[cat]) {
-        acc[cat] = []
+    const categorizedFeatures = features?.reduce((acc: any, feature) => {
+      const category = feature.category || 'other'
+      if (!acc[category]) {
+        acc[category] = []
       }
-      acc[cat].push(feature)
+      acc[category].push(feature)
       return acc
-    }, {} as Record<string, typeof features>) || {}
+    }, {})
 
     return NextResponse.json({
-      features: features || [],
-      categorized,
-      success: true
+      success: true,
+      user: {
+        tier: userData.subscription_tier,
+        credits: userData.credits_balance
+      },
+      features: categorizedFeatures,
+      totalFeatures: features?.length || 0
     })
   } catch (error) {
-    console.error('Error in premium features API:', error)
+    console.error('Error fetching premium features:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

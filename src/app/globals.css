@@ -244,3 +244,17 @@
   max-height: 100vh;
   box-sizing: border-box;
 }
+
+/* Ripple Button & Animated Pricing Styles */
+:root {
+  --button-ripple-color: oklch(0.145 0 0 / 0.3);
+}
+
+.dark {
+  --button-ripple-color: oklch(0.985 0 0 / 0.5);
+}
+
+/* Font display for pricing */
+.font-display {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}

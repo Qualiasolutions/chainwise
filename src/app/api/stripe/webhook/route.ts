@@ -92,6 +92,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
+  // Handle premium feature purchases
+  if (type === 'premium_feature_purchase') {
+    await handlePremiumFeaturePurchase(session)
+    return
+  }
+
   const plan = session.metadata?.plan as 'pro' | 'elite'
   
   if (!plan) {
@@ -349,4 +355,54 @@ async function handleCreditPackPurchase(session: Stripe.Checkout.Session) {
   }
 
   console.log(`Successfully processed credit pack purchase: ${credits} credits for user ${userId}`)
+}
+
+async function handlePremiumFeaturePurchase(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.userId
+  const featureId = session.metadata?.featureId
+  const featureKey = session.metadata?.featureKey
+  const featureName = session.metadata?.featureName
+  
+  if (!userId || !featureId || !featureKey) {
+    console.error('Missing metadata in premium feature purchase session')
+    return
+  }
+
+  const supabase = createClient()
+
+  // Get feature details for verification
+  const { data: feature, error: featureError } = await supabase
+    .from('premium_features')
+    .select('*')
+    .eq('id', featureId)
+    .single()
+
+  if (featureError || !feature) {
+    console.error('Error fetching premium feature:', featureError)
+    return
+  }
+
+  // Record feature purchase in activity log
+  const { error: activityError } = await supabase
+    .from('user_activity_logs')
+    .insert({
+      user_id: userId,
+      action: 'premium_feature_purchase',
+      entity_type: 'premium_feature',
+      entity_id: featureId,
+      metadata: {
+        feature_key: featureKey,
+        feature_name: featureName,
+        purchase_type: 'usd',
+        amount_paid: feature.pricing_usd,
+        session_id: session.id,
+        timestamp: new Date().toISOString()
+      }
+    })
+
+  if (activityError) {
+    console.error('Error recording premium feature purchase:', activityError)
+  }
+
+  console.log(`Successfully processed premium feature purchase: ${featureName} for user ${userId}`)
 }
