@@ -17,7 +17,7 @@ import {
 import { CryptoService } from '@/lib/crypto-service'
 import { formatCurrency, formatPercentage } from '@/lib/utils'
 import { CryptoData } from '@/types'
-import ChainWiseHeroWithSpline from '@/components/ui/hero-with-spline'
+import ChainWiseHero from '@/components/ui/hero'
 
 export default function HomePage() {
   const [topCryptos, setTopCryptos] = useState<CryptoData[]>([])
@@ -66,18 +66,16 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Full-Screen Hero - Break out of layout constraints */}
-      <div className="fixed inset-0 z-0">
-        <ChainWiseHeroWithSpline />
-      </div>
+      {/* Hero Section - No longer fixed */}
+      <ChainWiseHero />
       
-      {/* Content sections with proper spacing */}
-      <div className="relative z-10 space-y-16" style={{ marginTop: '100vh' }}>
-
-      <section className="py-12">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
-          Trending Cryptocurrencies
-        </h2>
+      {/* Content sections with proper background */}
+      <div className="bg-gray-50 dark:bg-gray-900 space-y-16 py-16">
+        <div className="container mx-auto px-4">
+          <section className="py-12">
+            <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
+              Trending Cryptocurrencies
+            </h2>
         
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -191,39 +189,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="py-12 bg-gradient-to-r from-crypto-primary to-crypto-secondary rounded-2xl">
-        <div className="text-center px-8">
-          <Zap className="w-16 h-16 text-white mx-auto mb-4" />
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Start Your Crypto Journey Today
-          </h2>
-          <p className="text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of investors who trust ChainWise for intelligent crypto insights
-            and market analysis. Our AI-powered platform is here to guide you every step of the way.
-          </p>
-          <Link
-            href="/chat"
-            className="inline-flex items-center px-8 py-4 bg-white text-crypto-primary rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-          >
-            Get Started Now
-            <ArrowRight className="ml-2" size={20} />
-          </Link>
-        </div>
-      </section>
+          <section className="py-12 bg-gradient-to-r from-crypto-primary to-crypto-secondary rounded-2xl">
+            <div className="text-center px-8 py-12">
+              <Zap className="w-16 h-16 text-white mx-auto mb-4" />
+              <h2 className="text-3xl font-bold text-white mb-4">
+                Start Your Crypto Journey Today
+              </h2>
+              <p className="text-white/90 mb-8 max-w-2xl mx-auto">
+                Join thousands of investors who trust ChainWise for intelligent crypto insights
+                and market analysis. Our AI-powered platform is here to guide you every step of the way.
+              </p>
+              <Link
+                href="/chat"
+                className="inline-flex items-center px-8 py-4 bg-white text-crypto-primary rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+              >
+                Get Started Now
+                <ArrowRight className="ml-2" size={20} />
+              </Link>
+            </div>
+          </section>
 
-      <section className="py-12 text-center">
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-          <Shield className="w-12 h-12 text-yellow-600 dark:text-yellow-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            Investment Disclaimer
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Cryptocurrency investments carry significant risk. Past performance does not guarantee future results.
-            This platform provides educational information only, not financial advice. Always do your own research
-            and consult with qualified financial advisors before making investment decisions.
-          </p>
+          <section className="py-12 text-center">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+              <Shield className="w-12 h-12 text-yellow-600 dark:text-yellow-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Investment Disclaimer
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                Cryptocurrency investments carry significant risk. Past performance does not guarantee future results.
+                This platform provides educational information only, not financial advice. Always do your own research
+                and consult with qualified financial advisors before making investment decisions.
+              </p>
+            </div>
+          </section>
         </div>
-      </section>
       </div>
     </>
   )
