@@ -37,6 +37,9 @@ import { DashboardLayout } from '@/components/dashboard-layout'
 export default function DashboardPage() {
   const { session, user, loading: authLoading } = useSupabase()
   const { creditBalance } = useSubscription()
+  
+  // Authentication status for conditional rendering
+  const status = session ? 'authenticated' : 'unauthenticated'
 
   const [cryptos, setCryptos] = useState<CryptoData[]>([])
   const [marketStats, setMarketStats] = useState<MarketStats | null>(null)
