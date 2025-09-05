@@ -40,7 +40,7 @@ export default function RootLayout({
             <Web3Provider>
               <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <Navigation />
-                <main className="container mx-auto px-4 py-8">
+                <main className="container mx-auto px-4 py-8 pb-24 sm:pb-8">
                   {children}
                 </main>
               </div>
