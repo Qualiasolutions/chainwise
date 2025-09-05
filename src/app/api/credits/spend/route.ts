@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { 
+  handleAPIError, 
+  handleAuthError, 
+  createSuccessResponse 
+} from '@/lib/api-error-handler'
 
 const spendCreditsSchema = z.object({
   amount: z.number().int().positive(),
@@ -13,9 +18,8 @@ export async function POST(request: NextRequest) {
     const supabase = createClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const authErrorResponse = handleAuthError(authError, user)
+    if (authErrorResponse) return authErrorResponse
 
     const body = await request.json()
     const { amount, featureUsed, description } = spendCreditsSchema.parse(body)
@@ -29,29 +33,15 @@ export async function POST(request: NextRequest) {
     })
 
     if (error) {
-      console.error('Error spending credits:', error)
-      if (error.message.includes('insufficient_credits')) {
-        return NextResponse.json({ 
-          error: `Insufficient credits: required ${amount}` 
-        }, { status: 402 })
-      }
-      return NextResponse.json({ error: 'Failed to spend credits' }, { status: 500 })
+      throw error
     }
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       newBalance: data.new_balance,
+      creditsSpent: amount,
+      featureUsed
     })
   } catch (error) {
-    console.error('Error spending credits:', error)
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Invalid request data',
-        details: error.errors 
-      }, { status: 400 })
-    }
-    
-    return NextResponse.json({ error: 'Failed to spend credits' }, { status: 500 })
+    return handleAPIError(error, 'credits/spend')
   }
 }

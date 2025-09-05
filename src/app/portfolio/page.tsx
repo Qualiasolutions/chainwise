@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import { DashboardLayout } from '@/components/dashboard-layout'
 import PortfolioDashboard from '@/components/portfolio/portfolio-dashboard'
 import AddHoldingModal from '@/components/portfolio/add-holding-modal'
 import CreatePortfolioModal from '@/components/portfolio/create-portfolio-modal'
@@ -80,9 +81,14 @@ export default function PortfolioPage() {
     setShowAddHoldingModal(true)
   }
 
+  const breadcrumbs = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Portfolio" }
+  ]
+
   return (
     <ProtectedRoute requireAuth={true}>
-      <div className="container mx-auto px-4 py-8">
+      <DashboardLayout breadcrumbs={breadcrumbs}>
         <PortfolioDashboard
           onCreatePortfolio={() => setShowCreateModal(true)}
           onAddHolding={handleShowAddHolding}
@@ -105,7 +111,7 @@ export default function PortfolioPage() {
           onAdd={handleAddHolding}
           portfolioId={selectedPortfolioId}
         />
-      </div>
+      </DashboardLayout>
     </ProtectedRoute>
   )
 }

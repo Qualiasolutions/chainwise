@@ -5,7 +5,9 @@ import Navigation from '@/components/Navigation'
 import ThemeProvider from '@/components/ThemeProvider'
 import { Web3Provider } from '@/components/Web3Provider'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { PageErrorBoundary } from '@/components/ui/error-boundary'
 import { Analytics } from '@vercel/analytics/next'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -36,18 +38,21 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://api.coingecko.com" />
       </head>
       <body className={inter.className}>
-        <AuthProvider>
-          <ThemeProvider>
-            <Web3Provider>
-              <div className="min-h-screen">
-                <Navigation />
-                <main>
-                  {children}
-                </main>
-              </div>
-            </Web3Provider>
-          </ThemeProvider>
-        </AuthProvider>
+        <PageErrorBoundary>
+          <AuthProvider>
+            <ThemeProvider>
+              <Web3Provider>
+                <div className="min-h-screen">
+                  <Navigation />
+                  <main>
+                    {children}
+                  </main>
+                </div>
+              </Web3Provider>
+            </ThemeProvider>
+          </AuthProvider>
+          <Toaster richColors position="top-right" />
+        </PageErrorBoundary>
         <Analytics />
       </body>
     </html>

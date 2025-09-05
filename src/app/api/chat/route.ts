@@ -3,6 +3,13 @@ import { createClient } from '@/lib/supabase/server'
 import { openAIService, type AIPersona } from '@/lib/openai-service'
 import { ChatMessage } from '@/types'
 import { z } from 'zod'
+import { 
+  handleAPIError, 
+  handleAuthError, 
+  validateCredits, 
+  createSuccessResponse, 
+  createErrorResponse 
+} from '@/lib/api-error-handler'
 
 // Request validation schema
 const chatRequestSchema = z.object({
@@ -23,9 +30,8 @@ export async function POST(request: NextRequest) {
     
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const authErrorResponse = handleAuthError(authError, user)
+    if (authErrorResponse) return authErrorResponse
 
     // Parse and validate request
     const body = await request.json()
@@ -39,8 +45,12 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (userError || !userData) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    if (userError) {
+      throw userError
+    }
+
+    if (!userData) {
+      return createErrorResponse('User not found', 'NOT_FOUND')
     }
 
     // Get persona configuration for credit cost
@@ -48,19 +58,17 @@ export async function POST(request: NextRequest) {
     const creditCost = personaConfig.creditCost
 
     // Check if user has enough credits
-    if (userData.credits_balance < creditCost) {
-      return NextResponse.json({ 
-        error: 'Insufficient credits',
-        required: creditCost,
-        balance: userData.credits_balance,
-        message: `You need ${creditCost} credits to use ${personaConfig.name}. Please upgrade your subscription or purchase more credits.`
-      }, { status: 402 })
-    }
+    const creditsErrorResponse = validateCredits(
+      userData.credits_balance, 
+      creditCost, 
+      personaConfig.name
+    )
+    if (creditsErrorResponse) return creditsErrorResponse
 
     // Check if OpenAI is configured
     if (!openAIService.isConfigured()) {
       // Return demo response if OpenAI is not configured
-      return NextResponse.json({ 
+      return createSuccessResponse({ 
         message: getDemoResponse(messages[messages.length - 1].content, persona),
         tokensUsed: 0,
         creditsUsed: 0,
@@ -95,7 +103,7 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (sessionError) {
-        return NextResponse.json({ error: 'Failed to create chat session' }, { status: 500 })
+        throw sessionError
       }
       
       chatSession = newSession
@@ -141,7 +149,7 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
 
     if (updateError) {
-      return NextResponse.json({ error: 'Failed to update credits' }, { status: 500 })
+      throw updateError
     }
 
     // Log the credit transaction
@@ -160,41 +168,17 @@ export async function POST(request: NextRequest) {
         }
       })
 
-    const result = {
+    return createSuccessResponse({
       message: content,
       sessionId: chatSession.id,
       tokensUsed,
       creditsUsed: creditCost,
       newBalance,
       persona: personaConfig.name
-    }
-
-    return NextResponse.json(result)
+    })
 
   } catch (error) {
-    console.error('Chat API error:', error)
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ 
-        error: 'Invalid request data',
-        details: error.errors 
-      }, { status: 400 })
-    }
-
-    if (error instanceof Error) {
-      // Check for specific OpenAI errors
-      if (error.message.includes('OpenAI')) {
-        return NextResponse.json({ 
-          error: 'AI service temporarily unavailable',
-          message: 'Please try again in a moment'
-        }, { status: 503 })
-      }
-    }
-
-    return NextResponse.json({ 
-      error: 'An unexpected error occurred',
-      message: 'Please try again later'
-    }, { status: 500 })
+    return handleAPIError(error, 'chat')
   }
 }
 
@@ -249,9 +233,8 @@ export async function GET(request: NextRequest) {
     
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const authErrorResponse = handleAuthError(authError, user)
+    if (authErrorResponse) return authErrorResponse
 
     const { searchParams } = new URL(request.url)
     const sessionId = searchParams.get('sessionId')
@@ -272,10 +255,10 @@ export async function GET(request: NextRequest) {
         .single()
 
       if (sessionError || !chatSession) {
-        return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+        return createErrorResponse('Chat session not found', 'NOT_FOUND')
       }
 
-      return NextResponse.json(chatSession)
+      return createSuccessResponse(chatSession)
     } else {
       // Get all sessions for user with latest message
       const { data: sessions, error: sessionsError } = await supabase
@@ -292,15 +275,12 @@ export async function GET(request: NextRequest) {
         .limit(1, { foreignTable: 'ai_chat_messages' })
 
       if (sessionsError) {
-        return NextResponse.json({ error: 'Failed to fetch sessions' }, { status: 500 })
+        throw sessionsError
       }
 
-      return NextResponse.json(sessions || [])
+      return createSuccessResponse(sessions || [])
     }
   } catch (error) {
-    console.error('Error fetching chat history:', error)
-    return NextResponse.json({ 
-      error: 'Failed to fetch chat history' 
-    }, { status: 500 })
+    return handleAPIError(error, 'chat/history')
   }
 }
