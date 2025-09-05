@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -106,8 +107,14 @@ function SignInForm() {
             Back to Home
           </Link>
           <div className="flex justify-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center mb-4">
-              <span className="text-white font-bold text-xl">C</span>
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mb-4 p-2">
+              <Image
+                src="/logo.png"
+                alt="ChainWise Logo"
+                width={48}
+                height={48}
+                className="w-12 h-12 rounded-lg"
+              />
             </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">

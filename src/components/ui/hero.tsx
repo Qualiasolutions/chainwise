@@ -8,7 +8,7 @@ import { MessageSquare, ArrowRight } from "lucide-react";
 export default function ChainWiseHero() {
   return (
     <section
-      className="relative w-full overflow-hidden bg-[#0a0613] pb-10 pt-32 font-light text-white antialiased md:pb-16 md:pt-20"
+      className="relative w-full overflow-hidden bg-[#0a0613] pb-10 pt-40 font-light text-white antialiased md:pb-16 md:pt-32"
       style={{
         background: "linear-gradient(135deg, #0a0613 0%, #150d27 100%)",
       }}
