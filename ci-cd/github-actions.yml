@@ -1,0 +1,297 @@
+name: ChainWise Production CI/CD
+
+on:
+  push:
+    branches: [main, production]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: chainwise
+  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+
+jobs:
+  # Security and Quality Checks
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Build and Test
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: [security-scan]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npm run lint
+      
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+      
+      - name: Build application
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: .next/
+          retention-days: 1
+
+  # Build and Push Docker Images
+  build-images:
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.production
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Sign container image
+        run: |
+          echo "${{ secrets.COSIGN_KEY }}" > cosign.key
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+  # Deploy to Staging (Blue Environment)
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build-images]
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      
+      - name: Setup Kubernetes config
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+      
+      - name: Deploy to Blue Environment
+        run: |
+          # Update image in deployment
+          kubectl set image deployment/chainwise-app-blue chainwise=${{ needs.build-images.outputs.image-tag }} -n chainwise
+          
+          # Wait for rollout to complete
+          kubectl rollout status deployment/chainwise-app-blue -n chainwise --timeout=300s
+          
+          # Run health checks
+          kubectl wait --for=condition=available --timeout=300s deployment/chainwise-app-blue -n chainwise
+      
+      - name: Run Integration Tests
+        run: |
+          # Get service endpoint
+          BLUE_ENDPOINT=$(kubectl get service chainwise-service-blue -n chainwise -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          
+          # Wait for service to be ready
+          sleep 30
+          
+          # Run health check
+          curl -f http://$BLUE_ENDPOINT/api/health || exit 1
+          
+          # Run smoke tests
+          npm run test:e2e -- --baseUrl=http://$BLUE_ENDPOINT
+
+  # Production Deployment (Blue-Green Switch)
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.ref == 'refs/heads/production'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      
+      - name: Setup Kubernetes config
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > ~/.kube/config
+      
+      - name: Determine Current Environment
+        id: current-env
+        run: |
+          # Check which environment is currently serving traffic
+          CURRENT_COLOR=$(kubectl get service chainwise-service -n chainwise -o jsonpath='{.spec.selector.color}')
+          if [ "$CURRENT_COLOR" = "blue" ]; then
+            echo "current=blue" >> $GITHUB_OUTPUT
+            echo "target=green" >> $GITHUB_OUTPUT
+          else
+            echo "current=green" >> $GITHUB_OUTPUT
+            echo "target=blue" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Deploy to Target Environment
+        run: |
+          TARGET_COLOR="${{ steps.current-env.outputs.target }}"
+          
+          # Update the target environment with new image
+          kubectl set image deployment/chainwise-app-$TARGET_COLOR chainwise=${{ needs.build-images.outputs.image-tag }} -n chainwise
+          
+          # Wait for deployment to complete
+          kubectl rollout status deployment/chainwise-app-$TARGET_COLOR -n chainwise --timeout=600s
+          
+          # Verify deployment health
+          kubectl wait --for=condition=available --timeout=300s deployment/chainwise-app-$TARGET_COLOR -n chainwise
+      
+      - name: Run Production Health Checks
+        run: |
+          TARGET_COLOR="${{ steps.current-env.outputs.target }}"
+          
+          # Get target service endpoint
+          TARGET_ENDPOINT=$(kubectl get service chainwise-service-$TARGET_COLOR -n chainwise -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          
+          # Wait for service to be ready
+          sleep 30
+          
+          # Comprehensive health checks
+          curl -f http://$TARGET_ENDPOINT/api/health || exit 1
+          
+          # Database connectivity check
+          curl -f http://$TARGET_ENDPOINT/api/health/db || exit 1
+          
+          # External services check
+          curl -f http://$TARGET_ENDPOINT/api/health/external || exit 1
+      
+      - name: Switch Traffic (Blue-Green Deployment)
+        run: |
+          TARGET_COLOR="${{ steps.current-env.outputs.target }}"
+          
+          # Update main service to point to new environment
+          kubectl patch service chainwise-service -n chainwise -p '{"spec":{"selector":{"color":"'$TARGET_COLOR'"}}}'
+          
+          echo "Traffic switched to $TARGET_COLOR environment"
+      
+      - name: Verify Traffic Switch
+        run: |
+          # Wait for service update to propagate
+          sleep 10
+          
+          # Verify main service is serving from new environment
+          for i in {1..30}; do
+            curl -f https://chainwise.ai/api/health && break
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+      
+      - name: Cleanup Old Environment
+        run: |
+          CURRENT_COLOR="${{ steps.current-env.outputs.current }}"
+          
+          # Scale down old environment (keep 1 replica for quick rollback)
+          kubectl scale deployment chainwise-app-$CURRENT_COLOR --replicas=1 -n chainwise
+          
+          echo "Old environment ($CURRENT_COLOR) scaled down for potential rollback"
+
+  # Rollback Procedure
+  rollback-production:
+    runs-on: ubuntu-latest
+    if: failure() && github.ref == 'refs/heads/production'
+    environment: production
+    steps:
+      - name: Emergency Rollback
+        run: |
+          # Get previous environment
+          CURRENT_COLOR=$(kubectl get service chainwise-service -n chainwise -o jsonpath='{.spec.selector.color}')
+          if [ "$CURRENT_COLOR" = "blue" ]; then
+            ROLLBACK_COLOR="green"
+          else
+            ROLLBACK_COLOR="blue"
+          fi
+          
+          # Scale up rollback environment
+          kubectl scale deployment chainwise-app-$ROLLBACK_COLOR --replicas=3 -n chainwise
+          
+          # Wait for rollback environment to be ready
+          kubectl rollout status deployment/chainwise-app-$ROLLBACK_COLOR -n chainwise --timeout=300s
+          
+          # Switch traffic back
+          kubectl patch service chainwise-service -n chainwise -p '{"spec":{"selector":{"color":"'$ROLLBACK_COLOR'"}}}'
+          
+          echo "Emergency rollback completed to $ROLLBACK_COLOR environment"
+
+  # Notification
+  notify:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [deploy-production]
+    steps:
+      - name: Notify Deployment Status
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
