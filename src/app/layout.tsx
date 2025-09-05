@@ -5,6 +5,7 @@ import Navigation from '@/components/Navigation'
 import ThemeProvider from '@/components/ThemeProvider'
 import { Web3Provider } from '@/components/Web3Provider'
 import { AuthProvider } from '@/components/providers/AuthProvider'
+import { Analytics } from '@vercel/analytics/next'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -47,6 +48,7 @@ export default function RootLayout({
             </Web3Provider>
           </ThemeProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   )
