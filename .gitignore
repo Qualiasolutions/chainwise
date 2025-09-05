@@ -109,3 +109,7 @@ jspm_packages/
 # Environment files
 .env.production
 VERCEL_ENV_SETUP.md
+
+# Generated coverage reports
+coverage/
+*.lcov
