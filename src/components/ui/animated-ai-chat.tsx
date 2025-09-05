@@ -153,6 +153,28 @@ export function AnimatedAIChat() {
 
     const { creditBalance, canUseFeature, refetchBalance } = useSubscription();
 
+    // Initialize credits when component mounts
+    useEffect(() => {
+        const initializeCredits = async () => {
+            try {
+                const response = await fetch('/api/credits/initialize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.refreshed) {
+                        refetchBalance(); // Refresh balance if credits were added
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to initialize credits:', error);
+            }
+        };
+
+        initializeCredits();
+    }, [refetchBalance]);
+
     // Memoize command suggestions for better performance
     const commandSuggestions: CommandSuggestion[] = useMemo(() => [
         { 
@@ -377,7 +399,7 @@ export function AnimatedAIChat() {
     const currentPersonaInfo = useMemo(() => AIService.getPersonaInfo(selectedPersona), [selectedPersona]);
 
     return (
-        <div className="min-h-screen flex flex-col w-full items-center justify-center text-white p-2 sm:p-4 lg:p-6 relative overflow-hidden">
+        <div className="min-h-screen flex flex-col w-full items-center justify-start text-white p-2 sm:p-4 lg:p-6 relative overflow-hidden">
             {/* Enhanced Background Effects */}
             <div className="absolute inset-0 w-full h-full overflow-hidden">
                 <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/20 rounded-full mix-blend-normal filter blur-[180px] animate-pulse" />
@@ -444,7 +466,7 @@ export function AnimatedAIChat() {
 
                     {/* Enhanced Messages Area */}
                     <motion.div 
-                        className="relative backdrop-blur-3xl bg-gradient-to-br from-white/10 to-white/5 rounded-2xl sm:rounded-3xl border border-purple-300/20 shadow-2xl h-[400px] sm:h-[450px] lg:h-[500px] overflow-hidden"
+                        className="relative backdrop-blur-3xl bg-gradient-to-br from-white/10 to-white/5 rounded-2xl sm:rounded-3xl border border-purple-300/20 shadow-2xl h-[400px] sm:h-[500px] lg:h-[600px] xl:h-[650px] overflow-hidden"
                         initial={{ scale: 0.98 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.1 }}
@@ -563,10 +585,11 @@ export function AnimatedAIChat() {
                                     "resize-none",
                                     "bg-transparent",
                                     "border-none",
-                                    "text-white text-sm sm:text-base",
-                                    "focus:outline-none",
-                                    "placeholder:text-purple-200/40 placeholder:text-sm sm:placeholder:text-base",
-                                    "min-h-[60px] sm:min-h-[80px]"
+                                    "text-white text-sm sm:text-base lg:text-lg",
+                                    "focus:outline-none focus:ring-0",
+                                    "placeholder:text-purple-200/50 placeholder:text-sm sm:placeholder:text-base lg:placeholder:text-lg",
+                                    "min-h-[60px] sm:min-h-[80px] lg:min-h-[100px]",
+                                    "cursor-text"
                                 )}
                                 style={{
                                     overflow: "hidden",
