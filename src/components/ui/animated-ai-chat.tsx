@@ -145,7 +145,7 @@ export function AnimatedAIChat() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const { textareaRef, adjustHeight } = useAutoResizeTextarea({
         minHeight: 60,
-        maxHeight: 200,
+        maxHeight: 160, // Reduced for mobile
     });
     const [inputFocused, setInputFocused] = useState(false);
     const commandPaletteRef = useRef<HTMLDivElement>(null);
@@ -377,7 +377,7 @@ export function AnimatedAIChat() {
     const currentPersonaInfo = useMemo(() => AIService.getPersonaInfo(selectedPersona), [selectedPersona]);
 
     return (
-        <div className="min-h-screen flex flex-col w-full items-center justify-center text-white p-4 relative overflow-hidden">
+        <div className="min-h-screen flex flex-col w-full items-center justify-center text-white p-2 sm:p-4 lg:p-6 relative overflow-hidden">
             {/* Enhanced Background Effects */}
             <div className="absolute inset-0 w-full h-full overflow-hidden">
                 <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/20 rounded-full mix-blend-normal filter blur-[180px] animate-pulse" />
@@ -388,23 +388,23 @@ export function AnimatedAIChat() {
 
             {/* Enhanced Credit Balance Display */}
             <motion.div 
-                className="absolute top-6 right-6 backdrop-blur-2xl bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-purple-400/20 p-4 shadow-2xl"
+                className="absolute top-4 right-2 sm:top-6 sm:right-6 backdrop-blur-2xl bg-gradient-to-br from-white/10 to-white/5 rounded-xl sm:rounded-2xl border border-purple-400/20 p-2 sm:p-4 shadow-2xl"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-purple-500/20 rounded-lg">
-                        <CreditCard className="w-5 h-5 text-purple-300" />
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                    <div className="p-1.5 sm:p-2 bg-purple-500/20 rounded-lg">
+                        <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" />
                     </div>
-                    <div className="text-sm">
-                        <div className="text-white font-semibold text-lg">{creditBalance?.balance || 0}</div>
-                        <div className="text-purple-200/70 text-xs">Credits Available</div>
+                    <div className="text-xs sm:text-sm">
+                        <div className="text-white font-semibold text-base sm:text-lg">{creditBalance?.balance || 0}</div>
+                        <div className="text-purple-200/70 text-xs hidden sm:block">Credits Available</div>
                     </div>
                 </div>
             </motion.div>
 
-            <div className="w-full max-w-5xl mx-auto relative">
+            <div className="w-full max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto relative">
                 <motion.div 
                     className="relative z-10 space-y-8"
                     initial={{ opacity: 0, y: 20 }}
@@ -419,7 +419,7 @@ export function AnimatedAIChat() {
                             transition={{ delay: 0.2, duration: 0.5 }}
                             className="inline-block"
                         >
-                            <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 pb-2">
+                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 pb-2">
                                 ChainWise AI
                             </h1>
                             <motion.div 
@@ -430,13 +430,13 @@ export function AnimatedAIChat() {
                             />
                         </motion.div>
                         <motion.div
-                            className="flex items-center justify-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-6 py-3 border border-purple-300/20"
+                            className="flex items-center justify-center space-x-2 sm:space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-3 py-2 sm:px-6 sm:py-3 border border-purple-300/20"
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.4 }}
                         >
                             <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                            <span className="text-white/80 text-sm font-medium">
+                            <span className="text-white/80 text-xs sm:text-sm font-medium">
                                 Connected to <span className="text-purple-300 font-semibold">{currentPersonaInfo.name}</span>
                             </span>
                         </motion.div>
@@ -444,12 +444,12 @@ export function AnimatedAIChat() {
 
                     {/* Enhanced Messages Area */}
                     <motion.div 
-                        className="relative backdrop-blur-3xl bg-gradient-to-br from-white/10 to-white/5 rounded-3xl border border-purple-300/20 shadow-2xl h-[500px] overflow-hidden"
+                        className="relative backdrop-blur-3xl bg-gradient-to-br from-white/10 to-white/5 rounded-2xl sm:rounded-3xl border border-purple-300/20 shadow-2xl h-[400px] sm:h-[450px] lg:h-[500px] overflow-hidden"
                         initial={{ scale: 0.98 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.1 }}
                     >
-                        <div className="h-full overflow-y-auto p-6 space-y-6 scrollbar-hide">
+                        <div className="h-full overflow-y-auto p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6 scrollbar-hide">
                             {messages.map((message, index) => (
                                 <motion.div
                                     key={message.id}
@@ -458,9 +458,9 @@ export function AnimatedAIChat() {
                                     transition={{ delay: index * 0.05 }}
                                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    <div className={`flex max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start space-x-4`}>
+                                    <div className={`flex max-w-[90%] sm:max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 sm:space-x-4`}>
                                         <motion.div 
-                                            className={`p-3 rounded-2xl shadow-lg ${
+                                            className={`p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-lg ${
                                                 message.role === 'user' 
                                                     ? 'bg-gradient-to-br from-purple-500 to-pink-500' 
                                                     : 'bg-gradient-to-br from-indigo-500/20 to-purple-500/20 backdrop-blur-xl border border-purple-300/20'
@@ -469,13 +469,13 @@ export function AnimatedAIChat() {
                                             transition={{ type: "spring", stiffness: 300 }}
                                         >
                                             {message.role === 'user' ? (
-                                                <User className="w-5 h-5 text-white" />
+                                                <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                                             ) : (
-                                                <Bot className="w-5 h-5 text-purple-300" />
+                                                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300" />
                                             )}
                                         </motion.div>
                                         <motion.div 
-                                            className={`px-6 py-4 rounded-2xl shadow-xl ${
+                                            className={`px-3 py-2 sm:px-4 sm:py-3 lg:px-6 lg:py-4 rounded-xl sm:rounded-2xl shadow-xl ${
                                                 message.role === 'user' 
                                                     ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white' 
                                                     : 'bg-white/10 backdrop-blur-xl text-white border border-purple-200/20'
@@ -483,8 +483,8 @@ export function AnimatedAIChat() {
                                             whileHover={{ scale: 1.02 }}
                                             transition={{ type: "spring", stiffness: 300 }}
                                         >
-                                            <p className="whitespace-pre-wrap text-sm leading-relaxed font-medium">{message.content}</p>
-                                            <p className={`text-xs mt-3 ${message.role === 'user' ? 'text-purple-100' : 'text-purple-200/60'} font-medium`}>
+                                            <p className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed font-medium">{message.content}</p>
+                                            <p className={`text-xs mt-2 sm:mt-3 ${message.role === 'user' ? 'text-purple-100' : 'text-purple-200/60'} font-medium`}>
                                                 {message.timestamp.toLocaleTimeString()}
                                             </p>
                                         </motion.div>
@@ -506,7 +506,7 @@ export function AnimatedAIChat() {
                             {showCommandPalette && (
                                 <motion.div 
                                     ref={commandPaletteRef}
-                                    className="absolute left-4 right-4 bottom-full mb-3 backdrop-blur-3xl bg-gradient-to-br from-purple-900/80 to-indigo-900/80 rounded-2xl z-50 shadow-2xl border border-purple-300/30 overflow-hidden"
+                                    className="absolute left-2 right-2 sm:left-4 sm:right-4 bottom-full mb-3 backdrop-blur-3xl bg-gradient-to-br from-purple-900/80 to-indigo-900/80 rounded-xl sm:rounded-2xl z-50 shadow-2xl border border-purple-300/30 overflow-hidden"
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -517,7 +517,7 @@ export function AnimatedAIChat() {
                                             <motion.div
                                                 key={suggestion.prefix}
                                                 className={cn(
-                                                    "flex items-center gap-4 px-6 py-4 text-sm transition-all cursor-pointer relative group",
+                                                    "flex items-center gap-3 sm:gap-4 px-3 py-3 sm:px-6 sm:py-4 text-xs sm:text-sm transition-all cursor-pointer relative group",
                                                     activeSuggestion === index 
                                                         ? "bg-purple-500/30 text-white shadow-lg" 
                                                         : "text-white/80 hover:bg-purple-500/20 hover:text-white"
@@ -528,14 +528,14 @@ export function AnimatedAIChat() {
                                                 transition={{ delay: index * 0.05 }}
                                                 whileHover={{ x: 4 }}
                                             >
-                                                <div className="w-8 h-8 flex items-center justify-center text-purple-300 bg-purple-500/20 rounded-xl group-hover:bg-purple-500/30 transition-colors">
+                                                <div className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-purple-300 bg-purple-500/20 rounded-lg sm:rounded-xl group-hover:bg-purple-500/30 transition-colors">
                                                     {suggestion.icon}
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="font-semibold">{suggestion.label}</div>
                                                     <div className="text-purple-200/60 text-xs mt-1">{suggestion.description}</div>
                                                 </div>
-                                                <div className="text-purple-300/70 text-xs font-mono bg-purple-500/10 px-2 py-1 rounded-lg">
+                                                <div className="text-purple-300/70 text-xs font-mono bg-purple-500/10 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-md sm:rounded-lg hidden sm:block">
                                                     {suggestion.prefix}
                                                 </div>
                                             </motion.div>
@@ -545,7 +545,7 @@ export function AnimatedAIChat() {
                             )}
                         </AnimatePresence>
 
-                        <div className="p-6">
+                        <div className="p-3 sm:p-4 lg:p-6">
                             <Textarea
                                 ref={textareaRef}
                                 value={value}
@@ -559,14 +559,14 @@ export function AnimatedAIChat() {
                                 placeholder="Ask ChainWise AI anything about crypto..."
                                 containerClassName="w-full"
                                 className={cn(
-                                    "w-full px-6 py-4",
+                                    "w-full px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-4",
                                     "resize-none",
                                     "bg-transparent",
                                     "border-none",
-                                    "text-white text-base",
+                                    "text-white text-sm sm:text-base",
                                     "focus:outline-none",
-                                    "placeholder:text-purple-200/40 placeholder:text-base",
-                                    "min-h-[80px]"
+                                    "placeholder:text-purple-200/40 placeholder:text-sm sm:placeholder:text-base",
+                                    "min-h-[60px] sm:min-h-[80px]"
                                 )}
                                 style={{
                                     overflow: "hidden",
@@ -575,8 +575,8 @@ export function AnimatedAIChat() {
                             />
                         </div>
 
-                        <div className="px-6 py-4 border-t border-purple-300/20 flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
+                        <div className="px-3 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-4 border-t border-purple-300/20 flex items-center justify-between gap-2 sm:gap-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
                                 <motion.button
                                     type="button"
                                     data-command-button
@@ -587,13 +587,13 @@ export function AnimatedAIChat() {
                                     whileTap={{ scale: 0.94 }}
                                     whileHover={{ scale: 1.05 }}
                                     className={cn(
-                                        "p-3 text-purple-300/60 hover:text-white rounded-xl transition-all relative group bg-purple-500/10 hover:bg-purple-500/20",
+                                        "p-2 sm:p-3 text-purple-300/60 hover:text-white rounded-lg sm:rounded-xl transition-all relative group bg-purple-500/10 hover:bg-purple-500/20",
                                         showCommandPalette && "bg-purple-500/30 text-white shadow-lg"
                                     )}
                                 >
-                                    <Command className="w-5 h-5" />
+                                    <Command className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </motion.button>
-                                <span className="text-purple-200/50 text-xs">Commands</span>
+                                <span className="text-purple-200/50 text-xs hidden sm:block">Commands</span>
                             </div>
                             
                             <motion.button
@@ -603,42 +603,43 @@ export function AnimatedAIChat() {
                                 whileTap={{ scale: 0.98 }}
                                 disabled={isTyping || !value.trim()}
                                 className={cn(
-                                    "px-8 py-3 rounded-2xl text-sm font-semibold transition-all",
-                                    "flex items-center gap-3",
+                                    "px-4 py-2 sm:px-6 sm:py-3 lg:px-8 lg:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-semibold transition-all",
+                                    "flex items-center gap-2 sm:gap-3",
                                     value.trim() && !isTyping
                                         ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/40"
                                         : "bg-white/10 text-white/40 cursor-not-allowed"
                                 )}
                             >
                                 {isTyping ? (
-                                    <LoaderIcon className="w-5 h-5 animate-spin" />
+                                    <LoaderIcon className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                                 ) : (
-                                    <SendIcon className="w-5 h-5" />
+                                    <SendIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                 )}
-                                <span>Send Message</span>
+                                <span className="hidden sm:inline">Send Message</span>
+                                <span className="sm:hidden">Send</span>
                             </motion.button>
                         </div>
                     </motion.div>
 
                     {/* Enhanced Command Suggestions */}
-                    <div className="flex flex-wrap items-center justify-center gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 lg:gap-4">
                         {commandSuggestions.map((suggestion, index) => (
                             <motion.button
                                 key={suggestion.prefix}
                                 onClick={() => selectCommandSuggestion(index)}
-                                className="flex items-center gap-3 px-6 py-3 bg-white/5 hover:bg-purple-500/20 rounded-2xl text-sm text-white/70 hover:text-white transition-all relative group border border-purple-300/10 hover:border-purple-400/40 shadow-lg backdrop-blur-xl"
+                                className="flex items-center gap-2 sm:gap-3 px-3 py-2 sm:px-4 sm:py-3 lg:px-6 lg:py-3 bg-white/5 hover:bg-purple-500/20 rounded-xl sm:rounded-2xl text-xs sm:text-sm text-white/70 hover:text-white transition-all relative group border border-purple-300/10 hover:border-purple-400/40 shadow-lg backdrop-blur-xl"
                                 initial={{ opacity: 0, y: 20, scale: 0.9 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 300 }}
                                 whileHover={{ scale: 1.05, y: -2 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                <div className="text-purple-300 bg-purple-500/20 p-2 rounded-xl group-hover:bg-purple-500/30 transition-colors">
+                                <div className="text-purple-300 bg-purple-500/20 p-1.5 sm:p-2 rounded-lg sm:rounded-xl group-hover:bg-purple-500/30 transition-colors">
                                     {suggestion.icon}
                                 </div>
                                 <div className="flex flex-col items-start">
                                     <span className="font-medium">{suggestion.label}</span>
-                                    <span className="text-xs text-purple-200/50 group-hover:text-purple-100/60">{suggestion.description}</span>
+                                    <span className="text-xs text-purple-200/50 group-hover:text-purple-100/60 hidden sm:block">{suggestion.description}</span>
                                 </div>
                             </motion.button>
                         ))}
@@ -650,21 +651,21 @@ export function AnimatedAIChat() {
             <AnimatePresence>
                 {isTyping && (
                     <motion.div 
-                        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 backdrop-blur-3xl bg-gradient-to-r from-purple-900/90 to-indigo-900/90 rounded-2xl px-8 py-4 shadow-2xl border border-purple-300/30"
+                        className="fixed bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 backdrop-blur-3xl bg-gradient-to-r from-purple-900/90 to-indigo-900/90 rounded-xl sm:rounded-2xl px-4 py-3 sm:px-8 sm:py-4 shadow-2xl border border-purple-300/30"
                         initial={{ opacity: 0, y: 30, scale: 0.8 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 30, scale: 0.8 }}
                         transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                             <motion.div 
-                                className="w-10 h-10 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
+                                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
                                 animate={{ rotate: [0, 5, -5, 0] }}
                                 transition={{ repeat: Infinity, duration: 2 }}
                             >
-                                <Bot className="w-5 h-5 text-white" />
+                                <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                             </motion.div>
-                            <div className="flex items-center gap-3 text-sm text-white">
+                            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-white">
                                 <span className="font-medium">{currentPersonaInfo.name} is thinking</span>
                                 <TypingDots />
                             </div>
