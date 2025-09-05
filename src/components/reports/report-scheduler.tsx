@@ -386,7 +386,7 @@ export function ReportScheduler() {
               <ul className="text-sm text-blue-800 space-y-1">
                 <li>• Reports are generated automatically based on your schedule</li>
                 <li>• Credits are deducted when reports are generated</li>
-                <li>• You'll receive notifications when reports are ready</li>
+                <li>• You&apos;ll receive notifications when reports are ready</li>
                 <li>• Schedules pause automatically if you run out of credits</li>
               </ul>
             </div>

@@ -215,7 +215,7 @@ export function TierLimitGuard({
           {usageType.charAt(0).toUpperCase() + usageType.slice(1)} Limit Reached
         </CardTitle>
         <CardDescription className="text-orange-700">
-          You've reached your limit of {maxAllowed} {usageType}
+          You&apos;ve reached your limit of {maxAllowed} {usageType}
         </CardDescription>
       </CardHeader>
       
