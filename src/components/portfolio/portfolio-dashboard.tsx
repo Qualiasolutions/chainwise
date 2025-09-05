@@ -80,10 +80,10 @@ export default function PortfolioDashboard({
 
   // Load user portfolios
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (session && !authLoading) {
       loadPortfolios()
     }
-  }, [status])
+  }, [session, authLoading])
 
   // Load selected portfolio analytics
   useEffect(() => {
@@ -183,7 +183,7 @@ export default function PortfolioDashboard({
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -191,7 +191,7 @@ export default function PortfolioDashboard({
     )
   }
 
-  if (status === 'unauthenticated') {
+  if (!session && !authLoading) {
     return (
       <Card className="text-center p-8">
         <CardHeader>
