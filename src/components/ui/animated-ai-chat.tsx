@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useTransition } from "react";
+import { useEffect, useRef, useCallback, useTransition, useMemo } from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -153,7 +153,8 @@ export function AnimatedAIChat() {
 
     const { creditBalance, canUseFeature, refetchBalance } = useSubscription();
 
-    const commandSuggestions: CommandSuggestion[] = [
+    // Memoize command suggestions for better performance
+    const commandSuggestions: CommandSuggestion[] = useMemo(() => [
         { 
             icon: <MessageSquare className="w-4 h-4" />, 
             label: "Crypto Buddy", 
@@ -182,15 +183,16 @@ export function AnimatedAIChat() {
             prefix: "/portfolio",
             persona: 'buddy'
         },
-    ];
+    ], []);
 
-    const scrollToBottom = () => {
+    // Memoized scroll function
+    const scrollToBottom = useCallback(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
+    }, []);
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, scrollToBottom]);
 
     // Initialize with welcome message
     useEffect(() => {
@@ -219,7 +221,7 @@ export function AnimatedAIChat() {
         } else {
             setShowCommandPalette(false);
         }
-    }, [value]);
+    }, [value, commandSuggestions]);
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -371,98 +373,121 @@ export function AnimatedAIChat() {
         setShowCommandPalette(false);
     };
 
-    const currentPersonaInfo = AIService.getPersonaInfo(selectedPersona);
+    // Memoize persona info for better performance
+    const currentPersonaInfo = useMemo(() => AIService.getPersonaInfo(selectedPersona), [selectedPersona]);
 
     return (
-        <div className="min-h-screen flex flex-col w-full items-center justify-center bg-slate-900 text-white p-6 relative overflow-hidden">
-            {/* Background Effects */}
+        <div className="min-h-screen flex flex-col w-full items-center justify-center text-white p-4 relative overflow-hidden">
+            {/* Enhanced Background Effects */}
             <div className="absolute inset-0 w-full h-full overflow-hidden">
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-crypto-primary/10 rounded-full mix-blend-normal filter blur-[128px] animate-pulse" />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-crypto-secondary/10 rounded-full mix-blend-normal filter blur-[128px] animate-pulse delay-700" />
-                <div className="absolute top-1/4 right-1/3 w-64 h-64 bg-crypto-accent/10 rounded-full mix-blend-normal filter blur-[96px] animate-pulse delay-1000" />
+                <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-500/20 rounded-full mix-blend-normal filter blur-[180px] animate-pulse" />
+                <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-500/15 rounded-full mix-blend-normal filter blur-[150px] animate-pulse delay-700" />
+                <div className="absolute top-1/3 right-1/3 w-[400px] h-[400px] bg-violet-500/10 rounded-full mix-blend-normal filter blur-[120px] animate-pulse delay-1000" />
+                <div className="absolute bottom-1/4 left-1/3 w-[350px] h-[350px] bg-pink-500/8 rounded-full mix-blend-normal filter blur-[100px] animate-pulse delay-500" />
             </div>
 
-            {/* Credit Balance Display */}
+            {/* Enhanced Credit Balance Display */}
             <motion.div 
-                className="absolute top-6 right-6 backdrop-blur-xl bg-white/[0.02] rounded-lg border border-white/[0.05] p-3 shadow-lg"
+                className="absolute top-6 right-6 backdrop-blur-2xl bg-gradient-to-br from-white/10 to-white/5 rounded-2xl border border-purple-400/20 p-4 shadow-2xl"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                <div className="flex items-center space-x-2">
-                    <CreditCard className="w-4 h-4 text-crypto-primary" />
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-500/20 rounded-lg">
+                        <CreditCard className="w-5 h-5 text-purple-300" />
+                    </div>
                     <div className="text-sm">
-                        <span className="text-white font-medium">{creditBalance?.balance || 0}</span>
-                        <span className="text-white/60 ml-1">Credits</span>
+                        <div className="text-white font-semibold text-lg">{creditBalance?.balance || 0}</div>
+                        <div className="text-purple-200/70 text-xs">Credits Available</div>
                     </div>
                 </div>
             </motion.div>
 
-            <div className="w-full max-w-4xl mx-auto relative">
+            <div className="w-full max-w-5xl mx-auto relative">
                 <motion.div 
-                    className="relative z-10 space-y-12"
+                    className="relative z-10 space-y-8"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
                 >
-                    {/* Header */}
-                    <div className="text-center space-y-3">
+                    {/* Enhanced Header */}
+                    <div className="text-center space-y-4">
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2, duration: 0.5 }}
                             className="inline-block"
                         >
-                            <h1 className="text-4xl font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-crypto-primary to-crypto-secondary pb-1">
-                                ChainWise AI Assistant
+                            <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300 pb-2">
+                                ChainWise AI
                             </h1>
                             <motion.div 
-                                className="h-px bg-gradient-to-r from-transparent via-crypto-primary/50 to-transparent"
+                                className="h-1 bg-gradient-to-r from-transparent via-purple-400/60 to-transparent rounded-full"
                                 initial={{ width: 0, opacity: 0 }}
                                 animate={{ width: "100%", opacity: 1 }}
                                 transition={{ delay: 0.5, duration: 0.8 }}
                             />
                         </motion.div>
-                        <motion.p 
-                            className="text-sm text-white/60"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.3 }}
+                        <motion.div
+                            className="flex items-center justify-center space-x-3 bg-white/5 backdrop-blur-xl rounded-full px-6 py-3 border border-purple-300/20"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.4 }}
                         >
-                            Currently chatting with <span className="text-crypto-primary font-medium">{currentPersonaInfo.name}</span>
-                        </motion.p>
+                            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                            <span className="text-white/80 text-sm font-medium">
+                                Connected to <span className="text-purple-300 font-semibold">{currentPersonaInfo.name}</span>
+                            </span>
+                        </motion.div>
                     </div>
 
-                    {/* Messages Area */}
+                    {/* Enhanced Messages Area */}
                     <motion.div 
-                        className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-2xl max-h-96 overflow-y-auto"
+                        className="relative backdrop-blur-3xl bg-gradient-to-br from-white/10 to-white/5 rounded-3xl border border-purple-300/20 shadow-2xl h-[500px] overflow-hidden"
                         initial={{ scale: 0.98 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.1 }}
                     >
-                        <div className="p-6 space-y-4">
+                        <div className="h-full overflow-y-auto p-6 space-y-6 scrollbar-hide">
                             {messages.map((message, index) => (
                                 <motion.div
                                     key={message.id}
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
+                                    transition={{ delay: index * 0.05 }}
                                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    <div className={`flex max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start space-x-3`}>
-                                        <div className={`p-2 rounded-lg ${message.role === 'user' ? 'bg-crypto-primary' : 'bg-crypto-secondary/20'}`}>
+                                    <div className={`flex max-w-[85%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start space-x-4`}>
+                                        <motion.div 
+                                            className={`p-3 rounded-2xl shadow-lg ${
+                                                message.role === 'user' 
+                                                    ? 'bg-gradient-to-br from-purple-500 to-pink-500' 
+                                                    : 'bg-gradient-to-br from-indigo-500/20 to-purple-500/20 backdrop-blur-xl border border-purple-300/20'
+                                            }`}
+                                            whileHover={{ scale: 1.05 }}
+                                            transition={{ type: "spring", stiffness: 300 }}
+                                        >
                                             {message.role === 'user' ? (
-                                                <User className="w-4 h-4 text-white" />
+                                                <User className="w-5 h-5 text-white" />
                                             ) : (
-                                                <Bot className="w-4 h-4 text-crypto-primary" />
+                                                <Bot className="w-5 h-5 text-purple-300" />
                                             )}
-                                        </div>
-                                        <div className={`px-4 py-3 rounded-lg ${message.role === 'user' ? 'bg-crypto-primary text-white' : 'bg-white/[0.05] text-white'}`}>
-                                            <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                                            <p className="text-xs mt-2 opacity-60">
+                                        </motion.div>
+                                        <motion.div 
+                                            className={`px-6 py-4 rounded-2xl shadow-xl ${
+                                                message.role === 'user' 
+                                                    ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white' 
+                                                    : 'bg-white/10 backdrop-blur-xl text-white border border-purple-200/20'
+                                            }`}
+                                            whileHover={{ scale: 1.02 }}
+                                            transition={{ type: "spring", stiffness: 300 }}
+                                        >
+                                            <p className="whitespace-pre-wrap text-sm leading-relaxed font-medium">{message.content}</p>
+                                            <p className={`text-xs mt-3 ${message.role === 'user' ? 'text-purple-100' : 'text-purple-200/60'} font-medium`}>
                                                 {message.timestamp.toLocaleTimeString()}
                                             </p>
-                                        </div>
+                                        </motion.div>
                                     </div>
                                 </motion.div>
                             ))}
@@ -470,9 +495,9 @@ export function AnimatedAIChat() {
                         </div>
                     </motion.div>
 
-                    {/* Chat Input */}
+                    {/* Enhanced Chat Input */}
                     <motion.div 
-                        className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-2xl"
+                        className="relative backdrop-blur-3xl bg-gradient-to-br from-white/10 to-white/5 rounded-3xl border border-purple-300/20 shadow-2xl"
                         initial={{ scale: 0.98 }}
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.1 }}
@@ -481,35 +506,36 @@ export function AnimatedAIChat() {
                             {showCommandPalette && (
                                 <motion.div 
                                     ref={commandPaletteRef}
-                                    className="absolute left-4 right-4 bottom-full mb-2 backdrop-blur-xl bg-slate-800/95 rounded-lg z-50 shadow-lg border border-white/10 overflow-hidden"
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 5 }}
-                                    transition={{ duration: 0.15 }}
+                                    className="absolute left-4 right-4 bottom-full mb-3 backdrop-blur-3xl bg-gradient-to-br from-purple-900/80 to-indigo-900/80 rounded-2xl z-50 shadow-2xl border border-purple-300/30 overflow-hidden"
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    transition={{ duration: 0.2, type: "spring", stiffness: 300 }}
                                 >
-                                    <div className="py-1">
+                                    <div className="py-2">
                                         {commandSuggestions.map((suggestion, index) => (
                                             <motion.div
                                                 key={suggestion.prefix}
                                                 className={cn(
-                                                    "flex items-center gap-3 px-4 py-3 text-sm transition-colors cursor-pointer",
+                                                    "flex items-center gap-4 px-6 py-4 text-sm transition-all cursor-pointer relative group",
                                                     activeSuggestion === index 
-                                                        ? "bg-crypto-primary/20 text-white" 
-                                                        : "text-white/70 hover:bg-white/5"
+                                                        ? "bg-purple-500/30 text-white shadow-lg" 
+                                                        : "text-white/80 hover:bg-purple-500/20 hover:text-white"
                                                 )}
                                                 onClick={() => selectCommandSuggestion(index)}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ delay: index * 0.03 }}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: index * 0.05 }}
+                                                whileHover={{ x: 4 }}
                                             >
-                                                <div className="w-6 h-6 flex items-center justify-center text-crypto-primary">
+                                                <div className="w-8 h-8 flex items-center justify-center text-purple-300 bg-purple-500/20 rounded-xl group-hover:bg-purple-500/30 transition-colors">
                                                     {suggestion.icon}
                                                 </div>
                                                 <div className="flex-1">
-                                                    <div className="font-medium">{suggestion.label}</div>
-                                                    <div className="text-white/50 text-xs">{suggestion.description}</div>
+                                                    <div className="font-semibold">{suggestion.label}</div>
+                                                    <div className="text-purple-200/60 text-xs mt-1">{suggestion.description}</div>
                                                 </div>
-                                                <div className="text-white/40 text-xs font-mono">
+                                                <div className="text-purple-300/70 text-xs font-mono bg-purple-500/10 px-2 py-1 rounded-lg">
                                                     {suggestion.prefix}
                                                 </div>
                                             </motion.div>
@@ -519,7 +545,7 @@ export function AnimatedAIChat() {
                             )}
                         </AnimatePresence>
 
-                        <div className="p-4">
+                        <div className="p-6">
                             <Textarea
                                 ref={textareaRef}
                                 value={value}
@@ -533,14 +559,14 @@ export function AnimatedAIChat() {
                                 placeholder="Ask ChainWise AI anything about crypto..."
                                 containerClassName="w-full"
                                 className={cn(
-                                    "w-full px-4 py-3",
+                                    "w-full px-6 py-4",
                                     "resize-none",
                                     "bg-transparent",
                                     "border-none",
-                                    "text-white/90 text-sm",
+                                    "text-white text-base",
                                     "focus:outline-none",
-                                    "placeholder:text-white/30",
-                                    "min-h-[60px]"
+                                    "placeholder:text-purple-200/40 placeholder:text-base",
+                                    "min-h-[80px]"
                                 )}
                                 style={{
                                     overflow: "hidden",
@@ -549,7 +575,7 @@ export function AnimatedAIChat() {
                             />
                         </div>
 
-                        <div className="p-4 border-t border-white/[0.05] flex items-center justify-between gap-4">
+                        <div className="px-6 py-4 border-t border-purple-300/20 flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <motion.button
                                     type="button"
@@ -559,81 +585,87 @@ export function AnimatedAIChat() {
                                         setShowCommandPalette(prev => !prev);
                                     }}
                                     whileTap={{ scale: 0.94 }}
+                                    whileHover={{ scale: 1.05 }}
                                     className={cn(
-                                        "p-2 text-white/40 hover:text-white/90 rounded-lg transition-colors relative group",
-                                        showCommandPalette && "bg-white/10 text-white/90"
+                                        "p-3 text-purple-300/60 hover:text-white rounded-xl transition-all relative group bg-purple-500/10 hover:bg-purple-500/20",
+                                        showCommandPalette && "bg-purple-500/30 text-white shadow-lg"
                                     )}
                                 >
-                                    <Command className="w-4 h-4" />
-                                    <motion.span
-                                        className="absolute inset-0 bg-white/[0.05] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                        layoutId="button-highlight"
-                                    />
+                                    <Command className="w-5 h-5" />
                                 </motion.button>
+                                <span className="text-purple-200/50 text-xs">Commands</span>
                             </div>
                             
                             <motion.button
                                 type="button"
                                 onClick={handleSendMessage}
-                                whileHover={{ scale: 1.01 }}
+                                whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 disabled={isTyping || !value.trim()}
                                 className={cn(
-                                    "px-6 py-2 rounded-lg text-sm font-medium transition-all",
-                                    "flex items-center gap-2",
+                                    "px-8 py-3 rounded-2xl text-sm font-semibold transition-all",
+                                    "flex items-center gap-3",
                                     value.trim() && !isTyping
-                                        ? "bg-gradient-to-r from-crypto-primary to-crypto-secondary text-white shadow-lg shadow-crypto-primary/20"
-                                        : "bg-white/[0.05] text-white/40"
+                                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-2xl shadow-purple-500/30 hover:shadow-purple-500/40"
+                                        : "bg-white/10 text-white/40 cursor-not-allowed"
                                 )}
                             >
                                 {isTyping ? (
-                                    <LoaderIcon className="w-4 h-4 animate-spin" />
+                                    <LoaderIcon className="w-5 h-5 animate-spin" />
                                 ) : (
-                                    <SendIcon className="w-4 h-4" />
+                                    <SendIcon className="w-5 h-5" />
                                 )}
-                                <span>Send</span>
+                                <span>Send Message</span>
                             </motion.button>
                         </div>
                     </motion.div>
 
-                    {/* Command Suggestions */}
-                    <div className="flex flex-wrap items-center justify-center gap-3">
+                    {/* Enhanced Command Suggestions */}
+                    <div className="flex flex-wrap items-center justify-center gap-4">
                         {commandSuggestions.map((suggestion, index) => (
                             <motion.button
                                 key={suggestion.prefix}
                                 onClick={() => selectCommandSuggestion(index)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white/[0.02] hover:bg-white/[0.05] rounded-lg text-sm text-white/60 hover:text-white/90 transition-all relative group border border-white/[0.05] hover:border-crypto-primary/30"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.4 + index * 0.1 }}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
+                                className="flex items-center gap-3 px-6 py-3 bg-white/5 hover:bg-purple-500/20 rounded-2xl text-sm text-white/70 hover:text-white transition-all relative group border border-purple-300/10 hover:border-purple-400/40 shadow-lg backdrop-blur-xl"
+                                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{ delay: 0.5 + index * 0.1, type: "spring", stiffness: 300 }}
+                                whileHover={{ scale: 1.05, y: -2 }}
+                                whileTap={{ scale: 0.95 }}
                             >
-                                <div className="text-crypto-primary">
+                                <div className="text-purple-300 bg-purple-500/20 p-2 rounded-xl group-hover:bg-purple-500/30 transition-colors">
                                     {suggestion.icon}
                                 </div>
-                                <span>{suggestion.label}</span>
+                                <div className="flex flex-col items-start">
+                                    <span className="font-medium">{suggestion.label}</span>
+                                    <span className="text-xs text-purple-200/50 group-hover:text-purple-100/60">{suggestion.description}</span>
+                                </div>
                             </motion.button>
                         ))}
                     </div>
                 </motion.div>
             </div>
 
-            {/* Typing Indicator */}
+            {/* Enhanced Typing Indicator */}
             <AnimatePresence>
                 {isTyping && (
                     <motion.div 
-                        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 backdrop-blur-2xl bg-white/[0.02] rounded-full px-6 py-3 shadow-lg border border-white/[0.05]"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
+                        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 backdrop-blur-3xl bg-gradient-to-r from-purple-900/90 to-indigo-900/90 rounded-2xl px-8 py-4 shadow-2xl border border-purple-300/30"
+                        initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 30, scale: 0.8 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-crypto-primary to-crypto-secondary flex items-center justify-center">
-                                <Bot className="w-4 h-4 text-white" />
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-white/70">
-                                <span>{currentPersonaInfo.name} is thinking</span>
+                        <div className="flex items-center gap-4">
+                            <motion.div 
+                                className="w-10 h-10 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg"
+                                animate={{ rotate: [0, 5, -5, 0] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                            >
+                                <Bot className="w-5 h-5 text-white" />
+                            </motion.div>
+                            <div className="flex items-center gap-3 text-sm text-white">
+                                <span className="font-medium">{currentPersonaInfo.name} is thinking</span>
                                 <TypingDots />
                             </div>
                         </div>
@@ -641,19 +673,19 @@ export function AnimatedAIChat() {
                 )}
             </AnimatePresence>
 
-            {/* Mouse Follow Effect */}
+            {/* Enhanced Mouse Follow Effect */}
             {inputFocused && (
                 <motion.div 
-                    className="fixed w-[50rem] h-[50rem] rounded-full pointer-events-none z-0 opacity-[0.02] bg-gradient-to-r from-crypto-primary via-crypto-secondary to-crypto-accent blur-[96px]"
+                    className="fixed w-[60rem] h-[60rem] rounded-full pointer-events-none z-0 opacity-[0.03] bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 blur-[120px]"
                     animate={{
-                        x: mousePosition.x - 400,
-                        y: mousePosition.y - 400,
+                        x: mousePosition.x - 480,
+                        y: mousePosition.y - 480,
                     }}
                     transition={{
                         type: "spring",
-                        damping: 25,
-                        stiffness: 150,
-                        mass: 0.5,
+                        damping: 30,
+                        stiffness: 120,
+                        mass: 0.8,
                     }}
                 />
             )}
@@ -667,20 +699,21 @@ function TypingDots() {
             {[1, 2, 3].map((dot) => (
                 <motion.div
                     key={dot}
-                    className="w-1.5 h-1.5 bg-white/90 rounded-full mx-0.5"
-                    initial={{ opacity: 0.3 }}
+                    className="w-2 h-2 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full mx-0.5 shadow-lg"
+                    initial={{ opacity: 0.4, scale: 0.8 }}
                     animate={{ 
-                        opacity: [0.3, 0.9, 0.3],
-                        scale: [0.85, 1.1, 0.85]
+                        opacity: [0.4, 1, 0.4],
+                        scale: [0.8, 1.3, 0.8],
+                        y: [0, -4, 0]
                     }}
                     transition={{
-                        duration: 1.2,
+                        duration: 1.5,
                         repeat: Infinity,
-                        delay: dot * 0.15,
+                        delay: dot * 0.2,
                         ease: "easeInOut",
                     }}
                     style={{
-                        boxShadow: "0 0 4px rgba(255, 255, 255, 0.3)"
+                        boxShadow: "0 0 8px rgba(168, 85, 247, 0.5)"
                     }}
                 />
             ))}
