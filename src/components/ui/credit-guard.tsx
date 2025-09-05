@@ -78,7 +78,7 @@ export function CreditGuard({
                 <Button asChild size="sm" className="bg-purple-600 hover:bg-purple-700">
                   <Link href="/pricing">
                     <Crown className="mr-2 h-4 w-4" />
-                    Elite: 150 Credits
+                    Elite: 200 Credits
                   </Link>
                 </Button>
               </div>

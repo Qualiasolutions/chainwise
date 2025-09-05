@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Check, Zap, Crown, Star, X } from "lucide-react"
 import Link from "next/link"
 import { PricingCard } from "@/components/pricing/PricingCard"
+import { CreditPacks } from "@/components/ui/credit-packs"
 import { useSupabase } from "@/components/providers/supabase-provider"
 import { useSubscription } from "@/hooks/use-subscription"
 
@@ -18,21 +19,23 @@ export default function PricingPage() {
       id: 'free' as const,
       name: "Free",
       price: "$0",
-      period: "forever",
-      description: "Perfect for getting started with crypto tracking",
+      period: "forever", 
+      description: "Awareness & a taste of AI, not full use",
       features: [
-        "Track up to 1 portfolio with 3 holdings",
-        "3 AI chat credits/month (Buddy persona)",
-        "Basic market data & price alerts",
-        "Up to 3 custom alerts",
-        "Basic educational content access",
-        "Community access (read-only)",
+        "Buddy persona (basic Q&A)",
+        "Live prices (top 10 coins only)",
+        "Portfolio tracking (up to 3 coins)",
+        "Coin comparisons (2 Max)",
+        "Daily generic news (no personalization)",
+        "ChainWise Academy: 2 intro lessons",
+        "ChainWise Community access",
+        "3 credits/month (to test premium features)"
       ],
       limitations: [
-        "No advanced AI personas",
-        "No portfolio analysis",
-        "No custom reports",
-        "Limited support",
+        "No advanced AI personas (Professor/Trader)",
+        "No portfolio analysis or insights",
+        "No custom reports or deep analysis",
+        "Limited to basic features only",
       ],
       popular: false,
       icon: <Star className="h-6 w-6" />,
@@ -43,17 +46,20 @@ export default function PricingPage() {
       name: "Pro",
       price: "$12.99",
       period: "per month",
-      description: "Advanced tools for serious crypto enthusiasts",
+      description: "The value-for-money plan. 60-70% of users will land here",
       features: [
-        "Track up to 3 portfolios with 20 holdings each",
-        "50 AI chat credits/month",
-        "Buddy + Professor AI personas",
-        "Advanced portfolio analytics & risk scoring",
-        "AI-powered market insights",
-        "Up to 10 custom alerts",
-        "Weekly AI reports",
-        "Full educational academy access",
-        "Priority email support",
+        "Buddy + Professor personas",
+        "Unlimited coin comparisons",
+        "ChainWise Community access",
+        "Daily personalized insights",
+        "Portfolio tracking (up to 20 coins)",
+        "Portfolio analysis (basic: performance, diversification, risk score)",
+        "Smart alerts (up to 10: price, %, volume, drawdown)",
+        "Scam/risk checks (basic red flags)",
+        "Weekly Pro AI Report (1 included)",
+        "ChainWise Academy: Beginner + Intermediate courses",
+        "Gamified missions & badges",
+        "50 credits/month"
       ],
       popular: true,
       icon: <Zap className="h-6 w-6" />,
@@ -64,19 +70,19 @@ export default function PricingPage() {
       name: "Elite",
       price: "$24.99",
       period: "per month",
-      description: "Professional-grade tools for power users",
+      description: "Prestige + VIP tools → for serious traders & power users",
       features: [
-        "Track up to 10 portfolios with unlimited holdings",
-        "200 AI chat credits/month",
-        "All AI personas (Buddy, Professor, Trader)",
-        "Advanced portfolio analytics & correlation analysis",
-        "Unlimited custom alerts with advanced triggers",
-        "Weekly + Monthly AI reports",
-        "Whale tracking & movement alerts",
-        "Social sentiment analysis",
-        "Advanced educational content",
-        "Priority chat support",
+        "Everything in Pro",
+        "Trader persona (advanced strategies, bull/bear scenarios)",
+        "Unlimited custom alerts",
+        "Advanced portfolio analysis (correlations & diversification)",
+        "Basic social sentiment index (bullish/bearish overview)",
+        "Basic thematic baskets (AI coins, DeFi, etc.)",
+        "Monthly Elite Deep AI Report (1 included)",
+        "ChainWise Academy: Full (Beginner → Advanced + Strategy lessons)",
         "Early access to new features",
+        "Priority support",
+        "200 credits/month"
       ],
       popular: false,
       icon: <Crown className="h-6 w-6" />,
@@ -108,6 +114,15 @@ export default function PricingPage() {
             />
           ))}
         </div>
+
+        {/* Credit Packs Section */}
+        {session && (
+          <div className="mt-24">
+            <div className="border-t border-gray-200 pt-16">
+              <CreditPacks />
+            </div>
+          </div>
+        )}
 
         {/* FAQ Section */}
         <div className="mt-24 max-w-4xl mx-auto">

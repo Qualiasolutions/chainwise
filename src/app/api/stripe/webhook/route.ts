@@ -79,10 +79,23 @@ export async function POST(request: NextRequest) {
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const userId = session.metadata?.userId
+  const type = session.metadata?.type
+  
+  if (!userId) {
+    console.error('Missing userId in checkout session metadata')
+    return
+  }
+
+  // Handle credit pack purchases
+  if (type === 'credit_pack_purchase') {
+    await handleCreditPackPurchase(session)
+    return
+  }
+
   const plan = session.metadata?.plan as 'pro' | 'elite'
   
-  if (!userId || !plan) {
-    console.error('Missing metadata in checkout session')
+  if (!plan) {
+    console.error('Missing plan in checkout session metadata')
     return
   }
 
@@ -275,4 +288,65 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   // 1. Send email notification to user
   // 2. Temporarily suspend premium features
   // 3. Log the failed payment attempt
+}
+
+async function handleCreditPackPurchase(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.userId
+  const packId = session.metadata?.packId
+  const credits = parseInt(session.metadata?.credits || '0')
+  
+  if (!userId || !packId || !credits) {
+    console.error('Missing metadata in credit pack purchase session')
+    return
+  }
+
+  const supabase = createClient()
+
+  // Get pack details for verification
+  const { data: pack, error: packError } = await supabase
+    .from('credit_purchase_packs')
+    .select('*')
+    .eq('id', packId)
+    .single()
+
+  if (packError || !pack) {
+    console.error('Error fetching credit pack:', packError)
+    return
+  }
+
+  // Add credits to user's balance using RPC function
+  const { error: creditsError } = await supabase.rpc('spend_credits', {
+    user_id: userId,
+    credit_amount: -credits, // Negative to add credits
+    feature_name: 'credit_pack_purchase',
+    transaction_description: `${pack.pack_name} purchase - ${credits} credits`
+  })
+
+  if (creditsError) {
+    console.error('Error adding credits from pack purchase:', creditsError)
+    return
+  }
+
+  // Record credit transaction
+  const { error: transactionError } = await supabase
+    .from('credit_transactions')
+    .insert({
+      user_id: userId,
+      transaction_type: 'purchased',
+      amount: credits,
+      stripe_payment_intent_id: session.payment_intent as string,
+      description: `${pack.pack_name} purchase - ${credits} credits`,
+      metadata: {
+        pack_id: packId,
+        pack_name: pack.pack_name,
+        price_paid: pack.price_usd,
+        session_id: session.id,
+      },
+    })
+
+  if (transactionError) {
+    console.error('Error creating credit pack transaction:', transactionError)
+  }
+
+  console.log(`Successfully processed credit pack purchase: ${credits} credits for user ${userId}`)
 }

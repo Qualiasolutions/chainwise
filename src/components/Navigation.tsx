@@ -59,6 +59,12 @@ export default function Navigation() {
   }, [])
 
   const isHomePage = pathname === '/'
+  const isDashboardPage = pathname.startsWith('/dashboard')
+
+  // Don't render navigation on dashboard pages (they have their own sidebar)
+  if (isDashboardPage) {
+    return null
+  }
 
   return (
     <>

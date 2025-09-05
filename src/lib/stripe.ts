@@ -21,7 +21,7 @@ export const STRIPE_CONFIG = {
     elite: {
       priceId: process.env.STRIPE_ELITE_PRICE_ID || 'price_elite_monthly',
       amount: 2499, // $24.99 in cents
-      credits: 150,
+      credits: 200, // Updated to match pricing document
       name: 'Elite Plan',  
       interval: 'month' as const,
     },

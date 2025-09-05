@@ -93,7 +93,7 @@ export const TIER_PERMISSIONS: Record<SubscriptionTier, {
       'academy_intermediate',
       'academy_advanced'
     ],
-    creditsPerMonth: 200,
+    creditsPerMonth: 200, // Updated from 150 to match pricing doc
     canUseWhaleTracking: true,
     canUseSentimentAnalysis: true,
     canGenerateReports: true,
