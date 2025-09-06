@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createMiddlewareClient } from '@/lib/supabase/server'
 
 export async function middleware(request: NextRequest) {
+  // Skip middleware if Supabase is not configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next()
+  }
+  
   const { supabase, response } = createMiddlewareClient(request)
   
   // Refresh session if expired - required for Server Components

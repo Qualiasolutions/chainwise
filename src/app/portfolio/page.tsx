@@ -80,37 +80,34 @@ export default function PortfolioPage() {
     setShowAddHoldingModal(true)
   }
 
-  const breadcrumbs = [
-    { label: "Dashboard", href: "/dashboard" },
-    { label: "Portfolio" }
-  ]
-
   return (
     <ProtectedRoute requireAuth={true}>
-      <DashboardLayout breadcrumbs={breadcrumbs}>
-        <PortfolioDashboard
-          onCreatePortfolio={() => setShowCreateModal(true)}
-          onAddHolding={handleShowAddHolding}
-        />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
+        <div className="container mx-auto px-4 py-8">
+          <PortfolioDashboard
+            onCreatePortfolio={() => setShowCreateModal(true)}
+            onAddHolding={handleShowAddHolding}
+          />
 
-        {/* Create Portfolio Modal */}
-        <CreatePortfolioModal
-          open={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onCreate={handleCreatePortfolio}
-        />
+          {/* Create Portfolio Modal */}
+          <CreatePortfolioModal
+            open={showCreateModal}
+            onClose={() => setShowCreateModal(false)}
+            onCreate={handleCreatePortfolio}
+          />
 
-        {/* Add Holding Modal */}
-        <AddHoldingModal
-          open={showAddHoldingModal}
-          onClose={() => {
-            setShowAddHoldingModal(false)
-            setSelectedPortfolioId('')
-          }}
-          onAdd={handleAddHolding}
-          portfolioId={selectedPortfolioId}
-        />
-      </DashboardLayout>
+          {/* Add Holding Modal */}
+          <AddHoldingModal
+            open={showAddHoldingModal}
+            onClose={() => {
+              setShowAddHoldingModal(false)
+              setSelectedPortfolioId('')
+            }}
+            onAdd={handleAddHolding}
+            portfolioId={selectedPortfolioId}
+          />
+        </div>
+      </div>
     </ProtectedRoute>
   )
 }

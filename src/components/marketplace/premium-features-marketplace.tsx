@@ -244,10 +244,10 @@ export function PremiumFeaturesMarketplace() {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
           Premium Features Marketplace
         </h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Unlock advanced AI-powered tools and analysis with our premium features. 
           Pay with credits or purchase individual features.
         </p>
@@ -281,12 +281,12 @@ export function PremiumFeaturesMarketplace() {
               const isPurchasing = purchasingFeature === feature.id
               
               return (
-                <Card key={feature.id} className={`relative ${!hasAccess ? 'opacity-60' : ''}`}>
-                  <CardHeader>
+                <Card key={feature.id} className={`relative shadow-lg border-0 hover:shadow-xl transition-all duration-300 ${!hasAccess ? 'opacity-60' : ''}`}>
+                  <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{feature.name}</CardTitle>
-                        <CardDescription className="mt-1">
+                        <CardTitle className="text-lg text-gray-900 dark:text-white">{feature.name}</CardTitle>
+                        <CardDescription className="mt-1 text-gray-600 dark:text-gray-400">
                           {feature.description}
                         </CardDescription>
                       </div>

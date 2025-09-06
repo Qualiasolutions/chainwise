@@ -231,10 +231,10 @@ export default function PortfolioDashboard({
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Portfolio Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Track your crypto investments with AI-powered insights
           </p>
         </div>
@@ -303,94 +303,85 @@ export default function PortfolioDashboard({
         <>
           {/* Portfolio Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
+            <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-white">
-                    <Wallet className="w-6 h-6" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-100 text-sm font-medium">Total Value</p>
+                    <p className="text-3xl font-bold mt-2">{formatCurrency(selectedPortfolio.totalValueUsd)}</p>
+                  </div>
+                  <div className="p-3 bg-white/20 rounded-full">
+                    <Wallet className="h-8 w-8" />
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Total Value
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(selectedPortfolio.totalValueUsd)}
-                </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white">
-                    <DollarSign className="w-6 h-6" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-100 text-sm font-medium">Total Invested</p>
+                    <p className="text-3xl font-bold mt-2">{formatCurrency(selectedPortfolio.totalCostUsd)}</p>
+                  </div>
+                  <div className="p-3 bg-white/20 rounded-full">
+                    <DollarSign className="h-8 w-8" />
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Total Invested
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(selectedPortfolio.totalCostUsd)}
-                </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className={cn(
+              "relative overflow-hidden border-0 shadow-lg text-white",
+              portfolioAnalytics && portfolioAnalytics.portfolioStats.profitLoss >= 0
+                ? 'bg-gradient-to-br from-green-500 to-green-600'
+                : 'bg-gradient-to-br from-red-500 to-red-600'
+            )}>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={cn(
-                    'p-3 bg-gradient-to-r rounded-lg text-white',
-                    portfolioAnalytics && portfolioAnalytics.portfolioStats.profitLoss >= 0
-                      ? 'from-green-500 to-emerald-500'
-                      : 'from-red-500 to-rose-500'
-                  )}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className={cn(
+                      "text-sm font-medium",
+                      portfolioAnalytics && portfolioAnalytics.portfolioStats.profitLoss >= 0
+                        ? 'text-green-100'
+                        : 'text-red-100'
+                    )}>Profit/Loss</p>
+                    <p className="text-3xl font-bold mt-2">
+                      {portfolioAnalytics 
+                        ? formatCurrency(portfolioAnalytics.portfolioStats.profitLoss)
+                        : formatCurrency(selectedPortfolio.totalValueUsd - selectedPortfolio.totalCostUsd)
+                      }
+                    </p>
+                  </div>
+                  <div className="p-3 bg-white/20 rounded-full">
                     {portfolioAnalytics && portfolioAnalytics.portfolioStats.profitLoss >= 0 ? (
-                      <TrendingUp className="w-6 h-6" />
+                      <TrendingUp className="h-8 w-8" />
                     ) : (
-                      <TrendingDown className="w-6 h-6" />
+                      <TrendingDown className="h-8 w-8" />
                     )}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Profit/Loss
-                </p>
-                <p className={cn(
-                  'text-2xl font-bold',
-                  portfolioAnalytics && portfolioAnalytics.portfolioStats.profitLoss >= 0
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                )}>
-                  {portfolioAnalytics 
-                    ? formatCurrency(portfolioAnalytics.portfolioStats.profitLoss)
-                    : formatCurrency(selectedPortfolio.totalValueUsd - selectedPortfolio.totalCostUsd)
-                  }
-                </p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg text-white">
-                    <PieChart className="w-6 h-6" />
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-100 text-sm font-medium">Total Return</p>
+                    <p className="text-3xl font-bold mt-2">
+                      {portfolioAnalytics 
+                        ? formatPercentage(portfolioAnalytics.portfolioStats.profitLossPercentage)
+                        : selectedPortfolio.totalCostUsd > 0 
+                          ? formatPercentage(((selectedPortfolio.totalValueUsd - selectedPortfolio.totalCostUsd) / selectedPortfolio.totalCostUsd) * 100)
+                          : '0.00%'
+                      }
+                    </p>
+                  </div>
+                  <div className="p-3 bg-white/20 rounded-full">
+                    <PieChart className="h-8 w-8" />
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Total Return
-                </p>
-                <p className={cn(
-                  'text-2xl font-bold',
-                  portfolioAnalytics && portfolioAnalytics.portfolioStats.profitLossPercentage >= 0
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                )}>
-                  {portfolioAnalytics 
-                    ? formatPercentage(portfolioAnalytics.portfolioStats.profitLossPercentage)
-                    : selectedPortfolio.totalCostUsd > 0 
-                      ? formatPercentage(((selectedPortfolio.totalValueUsd - selectedPortfolio.totalCostUsd) / selectedPortfolio.totalCostUsd) * 100)
-                      : '0.00%'
-                  }
-                </p>
               </CardContent>
             </Card>
           </div>
@@ -520,9 +511,9 @@ export default function PortfolioDashboard({
 
           {/* Holdings Table */}
           {selectedPortfolio.holdings.length > 0 ? (
-            <Card>
+            <Card className="glass-card border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle>Holdings</CardTitle>
+                <CardTitle className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Holdings</CardTitle>
                 <CardDescription>Your crypto investments</CardDescription>
               </CardHeader>
               <CardContent>
