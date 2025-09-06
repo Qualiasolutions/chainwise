@@ -2,9 +2,9 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { 
-  Zap, 
   Menu, 
   X,
   BarChart3,
@@ -70,8 +70,14 @@ export function MainHeader() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-3 group">
               <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-purple-500/25 transition-all duration-200">
-                  <Zap className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-purple-500/25 transition-all duration-200 p-2">
+                  <Image
+                    src="/logo.png"
+                    alt="ChainWise Logo"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform"
+                  />
                 </div>
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-400 to-blue-400 opacity-0 group-hover:opacity-30 blur-md transition-opacity" />
                 <div className="absolute -inset-1 rounded-2xl border border-purple-400/20 group-hover:border-purple-400/40 transition-colors" />
