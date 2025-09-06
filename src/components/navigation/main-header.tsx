@@ -130,12 +130,73 @@ export function MainHeader() {
             {user ? (
               <div className="hidden md:flex items-center space-x-3">
                 {/* Notifications */}
-                <Button variant="ghost" size="sm" className="relative">
-                  <Bell className="h-4 w-4" />
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-chainwise-primary-500">
-                    2
-                  </Badge>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="relative h-10 w-10 rounded-full hover:bg-purple-500/10 hover:text-purple-400 transition-all duration-200 group"
+                    >
+                      <Bell className="h-5 w-5 text-gray-400 group-hover:text-purple-400 transition-colors" />
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-gradient-to-r from-purple-500 to-blue-500 text-white border-2 border-background animate-pulse">
+                        3
+                      </Badge>
+                      <span className="sr-only">View notifications</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-80 max-h-96 overflow-y-auto" align="end">
+                    <div className="flex items-center justify-between p-3 border-b border-border">
+                      <h3 className="font-semibold text-lg">Notifications</h3>
+                      <Badge variant="secondary" className="text-xs">
+                        3 new
+                      </Badge>
+                    </div>
+                    <div className="py-2">
+                      {/* Sample notifications */}
+                      <DropdownMenuItem className="flex flex-col items-start p-3 hover:bg-purple-500/5 cursor-pointer">
+                        <div className="flex items-start justify-between w-full">
+                          <div className="flex items-start space-x-3">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">Portfolio Alert</p>
+                              <p className="text-xs text-muted-foreground mt-1">Your BTC holdings increased by 5.2% today</p>
+                              <p className="text-xs text-muted-foreground mt-1">2 minutes ago</p>
+                            </div>
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex flex-col items-start p-3 hover:bg-purple-500/5 cursor-pointer">
+                        <div className="flex items-start justify-between w-full">
+                          <div className="flex items-start space-x-3">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">AI Analysis Ready</p>
+                              <p className="text-xs text-muted-foreground mt-1">New market analysis available for your portfolio</p>
+                              <p className="text-xs text-muted-foreground mt-1">15 minutes ago</p>
+                            </div>
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex flex-col items-start p-3 hover:bg-purple-500/5 cursor-pointer">
+                        <div className="flex items-start justify-between w-full">
+                          <div className="flex items-start space-x-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">Credits Refilled</p>
+                              <p className="text-xs text-muted-foreground mt-1">Your monthly credits have been restored</p>
+                              <p className="text-xs text-muted-foreground mt-1">1 hour ago</p>
+                            </div>
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                    </div>
+                    <div className="border-t border-border p-3">
+                      <Button variant="ghost" size="sm" className="w-full text-purple-400 hover:text-purple-300 hover:bg-purple-500/10">
+                        View All Notifications
+                      </Button>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* User Menu */}
                 <DropdownMenu>
@@ -188,11 +249,46 @@ export function MainHeader() {
 
             {/* Mobile controls */}
             <div className="flex items-center space-x-2 md:hidden">
+              {/* Mobile notifications */}
+              {user && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="relative h-9 w-9 rounded-full hover:bg-purple-500/10"
+                    >
+                      <Bell className="h-4 w-4 text-gray-400" />
+                      <Badge className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 text-xs bg-gradient-to-r from-purple-500 to-blue-500 text-white border border-background">
+                        3
+                      </Badge>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-72 max-h-80 overflow-y-auto" align="end">
+                    <div className="flex items-center justify-between p-3 border-b border-border">
+                      <h3 className="font-medium">Notifications</h3>
+                      <Badge variant="secondary" className="text-xs">3 new</Badge>
+                    </div>
+                    <div className="py-2">
+                      <DropdownMenuItem className="flex flex-col items-start p-3">
+                        <p className="text-sm font-medium">Portfolio Alert</p>
+                        <p className="text-xs text-muted-foreground mt-1">BTC increased by 5.2%</p>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex flex-col items-start p-3">
+                        <p className="text-sm font-medium">AI Analysis Ready</p>
+                        <p className="text-xs text-muted-foreground mt-1">New analysis available</p>
+                      </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="hover:bg-purple-500/10 hover:text-purple-400 transition-all duration-200"
               >
                 {mobileMenuOpen ? (
                   <X className="h-5 w-5" />

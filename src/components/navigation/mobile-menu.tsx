@@ -104,13 +104,13 @@ export function MobileMenu({ isOpen, onClose, navigation, user, onSignOut }: Mob
                   {/* Notifications */}
                   <Link
                     href="/notifications"
-                    className="group flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
+                    className="group flex items-center rounded-lg px-3 py-2 text-sm font-medium hover:bg-purple-500/10 hover:text-purple-400 transition-colors"
                     onClick={onClose}
                   >
-                    <Bell className="mr-3 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                    <Bell className="mr-3 h-5 w-5 flex-shrink-0 text-muted-foreground group-hover:text-purple-400" />
                     Notifications
-                    <Badge className="ml-auto h-5 w-5 rounded-full p-0 text-xs bg-purple-500">
-                      2
+                    <Badge className="ml-auto h-5 w-5 rounded-full p-0 text-xs bg-gradient-to-r from-purple-500 to-blue-500 text-white animate-pulse">
+                      3
                     </Badge>
                   </Link>
 
