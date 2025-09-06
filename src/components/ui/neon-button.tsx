@@ -96,6 +96,21 @@ const NeonButton = React.forwardRef<HTMLButtonElement, NeonButtonProps>(
       whileTap: "tap"
     } : {}
 
+    if (asChild) {
+      // When using asChild, return only the children without decorative elements
+      // to ensure React.Children.only works correctly
+      return (
+        <Slot
+          className={cn(neonButtonVariants({ variant, size, glow, className }))}
+          ref={ref}
+          onClick={handleClick}
+          {...props}
+        >
+          {children}
+        </Slot>
+      )
+    }
+
     return (
       <Comp
         className={cn(neonButtonVariants({ variant, size, glow, className }))}

@@ -8,6 +8,8 @@ import { ArrowRightIcon } from "@radix-ui/react-icons"
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
 import { CometCard } from "@/components/ui/comet-card"
 import { PointerHighlight } from "@/components/ui/pointer-highlight"
+import { ShimmerButton } from "@/components/magicui/shimmer-button"
+import { RippleButton } from "@/components/magicui/ripple-button"
 
 export default function ChainWiseHero() {
   const [mounted, setMounted] = useState(false)
@@ -54,27 +56,36 @@ export default function ChainWiseHero() {
               crypto investments with precision and ease.
             </p>
 
-            {/* CTAs - Mobile-first, touch-friendly */}
+            {/* CTAs - Enhanced with Modern Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
-              <Button 
-                asChild
-                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-200 group"
+              {/* Primary CTA - Get Started */}
+              <ShimmerButton
+                className="w-full sm:w-auto px-10 py-4 text-lg font-bold text-white hover:text-white transform hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-purple-500/30 group"
+                background="linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #3b82f6 100%)"
+                shimmerColor="#ffffff"
+                shimmerSize="0.1em"
+                shimmerDuration="2.5s"
+                borderRadius="12px"
+                onClick={() => window.location.href = '/chat'}
               >
-                <a href="/chat">
+                <span className="flex items-center justify-center gap-3 text-white font-bold tracking-wide">
                   Get Started
-                  <ArrowRightIcon className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </a>
-              </Button>
+                  <ArrowRightIcon className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+                </span>
+              </ShimmerButton>
 
-              <Button
-                asChild
-                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold border-2 border-purple-400/50 text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 hover:border-purple-300/60 rounded-xl backdrop-blur-sm transition-all duration-200 group"
+              {/* Secondary CTA - Learn How It Works */}
+              <RippleButton
+                className="w-full sm:w-auto px-10 py-4 text-lg font-bold border-2 border-white/20 bg-white/5 backdrop-blur-md text-white hover:text-white hover:bg-white/10 hover:border-white/30 rounded-xl shadow-xl hover:shadow-white/10 transform hover:scale-105 transition-all duration-300 group"
+                rippleColor="#ffffff"
+                duration="800ms"
+                onClick={() => window.location.href = '/dashboard'}
               >
-                <a href="/dashboard">
-                  <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="flex items-center justify-center gap-3 text-white font-bold tracking-wide">
+                  <Play className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
                   Learn How It Works
-                </a>
-              </Button>
+                </span>
+              </RippleButton>
             </div>
           </div>
 
