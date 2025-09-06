@@ -1,12 +1,12 @@
 'use client'
 
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { ModernChainWiseDashboard } from '@/components/ui/modern-chainwise-dashboard'
+import UnifiedDashboard from '@/components/dashboard/unified-dashboard'
 
 export default function DashboardPage() {
   return (
     <ProtectedRoute requireAuth={true}>
-      <ModernChainWiseDashboard />
+      <UnifiedDashboard />
     </ProtectedRoute>
   )
 }
