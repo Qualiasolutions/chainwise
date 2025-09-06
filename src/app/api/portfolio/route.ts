@@ -43,6 +43,17 @@ export async function GET(request: NextRequest) {
     const { data: portfolios, error } = await query
 
     if (error) {
+      console.error('Portfolio query error:', error)
+      
+      // Handle table not found error
+      if (error.message?.includes('relation') && error.message?.includes('does not exist')) {
+        return NextResponse.json({
+          portfolios: [],
+          pagination: { total: 0, limit, offset, hasMore: false },
+          message: 'Database not fully initialized. Please contact support.'
+        })
+      }
+      
       return NextResponse.json({ error: 'Failed to fetch portfolios' }, { status: 500 })
     }
 

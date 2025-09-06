@@ -13,15 +13,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user data
-    const { data: userData, error: userError } = await supabase
+    // Get user data, create if doesn't exist
+    let { data: userData, error: userError } = await supabase
       .from('users')
       .select('id, credits_balance, subscription_tier, last_credit_refresh')
       .eq('id', user.id)
       .single()
 
-    if (userError || !userData) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    // If user doesn't exist, create them
+    if (userError && userError.code === 'PGRST116') {
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email || 'unknown@example.com',
+          credits_balance: 100,
+          subscription_tier: 'free'
+        })
+        .select('id, credits_balance, subscription_tier, last_credit_refresh')
+        .single()
+
+      if (createError) {
+        console.error('Error creating user:', createError)
+        return NextResponse.json({ error: 'Failed to initialize user' }, { status: 500 })
+      }
+
+      userData = newUser
+    } else if (userError) {
+      console.error('Database error:', userError)
+      return NextResponse.json({ 
+        error: 'Database connection failed. Please try again later.' 
+      }, { status: 503 })
+    }
+
+    if (!userData) {
+      return NextResponse.json({ error: 'User initialization failed' }, { status: 500 })
     }
 
     const tier = (userData.subscription_tier || 'free') as SubscriptionTier

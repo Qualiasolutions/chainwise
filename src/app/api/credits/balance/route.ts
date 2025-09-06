@@ -12,20 +12,38 @@ export async function GET(request: NextRequest) {
     const authErrorResponse = handleAuthError(authError, user)
     if (authErrorResponse) return authErrorResponse
 
-    const { data: userData, error } = await supabase
+    let { data: userData, error } = await supabase
       .from('users')
       .select('credits_balance, subscription_tier, total_points')
       .eq('id', user.id)
       .single()
 
-    if (error) {
+    // If user doesn't exist, create them
+    if (error && error.code === 'PGRST116') {
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email || 'unknown@example.com',
+          credits_balance: 100,
+          subscription_tier: 'free'
+        })
+        .select('credits_balance, subscription_tier, total_points')
+        .single()
+
+      if (createError) {
+        throw createError
+      }
+
+      userData = newUser
+    } else if (error) {
       throw error
     }
 
     if (!userData) {
       return NextResponse.json(
-        { error: 'User not found', code: 'NOT_FOUND' },
-        { status: 404 }
+        { error: 'User initialization failed', code: 'INITIALIZATION_FAILED' },
+        { status: 500 }
       )
     }
 
