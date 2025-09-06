@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { ChatMessage } from '@/types'
 import { AIService, type AIResponse } from '@/lib/ai-service'
 import { type AIPersona } from '@/lib/openai-service'

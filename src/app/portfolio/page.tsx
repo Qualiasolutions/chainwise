@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { DashboardLayout } from '@/components/dashboard-layout'
 import PortfolioDashboard from '@/components/portfolio/portfolio-dashboard'
 import AddHoldingModal from '@/components/portfolio/add-holding-modal'
 import CreatePortfolioModal from '@/components/portfolio/create-portfolio-modal'
