@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 type SupabaseContext = {
   user: User | null
   session: Session | null
+  supabase: ReturnType<typeof createClient>
   loading: boolean
   signOut: () => Promise<void>
 }
@@ -57,6 +58,7 @@ export function SupabaseProvider({
   const value = {
     user,
     session,
+    supabase,
     loading,
     signOut,
   }
