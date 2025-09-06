@@ -10,32 +10,90 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Enhanced crypto color palette inspired by landing page
-        crypto: {
-          // Primary colors from landing page
-          primary: '#4f46e5',     // Main Indigo (--color-indigo-600)
-          secondary: '#8b5cf6',   // Main Purple (--color-purple-500)
-          accent: '#2563eb',      // Tech Blue (--color-blue-600)
+        // Unified ChainWise Design System Colors
+        chainwise: {
+          // Primary Brand Colors - Consistent throughout app
+          primary: {
+            50: '#eef2ff',
+            100: '#e0e7ff', 
+            200: '#c7d2fe',
+            300: '#a5b4fc',
+            400: '#818cf8',
+            500: '#6366f1',  // Main brand color
+            600: '#4f46e5',  // Primary CTA color
+            700: '#4338ca',  // Hover state
+            800: '#3730a3',
+            900: '#312e81',
+            950: '#1e1b4b',
+          },
           
-          // Extended palette
-          'primary-light': '#818cf8',  // Lighter Indigo (--color-indigo-400)
-          'primary-dark': '#4338ca',   // Darker Indigo (--color-indigo-700)
-          'secondary-light': '#a78bfa', // Lighter Purple (--color-purple-400)
-          'secondary-dark': '#7c3aed',  // Darker Purple (--color-purple-600)
-          'accent-light': '#60a5fa',   // Lighter Blue (--color-blue-400)
-          'accent-cyan': '#22d3ee',    // Tech Cyan (--color-cyan-400)
+          // Secondary Purple Palette
+          secondary: {
+            50: '#f5f3ff',
+            100: '#ede9fe',
+            200: '#ddd6fe', 
+            300: '#c4b5fd',
+            400: '#a78bfa',  // Light accent
+            500: '#8b5cf6',  // Main secondary
+            600: '#7c3aed',  // Secondary CTA
+            700: '#6d28d9',  // Hover state
+            800: '#5b21b6',
+            900: '#4c1d95',
+            950: '#2e1065',
+          },
           
-          // Utility colors
-          success: '#10b981',     // Green-500
-          danger: '#ef4444',      // Red-500
-          warning: '#f59e0b',     // Yellow-500 (--color-yellow-500)
-          dark: '#000000',        // Pure black from landing page
-          light: '#ffffff',       // Pure white from landing page
+          // Accent Blue Palette
+          accent: {
+            50: '#eff6ff',
+            100: '#dbeafe',
+            200: '#bfdbfe',
+            300: '#93c5fd', 
+            400: '#60a5fa',  // Light blue accent
+            500: '#3b82f6',
+            600: '#2563eb',  // Main accent color
+            700: '#1d4ed8',  // Accent hover
+            800: '#1e40af',
+            900: '#1e3a8a',
+            950: '#172554',
+          },
           
-          // Gradient backgrounds
-          'gradient-1': 'rgba(79, 70, 229, 0.25)',   // Primary with opacity
-          'gradient-2': 'rgba(124, 58, 237, 0.25)',  // Purple with opacity
-          'gradient-3': 'rgba(37, 99, 235, 0.2)',    // Blue with opacity
+          // Semantic Colors
+          success: {
+            50: '#ecfdf5',
+            500: '#10b981',  // Success state
+            600: '#059669',  // Success hover
+            900: '#064e3b',
+          },
+          
+          error: {
+            50: '#fef2f2', 
+            500: '#ef4444',  // Error state
+            600: '#dc2626',  // Error hover
+            900: '#7f1d1d',
+          },
+          
+          warning: {
+            50: '#fffbeb',
+            500: '#f59e0b',  // Warning state  
+            600: '#d97706',  // Warning hover
+            900: '#78350f',
+          },
+          
+          // Neutral Grays - Consistent UI elements
+          neutral: {
+            0: '#ffffff',    // Pure white
+            50: '#fafafa',   // Background light
+            100: '#f5f5f5',  // Background subtle
+            200: '#e5e5e5',  // Border light
+            300: '#d4d4d4',  // Border default
+            400: '#a3a3a3',  // Text muted
+            500: '#737373',  // Text secondary
+            600: '#525252',  // Text primary
+            700: '#404040',  // Text strong
+            800: '#262626',  // Text emphasis
+            900: '#171717',  // Text maximum
+            950: '#0a0a0a',  // Pure black (rare usage)
+          },
         },
         
         // shadcn/ui compatible colors
@@ -148,21 +206,40 @@ const config: Config = {
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
         'crypto-gradient': 'linear-gradient(135deg, #4f46e5 0%, #8b5cf6 50%, #2563eb 100%)',
         'crypto-mesh': 'radial-gradient(circle at 25% 25%, #4f46e5 0%, transparent 50%), radial-gradient(circle at 75% 75%, #8b5cf6 0%, transparent 50%)',
+        'chainwise-gradient': 'linear-gradient(135deg, #4f46e5 0%, #8b5cf6 50%, #2563eb 100%)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         heading: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'xs': '0.75rem',
-        'sm': '0.875rem', 
-        'base': '17px',  // Landing page base font size
-        'lg': '1.125rem',
-        'xl': '1.25rem',
-        '2xl': '1.5rem',
-        '3xl': '1.875rem',
-        '4xl': '2.25rem',
-        '5xl': '3rem',
+        // Unified Typography Scale - Mobile-First & Accessible
+        'xs': ['0.75rem', { lineHeight: '1rem' }],      // 12px
+        'sm': ['0.875rem', { lineHeight: '1.25rem' }],  // 14px
+        'base': ['1rem', { lineHeight: '1.5rem' }],     // 16px - WCAG baseline
+        'lg': ['1.125rem', { lineHeight: '1.75rem' }],  // 18px
+        'xl': ['1.25rem', { lineHeight: '1.75rem' }],   // 20px
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],      // 24px
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }], // 30px
+        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],   // 36px
+        '5xl': ['3rem', { lineHeight: '1.15' }],        // 48px - Display
+        '6xl': ['3.75rem', { lineHeight: '1.15' }],     // 60px - Hero
+        '7xl': ['4.5rem', { lineHeight: '1.15' }],      // 72px - Hero Large
+      },
+      
+      screens: {
+        // Mobile-First Responsive Strategy
+        'xs': '475px',   // Small phones
+        'sm': '640px',   // Large phones  
+        'md': '768px',   // Tablets
+        'lg': '1024px',  // Laptops
+        'xl': '1280px',  // Desktops
+        '2xl': '1536px', // Large desktops
+        
+        // Custom utility breakpoints
+        'mobile': {'max': '767px'}, // Mobile-only styles
+        'tablet': {'min': '768px', 'max': '1023px'}, // Tablet-only
+        'desktop': {'min': '1024px'}, // Desktop and up
       },
       borderRadius: {
         'lg': '0.5rem',
@@ -175,6 +252,8 @@ const config: Config = {
         'crypto-lg': '0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(79, 70, 229, 0.05)',
         'glow': '0 0 20px rgba(79, 70, 229, 0.3)',
         'glow-purple': '0 0 20px rgba(139, 92, 246, 0.3)',
+        'brand': '0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(79, 70, 229, 0.06)',
+        'brand-lg': '0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(79, 70, 229, 0.05)',
       },
     },
   },

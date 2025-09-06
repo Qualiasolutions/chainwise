@@ -59,45 +59,48 @@ export default function ChainWiseHero() {
               </div>
             </div>
 
-            {/* Main headline */}
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
+            {/* Main headline - Mobile-first responsive */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
               <span className="text-balance text-white">Trade Smarter with</span>
               <br />
-              <span className="text-indigo-300 bg-gradient-to-r from-indigo-300 via-purple-300 to-blue-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-chainwise-primary-400 via-chainwise-secondary-400 to-chainwise-accent-400 bg-clip-text text-transparent">
                 AI-Powered
               </span>
               <br />
               <span className="text-balance text-white">Crypto Insights</span>
             </h1>
 
-            {/* Subtext */}
-            <p className="text-xl md:text-2xl text-gray-300 leading-relaxed max-w-4xl text-balance">
+            {/* Subtext - Responsive typography */}
+            <p className="text-lg sm:text-xl md:text-2xl text-chainwise-neutral-300 leading-relaxed max-w-4xl text-balance">
               ChainWise combines artificial intelligence with cutting-edge trading strategies to help you maximize your
               crypto investments with precision and ease.
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-start">
-              <a href="/chat">
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-6 text-lg rounded-full group shadow-2xl shadow-indigo-500/25"
-                >
+            {/* CTAs - Mobile-first, touch-friendly */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
+              <Button 
+                variant="primary"
+                size="xl" 
+                asChild
+                className="w-full sm:w-auto group"
+              >
+                <a href="/chat">
                   Get Started
                   <ArrowRightIcon className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </a>
+                </a>
+              </Button>
 
-              <a href="/dashboard">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-gray-600 text-white hover:bg-white/10 px-10 py-6 text-lg rounded-full bg-transparent group"
-                >
+              <Button
+                variant="outline"
+                size="xl"
+                asChild
+                className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 group"
+              >
+                <a href="/dashboard">
                   <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
                   Learn How It Works
-                </Button>
-              </a>
+                </a>
+              </Button>
             </div>
           </div>
 
