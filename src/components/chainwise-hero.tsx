@@ -106,186 +106,277 @@ export default function ChainWiseHero() {
                   
                   {/* Main shader component */}
                   <div className="relative">
-                    {/* 3D Orbital System Container */}
-                    <div className="relative w-80 h-80 mx-auto" style={{ perspective: '1000px' }}>
+                    {/* True 3D Orbital System Container */}
+                    <div className="relative w-96 h-96 mx-auto" style={{ perspective: '1200px', perspectiveOrigin: 'center center' }}>
                       
                       {/* Central ChainWise Logo */}
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[#4f46e5] via-[#8b5cf6] to-[#2563eb] p-1 shadow-2xl">
-                          <div className="w-full h-full rounded-full bg-black/80 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                            <span className="text-2xl font-bold bg-gradient-to-r from-[#4f46e5] to-[#8b5cf6] bg-clip-text text-transparent">
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-r from-[#4f46e5] via-[#8b5cf6] to-[#2563eb] p-1 shadow-2xl">
+                          <div className="w-full h-full rounded-full bg-black/90 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                            <span className="text-3xl font-bold bg-gradient-to-r from-[#4f46e5] to-[#8b5cf6] bg-clip-text text-transparent">
                               CW
                             </span>
                           </div>
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#4f46e5]/20 to-[#8b5cf6]/20 rounded-full blur-xl scale-150 animate-pulse" />
-                      </div>
-
-                      {/* Orbital Rings */}
-                      <div className="absolute inset-0">
-                        {/* Outer Ring */}
-                        <div 
-                          className="absolute inset-2 border border-white/10 rounded-full animate-spin"
-                          style={{ 
-                            animationDuration: '30s',
-                            transformStyle: 'preserve-3d',
-                            transform: 'rotateX(15deg) rotateY(10deg)'
-                          }}
-                        />
-                        {/* Middle Ring */}
-                        <div 
-                          className="absolute inset-8 border border-purple-500/20 rounded-full animate-spin"
-                          style={{ 
-                            animationDuration: '25s',
-                            animationDirection: 'reverse',
-                            transformStyle: 'preserve-3d',
-                            transform: 'rotateX(-10deg) rotateY(-5deg)'
-                          }}
-                        />
-                        {/* Inner Ring */}
-                        <div 
-                          className="absolute inset-16 border border-blue-500/15 rounded-full animate-spin"
-                          style={{ 
-                            animationDuration: '20s',
-                            transformStyle: 'preserve-3d',
-                            transform: 'rotateX(20deg) rotateY(15deg)'
-                          }}
-                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#4f46e5]/30 to-[#8b5cf6]/30 rounded-full blur-2xl scale-150 animate-pulse" />
                       </div>
 
                       {mounted && (
                         <>
-                          {/* Outer Orbit - Bitcoin Planet */}
+                          {/* Bitcoin - Outer 3D Elliptical Orbit */}
                           <div 
-                            className="absolute inset-0 animate-spin"
+                            className="absolute inset-0"
                             style={{ 
-                              animationDuration: '30s',
                               transformStyle: 'preserve-3d',
-                              transform: 'rotateX(15deg)'
+                              transform: 'rotateX(60deg) rotateY(0deg)',
                             }}
                           >
-                            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                              <div className="relative group">
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-yellow-500 p-0.5 shadow-2xl">
-                                  <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                                    <Bitcoin className="w-6 h-6 text-white" />
+                            <div 
+                              className="absolute w-full h-full"
+                              style={{
+                                animation: 'orbit-bitcoin 35s linear infinite',
+                                transformStyle: 'preserve-3d',
+                              }}
+                            >
+                              <div 
+                                className="absolute"
+                                style={{
+                                  top: '10px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) rotateX(-60deg)',
+                                }}
+                              >
+                                <div className="relative group">
+                                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-yellow-500 p-0.5 shadow-2xl transform hover:scale-110 transition-transform">
+                                    <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                                      <Bitcoin className="w-7 h-7 text-white" />
+                                    </div>
                                   </div>
+                                  <div className="absolute inset-0 bg-orange-400/40 rounded-full blur-xl scale-150 animate-pulse" />
                                 </div>
-                                <div className="absolute inset-0 bg-orange-400/30 rounded-full blur-md scale-150 group-hover:scale-175 transition-transform" />
-                                {/* Trail effect */}
-                                <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-orange-400/60 rounded-full transform -translate-x-1/2 -translate-y-1/2 blur-sm" 
-                                     style={{ marginLeft: '-20px' }} />
                               </div>
                             </div>
                           </div>
 
-                          {/* Middle Orbit - Ethereum Planet */}
+                          {/* Ethereum - Middle 3D Orbit with different inclination */}
                           <div 
-                            className="absolute inset-0 animate-spin"
+                            className="absolute inset-8"
                             style={{ 
-                              animationDuration: '25s',
-                              animationDirection: 'reverse',
                               transformStyle: 'preserve-3d',
-                              transform: 'rotateX(-10deg) rotateY(45deg)'
+                              transform: 'rotateX(45deg) rotateY(30deg)',
                             }}
                           >
-                            <div className="absolute top-1/2 -right-8 transform -translate-y-1/2">
-                              <div className="relative group">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 p-0.5 shadow-2xl">
-                                  <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                                    <Coins className="w-5 h-5 text-white" />
+                            <div 
+                              className="absolute w-full h-full"
+                              style={{
+                                animation: 'orbit-ethereum 28s linear infinite reverse',
+                                transformStyle: 'preserve-3d',
+                              }}
+                            >
+                              <div 
+                                className="absolute"
+                                style={{
+                                  top: '15px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) rotateX(-45deg) rotateY(-30deg)',
+                                }}
+                              >
+                                <div className="relative group">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 p-0.5 shadow-2xl transform hover:scale-110 transition-transform">
+                                    <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                      <Coins className="w-6 h-6 text-white" />
+                                    </div>
                                   </div>
+                                  <div className="absolute inset-0 bg-blue-400/40 rounded-full blur-lg scale-150 animate-pulse" style={{ animationDelay: '0.5s' }} />
                                 </div>
-                                <div className="absolute inset-0 bg-blue-400/30 rounded-full blur-md scale-150 group-hover:scale-175 transition-transform" />
-                                {/* Trail effect */}
-                                <div className="absolute top-1/2 left-1/2 w-1.5 h-1.5 bg-blue-400/60 rounded-full transform -translate-x-1/2 -translate-y-1/2 blur-sm" 
-                                     style={{ marginTop: '-18px' }} />
                               </div>
                             </div>
                           </div>
 
-                          {/* Inner Orbit - DeFi Planet */}
+                          {/* DeFi - Inner 3D Orbit */}
                           <div 
-                            className="absolute inset-0 animate-spin"
+                            className="absolute inset-16"
                             style={{ 
-                              animationDuration: '20s',
                               transformStyle: 'preserve-3d',
-                              transform: 'rotateX(20deg) rotateY(-30deg)'
+                              transform: 'rotateX(30deg) rotateY(-45deg)',
                             }}
                           >
-                            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
-                              <div className="relative group">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 p-0.5 shadow-2xl">
-                                  <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                                    <Activity className="w-4 h-4 text-white" />
+                            <div 
+                              className="absolute w-full h-full"
+                              style={{
+                                animation: 'orbit-defi 22s linear infinite',
+                                transformStyle: 'preserve-3d',
+                              }}
+                            >
+                              <div 
+                                className="absolute"
+                                style={{
+                                  top: '20px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) rotateX(-30deg) rotateY(45deg)',
+                                }}
+                              >
+                                <div className="relative group">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 p-0.5 shadow-2xl transform hover:scale-110 transition-transform">
+                                    <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                                      <Activity className="w-5 h-5 text-white" />
+                                    </div>
                                   </div>
+                                  <div className="absolute inset-0 bg-purple-400/40 rounded-full blur-lg scale-150 animate-pulse" style={{ animationDelay: '1s' }} />
                                 </div>
-                                <div className="absolute inset-0 bg-purple-400/30 rounded-full blur-md scale-150 group-hover:scale-175 transition-transform" />
-                                {/* Trail effect */}
-                                <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-purple-400/60 rounded-full transform -translate-x-1/2 -translate-y-1/2 blur-sm" 
-                                     style={{ marginLeft: '15px' }} />
                               </div>
                             </div>
                           </div>
 
-                          {/* Additional Orbit - Stablecoin Planet */}
+                          {/* Stablecoin - Alternative 3D Orbit */}
                           <div 
-                            className="absolute inset-0 animate-spin"
+                            className="absolute inset-12"
                             style={{ 
-                              animationDuration: '22s',
-                              animationDirection: 'reverse',
                               transformStyle: 'preserve-3d',
-                              transform: 'rotateX(-15deg) rotateY(60deg)'
+                              transform: 'rotateX(75deg) rotateY(60deg)',
                             }}
                           >
-                            <div className="absolute top-1/2 -left-8 transform -translate-y-1/2">
-                              <div className="relative group">
-                                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 p-0.5 shadow-2xl">
-                                  <div className="w-full h-full rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                                    <DollarSign className="w-4 h-4 text-white" />
+                            <div 
+                              className="absolute w-full h-full"
+                              style={{
+                                animation: 'orbit-stable 31s linear infinite reverse',
+                                transformStyle: 'preserve-3d',
+                              }}
+                            >
+                              <div 
+                                className="absolute"
+                                style={{
+                                  top: '25px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) rotateX(-75deg) rotateY(-60deg)',
+                                }}
+                              >
+                                <div className="relative group">
+                                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 p-0.5 shadow-2xl transform hover:scale-110 transition-transform">
+                                    <div className="w-full h-full rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                                      <DollarSign className="w-5 h-5 text-white" />
+                                    </div>
                                   </div>
+                                  <div className="absolute inset-0 bg-green-400/40 rounded-full blur-lg scale-150 animate-pulse" style={{ animationDelay: '1.5s' }} />
                                 </div>
-                                <div className="absolute inset-0 bg-green-400/30 rounded-full blur-md scale-150 group-hover:scale-175 transition-transform" />
-                                {/* Trail effect */}
-                                <div className="absolute top-1/2 left-1/2 w-1.5 h-1.5 bg-green-400/60 rounded-full transform -translate-x-1/2 -translate-y-1/2 blur-sm" 
-                                     style={{ marginTop: '16px' }} />
                               </div>
                             </div>
                           </div>
 
-                          {/* Micro satellites - Fast orbiting small dots */}
+                          {/* Micro satellites with true 3D movement */}
                           <div 
-                            className="absolute inset-0 animate-spin"
+                            className="absolute inset-20"
                             style={{ 
-                              animationDuration: '15s',
-                              transformStyle: 'preserve-3d'
+                              transformStyle: 'preserve-3d',
+                              transform: 'rotateX(15deg) rotateY(15deg)',
                             }}
                           >
-                            <div className="absolute top-1/4 left-3/4 w-2 h-2 bg-cyan-400 rounded-full shadow-lg blur-[1px]" />
+                            <div 
+                              className="absolute w-full h-full"
+                              style={{
+                                animation: 'orbit-micro-1 18s linear infinite',
+                                transformStyle: 'preserve-3d',
+                              }}
+                            >
+                              <div 
+                                className="absolute w-3 h-3 bg-cyan-400 rounded-full shadow-lg"
+                                style={{
+                                  top: '30px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) rotateX(-15deg) rotateY(-15deg)',
+                                  filter: 'blur(1px)',
+                                }}
+                              />
+                            </div>
                           </div>
+
                           <div 
-                            className="absolute inset-0 animate-spin"
+                            className="absolute inset-24"
                             style={{ 
-                              animationDuration: '12s',
-                              animationDirection: 'reverse',
-                              transformStyle: 'preserve-3d'
+                              transformStyle: 'preserve-3d',
+                              transform: 'rotateX(-20deg) rotateY(-75deg)',
                             }}
                           >
-                            <div className="absolute bottom-1/4 right-3/4 w-1.5 h-1.5 bg-pink-400 rounded-full shadow-lg blur-[1px]" />
+                            <div 
+                              className="absolute w-full h-full"
+                              style={{
+                                animation: 'orbit-micro-2 15s linear infinite reverse',
+                                transformStyle: 'preserve-3d',
+                              }}
+                            >
+                              <div 
+                                className="absolute w-2 h-2 bg-pink-400 rounded-full shadow-lg"
+                                style={{
+                                  top: '35px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) rotateX(20deg) rotateY(75deg)',
+                                  filter: 'blur(1px)',
+                                }}
+                              />
+                            </div>
                           </div>
+
                           <div 
-                            className="absolute inset-0 animate-spin"
+                            className="absolute inset-28"
                             style={{ 
-                              animationDuration: '18s',
-                              transformStyle: 'preserve-3d'
+                              transformStyle: 'preserve-3d',
+                              transform: 'rotateX(45deg) rotateY(-30deg)',
                             }}
                           >
-                            <div className="absolute top-3/4 left-1/4 w-2 h-2 bg-amber-400 rounded-full shadow-lg blur-[1px]" />
+                            <div 
+                              className="absolute w-full h-full"
+                              style={{
+                                animation: 'orbit-micro-3 20s linear infinite',
+                                transformStyle: 'preserve-3d',
+                              }}
+                            >
+                              <div 
+                                className="absolute w-2.5 h-2.5 bg-amber-400 rounded-full shadow-lg"
+                                style={{
+                                  top: '40px',
+                                  left: '50%',
+                                  transform: 'translateX(-50%) rotateX(-45deg) rotateY(30deg)',
+                                  filter: 'blur(1px)',
+                                }}
+                              />
+                            </div>
                           </div>
 
                         </>
                       )}
                     </div>
+
+                    {/* CSS Keyframes for realistic 3D orbits */}
+                    <style jsx>{`
+                      @keyframes orbit-bitcoin {
+                        0% { transform: rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateY(360deg) rotateZ(360deg); }
+                      }
+                      @keyframes orbit-ethereum {
+                        0% { transform: rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateY(360deg) rotateZ(360deg); }
+                      }
+                      @keyframes orbit-defi {
+                        0% { transform: rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateY(360deg) rotateZ(360deg); }
+                      }
+                      @keyframes orbit-stable {
+                        0% { transform: rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateY(360deg) rotateZ(360deg); }
+                      }
+                      @keyframes orbit-micro-1 {
+                        0% { transform: rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateY(360deg) rotateZ(360deg); }
+                      }
+                      @keyframes orbit-micro-2 {
+                        0% { transform: rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateY(360deg) rotateZ(360deg); }
+                      }
+                      @keyframes orbit-micro-3 {
+                        0% { transform: rotateY(0deg) rotateZ(0deg); }
+                        100% { transform: rotateY(360deg) rotateZ(360deg); }
+                      }
+                    `}</style>
                   </div>
                 </CardItem>
 

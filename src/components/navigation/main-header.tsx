@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils"
 import { useSupabase } from "@/components/providers/supabase-provider"
 import { MobileMenu } from "./mobile-menu"
 import { AuthButtons } from "./auth-buttons"
+import { ThemeToggle, CompactThemeToggle } from "@/components/ui/theme-toggle"
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -125,13 +126,18 @@ export function MainHeader() {
           </nav>
 
           {/* Right side - Auth or User Menu */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            {/* Theme Toggle */}
+            <div className="hidden md:block">
+              <ThemeToggle size="md" />
+            </div>
+            
             {user ? (
               <div className="hidden md:flex items-center space-x-3">
                 {/* Notifications */}
                 <Button variant="ghost" size="sm" className="relative">
                   <Bell className="h-4 w-4" />
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-purple-500">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-chainwise-primary-500">
                     2
                   </Badge>
                 </Button>
@@ -171,6 +177,13 @@ export function MainHeader() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <div className="px-2 py-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Theme</span>
+                        <CompactThemeToggle />
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
                       Sign out
@@ -182,8 +195,12 @@ export function MainHeader() {
               <AuthButtons />
             )}
 
-            {/* Mobile menu button */}
-            <div className="md:hidden">
+            {/* Mobile controls */}
+            <div className="flex items-center space-x-2 md:hidden">
+              {/* Mobile Theme Toggle */}
+              <CompactThemeToggle />
+              
+              {/* Mobile menu button */}
               <Button
                 variant="ghost"
                 size="sm"

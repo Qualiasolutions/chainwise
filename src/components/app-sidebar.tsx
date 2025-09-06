@@ -47,6 +47,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { useSubscription } from "@/hooks/use-subscription"
+import { CompactThemeToggle } from "@/components/ui/theme-toggle"
 
 // Menu items
 const mainMenuItems = [
@@ -283,6 +284,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     Billing
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Theme</span>
+                    <CompactThemeToggle />
+                  </div>
+                </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />

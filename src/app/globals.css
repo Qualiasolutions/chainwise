@@ -352,4 +352,19 @@
       max-width: 75%;
     }
   }
+
+  /* Theme-specific utilities */
+  .chainwise-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 50%, #2563eb 100%);
+  }
+
+  /* Light theme adjustments */
+  .light .chainwise-gradient {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #3b82f6 100%);
+  }
+
+  /* Theme transition for smooth switching */
+  .theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
 }
