@@ -39,7 +39,6 @@ import { cn } from "@/lib/utils"
 import { useSupabase } from "@/components/providers/supabase-provider"
 import { MobileMenu } from "./mobile-menu"
 import { AuthButtons } from "./auth-buttons"
-import { ThemeToggle, CompactThemeToggle } from "@/components/ui/theme-toggle"
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -127,10 +126,6 @@ export function MainHeader() {
 
           {/* Right side - Auth or User Menu */}
           <div className="flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <div className="hidden md:block">
-              <ThemeToggle size="md" />
-            </div>
             
             {user ? (
               <div className="hidden md:flex items-center space-x-3">
@@ -178,10 +173,6 @@ export function MainHeader() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <div className="px-2 py-1.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Theme</span>
-                        <CompactThemeToggle />
-                      </div>
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut}>
@@ -197,9 +188,6 @@ export function MainHeader() {
 
             {/* Mobile controls */}
             <div className="flex items-center space-x-2 md:hidden">
-              {/* Mobile Theme Toggle */}
-              <CompactThemeToggle />
-              
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
