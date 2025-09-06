@@ -90,11 +90,12 @@ ChainWise is an AI-powered cryptocurrency investment management SaaS platform bu
 
 ## Development Commands
 
+### Core Development
 ```bash
 # Start development server
 npm run dev
 
-# Build for production
+# Build for production  
 npm run build
 
 # Start production server
@@ -102,15 +103,45 @@ npm start
 
 # Run linting
 npm run lint
+```
 
+### Testing & Quality Assurance
+```bash
 # Run E2E tests with Playwright
 npx playwright test
 
 # Open Playwright test UI
 npx playwright test --ui
 
+# Run specific test file
+npx playwright test tests/[test-file].spec.ts
+
+# Run tests in headed mode (see browser)
+npx playwright test --headed
+
+# Generate test report
+npx playwright show-report
+```
+
+### Component & UI Development
+```bash
 # Install Shadcn components
 npx shadcn@latest add [component-name]
+
+# List available shadcn components
+npx shadcn@latest add
+
+# Add multiple components at once
+npx shadcn@latest add button card dialog
+```
+
+### Database & Supabase Management
+```bash
+# Use Supabase MCP tools for database operations:
+# - mcp__supabase__list_tables
+# - mcp__supabase__execute_sql  
+# - mcp__supabase__apply_migration
+# - mcp__supabase__get_logs
 ```
 
 ## Architecture Overview
@@ -212,19 +243,40 @@ Working tables (22 total):
 
 ### Build Configuration
 
-- TypeScript errors are temporarily ignored in production builds (next.config.js)
-- Webpack configured to handle Web3 dependencies
-- ESM externals enabled for compatibility
-- Dark theme set as default in root layout
+- **TypeScript**: Errors temporarily ignored in production builds (`next.config.js:4`)
+- **Webpack**: Custom configuration for Web3 dependencies and fallbacks (`next.config.js:23-46`)
+- **ESM Externals**: Enabled for better compatibility (`next.config.js:49`)
+- **Image Domains**: Configured for CoinGecko and Unsplash (`next.config.js:7-22`) 
+- **Dark Theme**: Default theme set in `layout.tsx:31` with `className="dark"`
+- **Transpilation**: RainbowKit and Wagmi packages transpiled (`next.config.js:47`)
 
-## Important Notes for Next Agent
+## Important Notes for Development
 
-1. **Dark Theme**: Changes made locally but need deployment to show on production
-2. **Portfolio API**: Returns 500 error - needs backend investigation
-3. **Supabase**: Successfully connected, use MCP tools for database operations
-4. **Test Account**: Use info@qualiasolutions.net for testing authenticated features
-5. **BMAD Method**: Follow the established pattern of Agent roles (Architect, UX, PM, Developer, QA)
-6. **Design Consistency**: Use ChainWise gradient colors and dark theme throughout
+### Critical Issues to Address
+1. **Portfolio API Error**: `/api/portfolio` endpoint returns 500 error on production (needs backend fix)
+2. **Dark Theme Deployment**: Changes made locally but not reflected on chainwise.tech
+
+### Development Guidelines
+1. **Supabase Integration**: Use MCP tools (`mcp__supabase__*`) for all database operations
+2. **Test Account**: Use `info@qualiasolutions.net` / `Zambelis1!` for testing authenticated features
+3. **Permission System**: Always check user permissions via `src/lib/permissions.ts:116-175` before allowing actions
+4. **Component Architecture**: Follow unified component pattern established in `src/components/dashboard/unified-dashboard.tsx`
+5. **Design System**: Use ChainWise gradient colors and design tokens from `src/styles/design-tokens.css`
+
+### MCP Servers Available
+- **Supabase**: Database operations, migrations, logs
+- **Playwright**: Browser automation and testing
+- **Context7**: Documentation retrieval
+- **Filesystem**: File operations
+- **Memory**: Knowledge graph storage
+- **Sequential-thinking**: Multi-step reasoning
+
+### Code Quality Standards
+- **TypeScript**: Strict mode enabled, use proper type definitions from `src/types/`
+- **Error Handling**: Use `src/lib/api-error-handler.ts` for consistent API error handling
+- **Authentication**: Supabase Auth configured in `src/lib/supabase/` (client/server)
+- **Credit System**: Implement credit checks using `src/lib/credit-service.ts`
+- **Performance**: Use caching service from `src/lib/cache-service.ts` for expensive operations
 
 ## Git Workflow
 

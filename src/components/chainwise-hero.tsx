@@ -94,7 +94,7 @@ export default function ChainWiseHero() {
                 variant="outline"
                 size="xl"
                 asChild
-                className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 group"
+                className="w-full sm:w-auto border-purple-400/50 text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 hover:border-purple-300/60 group"
               >
                 <a href="/dashboard">
                   <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
