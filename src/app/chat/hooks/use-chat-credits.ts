@@ -135,8 +135,8 @@ export function useChatCredits() {
 
   const getSubscriptionLimits = useCallback(() => {
     const limits = {
-      free: { monthly: 3, personas: ['buddy'] },
-      pro: { monthly: 50, personas: ['buddy', 'professor'] },
+      free: { monthly: 10, personas: ['buddy', 'professor', 'trader'] }, // Allow all personas for testing
+      pro: { monthly: 50, personas: ['buddy', 'professor', 'trader'] },
       elite: { monthly: 200, personas: ['buddy', 'professor', 'trader'] }
     }
 

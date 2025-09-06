@@ -94,7 +94,7 @@ export function PersonaSelector({ selectedPersona, onPersonaSelect, disabled }: 
       </motion.div>
 
       {/* Persona Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {personas.map((persona, index) => {
           const status = getPersonaStatus(persona.id)
           const isSelected = selectedPersona === persona.id
@@ -109,15 +109,20 @@ export function PersonaSelector({ selectedPersona, onPersonaSelect, disabled }: 
               className="relative group"
             >
               <motion.button
-                onClick={() => status.available && !disabled && onPersonaSelect(persona.id)}
+                onClick={() => {
+                  console.log('Persona clicked:', persona.id, 'Available:', status.available, 'Disabled:', disabled)
+                  if (status.available && !disabled) {
+                    onPersonaSelect(persona.id)
+                  }
+                }}
                 disabled={disabled || !status.available}
                 className={cn(
-                  "w-full p-6 rounded-2xl border backdrop-blur-xl text-left relative overflow-hidden transition-all duration-300",
+                  "w-full p-6 rounded-2xl border backdrop-blur-xl text-left relative overflow-hidden transition-all duration-300 cursor-pointer",
                   "hover:shadow-2xl",
                   isSelected
                     ? `bg-gradient-to-br ${persona.color} text-white shadow-2xl scale-105 ${persona.borderColor}`
                     : status.available
-                    ? "bg-white/5 hover:bg-white/10 border-purple-300/20 hover:border-purple-400/40 text-white"
+                    ? "bg-white/5 hover:bg-white/10 border-chainwise-primary-300/20 hover:border-chainwise-primary-400/40 text-white hover:scale-102"
                     : "bg-white/5 border-gray-600/20 text-gray-400 cursor-not-allowed",
                   disabled && "opacity-50"
                 )}

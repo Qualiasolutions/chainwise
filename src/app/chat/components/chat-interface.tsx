@@ -34,23 +34,29 @@ export function ChatInterface() {
 
   const { isInitializing } = useChatCredits()
 
-  // Hide initial persona selector after first message
+  // Handle initial persona selector display
   useEffect(() => {
-    if (currentSession && currentSession.messages.length > 1) {
+    // Show persona selector if no sessions exist or current session has only welcome message
+    if (!currentSession || currentSession.messages.length <= 1) {
+      setShowInitialPersonaSelector(true)
+    } else {
       setShowInitialPersonaSelector(false)
     }
-  }, [currentSession?.messages.length])
+  }, [currentSession, currentSession?.messages.length])
 
   const handlePersonaSelect = (persona: any) => {
-    if (currentSession && currentSession.messages.length <= 1) {
-      // If it's a new session, switch persona immediately
+    // Always create a new session when selecting from initial persona selector
+    if (showInitialPersonaSelector) {
+      createNewSession(persona)
+      setShowInitialPersonaSelector(false)
+    } else if (currentSession && currentSession.messages.length <= 1) {
+      // If it's a new session with just welcome message, switch persona
       switchPersona(persona)
     } else {
       // If there are existing messages, create a new session
       createNewSession(persona)
     }
     setShowPersonaSelector(false)
-    setShowInitialPersonaSelector(false)
   }
 
   const handleSendMessage = (message: string) => {
@@ -202,8 +208,8 @@ export function ChatInterface() {
         <div className="flex-1 flex flex-col min-h-0">
           {showInitialPersonaSelector ? (
             /* Initial Persona Selection */
-            <div className="flex-1 flex items-center justify-center p-4">
-              <div className="w-full max-w-4xl">
+            <div className="flex-1 flex items-center justify-center p-4 lg:p-8 overflow-y-auto">
+              <div className="w-full max-w-6xl mx-auto">
                 <PersonaSelector
                   selectedPersona={currentSession?.persona || 'buddy'}
                   onPersonaSelect={handlePersonaSelect}
@@ -236,8 +242,8 @@ export function ChatInterface() {
                     Choose an AI persona to start your crypto conversation
                   </p>
                   <button 
-                    onClick={() => createNewSession()}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all"
+                    onClick={() => setShowInitialPersonaSelector(true)}
+                    className="bg-gradient-to-r from-chainwise-primary-500 to-chainwise-secondary-500 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all hover:scale-105"
                   >
                     Start New Chat
                   </button>

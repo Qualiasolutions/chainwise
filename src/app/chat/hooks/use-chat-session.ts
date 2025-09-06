@@ -215,12 +215,12 @@ export function useChatSession() {
     }
   }, [currentSession])
 
-  // Initialize with a default session if none exists
-  useEffect(() => {
-    if (sessions.length === 0 && !currentSession) {
-      createNewSession('buddy')
-    }
-  }, [sessions.length, currentSession, createNewSession])
+  // Don't auto-create session - let user choose persona first
+  // useEffect(() => {
+  //   if (sessions.length === 0 && !currentSession) {
+  //     createNewSession('buddy')
+  //   }
+  // }, [sessions.length, currentSession, createNewSession])
 
   return {
     currentSession,
