@@ -9,7 +9,11 @@ import {
 import { CryptoService } from '@/lib/crypto-service'
 import { formatCurrency, formatPercentage } from '@/lib/utils'
 import { CryptoData } from '@/types'
-import ChainWiseHero from '@/components/ui/hero'
+import ChainWiseHero from "@/components/chainwise-hero"
+import TrustIndicators from "@/components/trust-indicators"
+import AIPersonas from "@/components/ai-personas"
+import FeatureShowcase from "@/components/feature-showcase"
+import PricingSection from "@/components/pricing-section"
 import { ChainWisePricingSection } from '@/components/ui/chainwise-pricing-section'
 
 export default function HomePage() {
@@ -28,8 +32,13 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero Section */}
+      {/* New v0 Hero Section */}
       <ChainWiseHero />
+      
+      {/* v0 Additional Sections */}
+      <TrustIndicators />
+      <AIPersonas />
+      <FeatureShowcase />
       
       {/* Content sections with proper background */}
       <div className="bg-gray-50 dark:bg-gray-900 space-y-16 py-16">
