@@ -68,14 +68,22 @@ export function MainHeader() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href="/" className="flex items-center space-x-3 group">
               <div className="relative">
-                <Zap className="h-8 w-8 text-purple-500 group-hover:text-purple-400 transition-colors" />
-                <div className="absolute inset-0 h-8 w-8 bg-purple-500/20 rounded-full blur-md group-hover:bg-purple-400/30 transition-colors" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-purple-500/25 transition-all duration-200">
+                  <Zap className="w-7 h-7 text-white group-hover:scale-110 transition-transform" />
+                </div>
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-400 to-blue-400 opacity-0 group-hover:opacity-30 blur-md transition-opacity" />
+                <div className="absolute -inset-1 rounded-2xl border border-purple-400/20 group-hover:border-purple-400/40 transition-colors" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
-                ChainWise
-              </span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:to-blue-300 transition-all duration-200 tracking-wide">
+                  CHAINWISE
+                </span>
+                <span className="text-xs text-gray-400 font-medium tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:block">
+                  AI CRYPTO INTELLIGENCE
+                </span>
+              </div>
             </Link>
           </div>
 

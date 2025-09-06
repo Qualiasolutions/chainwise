@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Play, TrendingUp, Bitcoin, Shield, Zap } from "lucide-react"
+import { Play, TrendingUp, Bitcoin, Shield, Zap, DollarSign, Activity, Coins } from "lucide-react"
 import { useState, useEffect } from "react"
 import PulsingBorderShader from "./pulsing-border-shader"
 import { ArrowRightIcon } from "@radix-ui/react-icons"
@@ -36,31 +36,6 @@ export default function ChainWiseHero() {
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           {/* Left side - Text content */}
           <div className="space-y-8 lg:pr-8">
-            {/* ChainWise Logo */}
-            <div className="mb-8">
-              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full glass-card">
-                <div className="relative">
-                  <img
-                    src="https://www.chainwise.tech/logo.png"
-                    alt="ChainWise Logo"
-                    className="w-10 h-10 rounded-full"
-                    style={{
-                      filter: 'drop-shadow(0 0 10px rgba(155, 135, 245, 0.4))',
-                    }}
-                  />
-                  <div 
-                    className="absolute inset-0 rounded-full animate-pulse"
-                    style={{
-                      background: 'conic-gradient(from 0deg, rgba(155, 135, 245, 0.3), rgba(155, 135, 245, 0.1), rgba(155, 135, 245, 0.3))',
-                      filter: 'blur(1px)'
-                    }}
-                  />
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                  ChainWise
-                </span>
-              </div>
-            </div>
 
             {/* Main headline - Mobile-first responsive */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
@@ -82,10 +57,8 @@ export default function ChainWiseHero() {
             {/* CTAs - Mobile-first, touch-friendly */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
               <Button 
-                variant="primary"
-                size="xl" 
                 asChild
-                className="w-full sm:w-auto group"
+                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-purple-500/25 transform hover:scale-105 transition-all duration-200 group"
               >
                 <a href="/chat">
                   Get Started
@@ -94,10 +67,8 @@ export default function ChainWiseHero() {
               </Button>
 
               <Button
-                variant="outline"
-                size="xl"
                 asChild
-                className="w-full sm:w-auto border-purple-400/50 text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 hover:border-purple-300/60 group"
+                className="w-full sm:w-auto px-8 py-4 text-lg font-semibold border-2 border-purple-400/50 text-purple-400 hover:text-purple-300 hover:bg-purple-400/10 hover:border-purple-300/60 rounded-xl backdrop-blur-sm transition-all duration-200 group"
               >
                 <a href="/dashboard">
                   <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -125,6 +96,42 @@ export default function ChainWiseHero() {
                   {/* Main shader component */}
                   <div className="relative">
                     <PulsingBorderShader />
+                    
+                    {/* Orbiting Crypto Icons */}
+                    {mounted && (
+                      <>
+                        {/* Bitcoin - Main position */}
+                        <div className="absolute inset-0 animate-spin" style={{ animationDuration: '15s' }}>
+                          <Bitcoin className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-8 h-8 text-orange-400 drop-shadow-lg" />
+                        </div>
+                        
+                        {/* Ethereum representation - Coins icon */}
+                        <div className="absolute inset-0 animate-spin" style={{ animationDuration: '18s', animationDirection: 'reverse' }}>
+                          <Coins className="absolute top-1/2 -right-6 transform -translate-y-1/2 w-7 h-7 text-blue-400 drop-shadow-lg" />
+                        </div>
+                        
+                        {/* DollarSign for USDC/Stablecoins */}
+                        <div className="absolute inset-0 animate-spin" style={{ animationDuration: '20s' }}>
+                          <DollarSign className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-7 h-7 text-green-400 drop-shadow-lg" />
+                        </div>
+                        
+                        {/* Activity icon for DeFi/Trading */}
+                        <div className="absolute inset-0 animate-spin" style={{ animationDuration: '16s', animationDirection: 'reverse' }}>
+                          <Activity className="absolute top-1/2 -left-6 transform -translate-y-1/2 w-6 h-6 text-purple-400 drop-shadow-lg" />
+                        </div>
+                        
+                        {/* Inner orbiting smaller icons */}
+                        <div className="absolute inset-4 animate-spin" style={{ animationDuration: '12s' }}>
+                          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-orange-500 shadow-lg" />
+                        </div>
+                        <div className="absolute inset-4 animate-spin" style={{ animationDuration: '10s', animationDirection: 'reverse' }}>
+                          <div className="absolute top-1/2 -right-3 transform -translate-y-1/2 w-3 h-3 rounded-full bg-blue-500 shadow-lg" />
+                        </div>
+                        <div className="absolute inset-4 animate-spin" style={{ animationDuration: '14s' }}>
+                          <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-green-500 shadow-lg" />
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardItem>
 
