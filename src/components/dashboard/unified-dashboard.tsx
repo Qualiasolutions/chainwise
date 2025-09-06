@@ -67,6 +67,10 @@ import {
   Legend
 } from "recharts"
 import { cn } from "@/lib/utils"
+import { SparklesText } from "@/components/magicui/sparkles-text"
+import { AnimatedBeam } from "@/components/magicui/animated-beam"
+import { GlassmorphismCard } from "@/components/ui/glassmorphism-card"
+import { NeonButton } from "@/components/ui/neon-button"
 
 // ChainWise gradient colors
 const CHART_COLORS = {
@@ -126,6 +130,11 @@ export default function UnifiedDashboard({ className }: DashboardProps) {
     alerts: 5
   })
 
+  // Refs for AnimatedBeam connections
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const aiCreditsRef = React.useRef<HTMLDivElement>(null)
+  const aiAssistantRef = React.useRef<HTMLAnchorElement>(null)
+
   useEffect(() => {
     fetchDashboardData()
   }, [user])
@@ -169,26 +178,33 @@ export default function UnifiedDashboard({ className }: DashboardProps) {
   }
 
   return (
-    <div className={cn("space-y-6 p-6", className)}>
+    <div ref={containerRef} className={cn("space-y-6 p-6 relative", className)}>
       {/* Header Section */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-chainwise-primary-600 to-chainwise-secondary-500 bg-clip-text text-transparent">
+          <SparklesText 
+            className="text-2xl md:text-3xl font-bold"
+            colors={{
+              first: "#4f46e5", // ChainWise primary
+              second: "#8b5cf6"  // ChainWise secondary
+            }}
+            sparklesCount={8}
+          >
             Welcome back to ChainWise
-          </h1>
-          <p className="text-muted-foreground mt-1">
+          </SparklesText>
+          <p className="text-muted-foreground mt-2">
             Your AI-powered crypto trading command center
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          <NeonButton variant="outline" size="default">
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
-          </Button>
-          <Button size="sm" className="bg-gradient-to-r from-chainwise-primary-600 to-chainwise-secondary-500">
+          </NeonButton>
+          <NeonButton variant="primary" size="default" glow="medium">
             <Plus className="h-4 w-4 mr-2" />
             New Trade
-          </Button>
+          </NeonButton>
         </div>
       </div>
 
@@ -217,19 +233,24 @@ export default function UnifiedDashboard({ className }: DashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-chainwise-secondary-200 dark:border-chainwise-secondary-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">AI Credits</CardTitle>
-            <Brain className="h-4 w-4 text-chainwise-secondary-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.credits}</div>
+        <GlassmorphismCard 
+          ref={aiCreditsRef}
+          variant="default" 
+          glowColor="rgba(139,92,246,0.4)"
+          className="p-6"
+        >
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <h3 className="text-sm font-medium text-white">AI Credits</h3>
+            <Brain className="h-4 w-4 text-purple-400" />
+          </div>
+          <div className="space-y-3">
+            <div className="text-2xl font-bold text-white">{dashboardData.credits}</div>
             <Progress value={(dashboardData.credits / 50) * 100} className="mt-2 h-2" />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-gray-300 mt-1">
               {50 - dashboardData.credits} credits until refill
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </GlassmorphismCard>
 
         <Card className="border-chainwise-accent-200 dark:border-chainwise-accent-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -397,47 +418,68 @@ export default function UnifiedDashboard({ className }: DashboardProps) {
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Button
+        <NeonButton
           variant="outline"
-          className="h-24 flex flex-col gap-2 hover:border-chainwise-primary-500"
+          size="xl"
+          className="h-24 flex flex-col gap-2"
           asChild
+          glow="subtle"
         >
-          <Link href="/chat">
-            <Bot className="h-6 w-6 text-chainwise-primary-600" />
+          <Link ref={aiAssistantRef} href="/chat">
+            <Bot className="h-6 w-6 text-[#4f46e5]" />
             <span>AI Assistant</span>
           </Link>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-24 flex flex-col gap-2 hover:border-chainwise-secondary-500"
+        </NeonButton>
+        <NeonButton
+          variant="secondary" 
+          size="xl"
+          className="h-24 flex flex-col gap-2"
           asChild
+          glow="medium"
         >
           <Link href="/portfolio">
-            <PieChart className="h-6 w-6 text-chainwise-secondary-600" />
+            <PieChart className="h-6 w-6" />
             <span>Portfolio</span>
           </Link>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-24 flex flex-col gap-2 hover:border-chainwise-accent-500"
+        </NeonButton>
+        <NeonButton
+          variant="ghost"
+          size="xl" 
+          className="h-24 flex flex-col gap-2"
           asChild
+          glow="subtle"
         >
           <Link href="/analytics">
-            <BarChart3 className="h-6 w-6 text-chainwise-accent-600" />
+            <BarChart3 className="h-6 w-6 text-[#2563eb]" />
             <span>Analytics</span>
           </Link>
-        </Button>
-        <Button
-          variant="outline"
-          className="h-24 flex flex-col gap-2 hover:border-chainwise-warning-500"
+        </NeonButton>
+        <NeonButton
+          variant="warning"
+          size="xl"
+          className="h-24 flex flex-col gap-2"
           asChild
+          glow="medium"
         >
           <Link href="/marketplace">
-            <Gem className="h-6 w-6 text-chainwise-warning-600" />
+            <Gem className="h-6 w-6" />
             <span>Marketplace</span>
           </Link>
-        </Button>
+        </NeonButton>
       </div>
+
+      {/* AnimatedBeam connecting AI Credits to AI Assistant */}
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={aiCreditsRef}
+        toRef={aiAssistantRef}
+        curvature={-75}
+        pathColor="rgba(139,92,246,0.1)"
+        gradientStartColor="#8b5cf6"
+        gradientStopColor="#4f46e5"
+        delay={2}
+        duration={3}
+      />
     </div>
   )
 }
