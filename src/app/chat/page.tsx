@@ -6,26 +6,32 @@ import { Loader2 } from 'lucide-react'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { ChatInterface } from './components/chat-interface'
 
-// Loading component for suspense
+// Enhanced loading component for suspense
 function ChatLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+    <div className="min-h-screen flex items-center justify-center chainwise-gradient">
       <motion.div 
-        className="text-center"
+        className="text-center relative"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Animated Background */}
+        <div className="absolute inset-0 -m-20">
+          <div className="absolute top-10 left-10 w-40 h-40 bg-chainwise-primary-500/10 rounded-full blur-3xl animate-background-pulse-1" />
+          <div className="absolute bottom-10 right-10 w-32 h-32 bg-chainwise-secondary-500/8 rounded-full blur-3xl animate-background-pulse-2" />
+        </div>
+        
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="w-16 h-16 mx-auto mb-6"
+          className="w-20 h-20 mx-auto mb-8 relative z-10"
         >
-          <Loader2 className="w-16 h-16 text-purple-300" />
+          <div className="w-20 h-20 rounded-full border-4 border-chainwise-primary-300/30 border-t-chainwise-primary-400 shadow-glow" />
         </motion.div>
         
         <motion.h2 
-          className="text-2xl font-bold text-white mb-2"
+          className="text-3xl font-bold bg-gradient-to-r from-chainwise-primary-400 via-chainwise-secondary-400 to-chainwise-accent-400 bg-clip-text text-transparent mb-3 relative z-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -34,7 +40,7 @@ function ChatLoading() {
         </motion.h2>
         
         <motion.p 
-          className="text-purple-200/70"
+          className="text-chainwise-neutral-300/80 text-lg relative z-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}

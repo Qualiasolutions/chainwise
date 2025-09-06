@@ -27,9 +27,18 @@ export function MessageThread({ messages, isTyping, persona, className }: Messag
 
   const getPersonaColor = (persona: AIPersona) => {
     const colors = {
-      buddy: 'from-blue-500/20 to-cyan-500/20 border-blue-400/20',
-      professor: 'from-purple-500/20 to-pink-500/20 border-purple-400/20',
-      trader: 'from-green-500/20 to-emerald-500/20 border-green-400/20'
+      buddy: 'from-chainwise-accent-500/20 to-chainwise-accent-600/20 border-chainwise-accent-400/20',
+      professor: 'from-chainwise-secondary-500/20 to-chainwise-secondary-600/20 border-chainwise-secondary-400/20',
+      trader: 'from-chainwise-success-500/20 to-chainwise-success-600/20 border-chainwise-success-400/20'
+    }
+    return colors[persona]
+  }
+
+  const getPersonaAvatarColor = (persona: AIPersona) => {
+    const colors = {
+      buddy: 'from-chainwise-accent-500 to-chainwise-accent-600',
+      professor: 'from-chainwise-secondary-500 to-chainwise-secondary-600',
+      trader: 'from-chainwise-success-500 to-chainwise-success-600'
     }
     return colors[persona]
   }
@@ -42,7 +51,7 @@ export function MessageThread({ messages, isTyping, persona, className }: Messag
   return (
     <div className={cn("flex-1 overflow-hidden", className)}>
       <div className="h-full overflow-y-auto scrollbar-hide scroll-smooth">
-        <div className="p-4 md:p-6 space-y-6">
+        <div className="p-4 md:p-6 lg:p-8 space-y-8 chat-mobile-spacing">
           <AnimatePresence mode="popLayout">
             {messages.map((message, index) => (
               <motion.div
@@ -58,24 +67,24 @@ export function MessageThread({ messages, isTyping, persona, className }: Messag
                 }}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`flex max-w-[85%] md:max-w-[75%] ${
+                <div className={`flex message-max-width ${
                   message.role === 'user' ? 'flex-row-reverse space-x-reverse' : 'flex-row'
-                } space-x-3 group`}>
-                  {/* Avatar */}
+                } space-x-4 group`}>
+                  {/* Enhanced Avatar */}
                   <motion.div 
                     className={cn(
-                      "flex-shrink-0 w-10 h-10 rounded-full shadow-lg flex items-center justify-center",
+                      "flex-shrink-0 w-12 h-12 rounded-2xl shadow-brand flex items-center justify-center border",
                       message.role === 'user' 
-                        ? 'bg-gradient-to-br from-purple-500 to-pink-500' 
-                        : `bg-gradient-to-br ${getPersonaColor(persona).replace('/20', '/40').replace('border-', 'from-').split(' ')[0]} to-indigo-500/40 backdrop-blur-xl border ${getPersonaColor(persona).split(' ')[1]}`
+                        ? 'bg-gradient-to-br from-chainwise-primary-500 to-chainwise-secondary-500 border-chainwise-primary-400/30' 
+                        : `bg-gradient-to-br ${getPersonaAvatarColor(persona)} border-chainwise-neutral-400/20 backdrop-blur-xl`
                     )}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, rotate: 2 }}
                     transition={{ type: "spring", stiffness: 400 }}
                   >
                     {message.role === 'user' ? (
-                      <User className="w-5 h-5 text-white" />
+                      <User className="w-6 h-6 text-white" />
                     ) : (
-                      <Bot className="w-5 h-5 text-white" />
+                      <Bot className="w-6 h-6 text-white" />
                     )}
                   </motion.div>
 
@@ -83,12 +92,12 @@ export function MessageThread({ messages, isTyping, persona, className }: Messag
                   <div className="flex-1 min-w-0">
                     <motion.div 
                       className={cn(
-                        "rounded-2xl shadow-lg backdrop-blur-xl border relative",
+                        "rounded-3xl shadow-brand backdrop-blur-xl border relative overflow-hidden",
                         message.role === 'user' 
-                          ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white ml-12' 
-                          : `bg-gradient-to-br ${getPersonaColor(persona)} text-white mr-12`
+                          ? 'bg-gradient-to-br from-chainwise-primary-500 to-chainwise-secondary-500 text-white ml-14 border-chainwise-primary-400/30' 
+                          : `bg-gradient-to-br ${getPersonaColor(persona)} text-white mr-14 border-chainwise-neutral-400/20`
                       )}
-                      whileHover={{ scale: 1.01 }}
+                      whileHover={{ scale: 1.01, y: -1 }}
                       transition={{ type: "spring", stiffness: 400 }}
                     >
                       {/* Message Text */}

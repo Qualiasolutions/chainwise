@@ -74,12 +74,20 @@ export function ChatInterface() {
   }
 
   return (
-    <div className="h-screen flex bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 relative overflow-hidden">
-      {/* Background Effects */}
+    <div className="h-screen flex chainwise-gradient relative overflow-hidden">
+      {/* Enhanced Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full mix-blend-normal filter blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-indigo-500/8 rounded-full mix-blend-normal filter blur-[100px] animate-pulse delay-700" />
-        <div className="absolute top-1/3 right-1/3 w-64 h-64 bg-violet-500/6 rounded-full mix-blend-normal filter blur-[80px] animate-pulse delay-1000" />
+        <div className="absolute top-20 left-10 w-72 h-72 bg-chainwise-primary-500/10 rounded-full blur-3xl animate-background-pulse-1" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-chainwise-secondary-500/8 rounded-full blur-3xl animate-background-pulse-2" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-chainwise-accent-500/6 rounded-full blur-2xl animate-background-pulse-1" style={{ animationDelay: '2s' }} />
+        
+        {/* Moving Grid Pattern */}
+        <div className="absolute inset-0 opacity-[0.02] animate-moving-grid" 
+             style={{ 
+               backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+               backgroundSize: '50px 50px'
+             }} 
+        />
       </div>
 
       {/* Session Sidebar */}
@@ -102,18 +110,18 @@ export function ChatInterface() {
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
 
-        {/* Header */}
+        {/* Enhanced Header */}
         <motion.div 
-          className="flex-shrink-0 backdrop-blur-xl bg-white/5 border-b border-purple-300/20 p-4 lg:p-6"
+          className="flex-shrink-0 backdrop-blur-xl bg-gradient-to-r from-chainwise-neutral-900/40 to-chainwise-neutral-800/40 border-b border-chainwise-primary-400/20 p-4 lg:p-6 shadow-lg"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
           <div className="flex items-center justify-between max-w-7xl mx-auto">
-            {/* Title */}
+            {/* Enhanced Title Section */}
             <div className="flex-1 min-w-0 ml-0 lg:ml-0">
               <motion.h1 
-                className="text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-300"
+                className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-chainwise-primary-400 via-chainwise-secondary-400 to-chainwise-accent-400 bg-clip-text text-transparent tracking-wide"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
@@ -122,30 +130,36 @@ export function ChatInterface() {
               </motion.h1>
               {currentSession && (
                 <motion.div 
-                  className="flex items-center space-x-2 mt-1"
+                  className="flex items-center space-x-3 mt-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                  <span className="text-sm text-white/70">
-                    Connected to {
-                      currentSession.persona === 'buddy' ? 'Crypto Buddy' :
-                      currentSession.persona === 'professor' ? 'Crypto Professor' : 'Crypto Trader'
-                    }
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-chainwise-success-500 rounded-full animate-pulse shadow-glow" />
+                    <span className="text-sm text-chainwise-neutral-300 font-medium">
+                      Connected to {
+                        currentSession.persona === 'buddy' ? 'Crypto Buddy' :
+                        currentSession.persona === 'professor' ? 'Crypto Professor' : 'Crypto Trader'
+                      }
+                    </span>
+                  </div>
+                  <div className="hidden sm:flex items-center text-xs text-chainwise-neutral-400 bg-chainwise-neutral-800/30 px-2 py-1 rounded-lg">
+                    <Zap className="w-3 h-3 mr-1" />
+                    AI-Powered
+                  </div>
                 </motion.div>
               )}
             </div>
 
-            {/* Actions */}
+            {/* Enhanced Actions */}
             <div className="flex items-center space-x-3">
               {/* Persona Switch Button */}
               {currentSession && (
                 <motion.button
                   onClick={() => setShowPersonaSelector(true)}
-                  className="hidden md:flex items-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-purple-300/20 rounded-xl text-white text-sm font-medium transition-all"
-                  whileHover={{ scale: 1.05 }}
+                  className="hidden md:flex items-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-chainwise-primary-600/20 to-chainwise-secondary-600/20 hover:from-chainwise-primary-500/30 hover:to-chainwise-secondary-500/30 border border-chainwise-primary-400/30 rounded-xl text-white text-sm font-medium transition-all shadow-brand"
+                  whileHover={{ scale: 1.05, y: -1 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Sparkles className="w-4 h-4" />
@@ -233,15 +247,15 @@ export function ChatInterface() {
           )}
         </div>
 
-        {/* Chat Input */}
+        {/* Enhanced Chat Input */}
         {currentSession && !showInitialPersonaSelector && (
           <motion.div 
-            className="flex-shrink-0 p-4 lg:p-6 backdrop-blur-xl bg-white/5"
+            className="flex-shrink-0 p-4 lg:p-6 backdrop-blur-xl bg-gradient-to-r from-chainwise-neutral-900/30 to-chainwise-neutral-800/30 border-t border-chainwise-primary-400/10"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <ChatInput
                 onSend={handleSendMessage}
                 persona={currentSession.persona}

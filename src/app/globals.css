@@ -310,4 +310,46 @@
     transform: translateZ(0) rotate(360deg);
     }
   }
+
+  /* Chat Interface Animations */
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
+  /* Enhanced Chat Utilities */
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(79, 70, 229, 0.3);
+  }
+
+  .shadow-glow-purple {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .message-bubble {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Responsive Chat Layout */
+  @media (max-width: 768px) {
+    .chat-mobile-spacing {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .message-max-width {
+      max-width: 90%;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .message-max-width {
+      max-width: 75%;
+    }
+  }
 }

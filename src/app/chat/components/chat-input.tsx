@@ -148,16 +148,16 @@ export function ChatInput({ onSend, persona, disabled, placeholder }: ChatInputP
         )}
       </AnimatePresence>
 
-      {/* Input Container */}
+      {/* Enhanced Input Container */}
       <motion.div 
         className={cn(
-          "backdrop-blur-2xl bg-gradient-to-br from-white/10 to-white/5 rounded-3xl border shadow-2xl transition-all duration-200",
+          "backdrop-blur-2xl bg-gradient-to-br from-chainwise-neutral-900/20 to-chainwise-neutral-800/10 rounded-3xl border shadow-2xl transition-all duration-200",
           isFocused 
-            ? "border-purple-400/40 shadow-purple-500/20" 
-            : "border-purple-300/20",
-          !canAfford && "border-red-400/40"
+            ? "border-chainwise-primary-400/50 shadow-chainwise-primary-500/20 shadow-glow" 
+            : "border-chainwise-primary-300/20",
+          !canAfford && "border-chainwise-error-400/40"
         )}
-        whileHover={{ scale: 1.01 }}
+        whileHover={{ scale: 1.01, y: -1 }}
         transition={{ type: "spring", stiffness: 400 }}
       >
         {/* Warning Banner */}
@@ -236,23 +236,28 @@ export function ChatInput({ onSend, persona, disabled, placeholder }: ChatInputP
                 </button>
               </div>
 
-              {/* Send Button */}
+              {/* Enhanced Send Button */}
               <motion.button
                 onClick={handleSend}
                 disabled={!message.trim() || disabled || !canAfford}
                 className={cn(
-                  "p-3 rounded-2xl font-semibold transition-all flex items-center space-x-2",
+                  "p-3 rounded-2xl font-semibold transition-all flex items-center space-x-2 relative overflow-hidden",
                   message.trim() && canAfford && !disabled
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30 hover:shadow-purple-500/40 hover:scale-105"
-                    : "bg-white/10 text-white/40 cursor-not-allowed"
+                    ? "bg-gradient-to-r from-chainwise-primary-500 to-chainwise-secondary-500 text-white shadow-lg shadow-chainwise-primary-500/30 hover:shadow-chainwise-primary-500/40 hover:scale-105"
+                    : "bg-chainwise-neutral-700/30 text-chainwise-neutral-400 cursor-not-allowed"
                 )}
-                whileHover={message.trim() && canAfford && !disabled ? { scale: 1.05 } : {}}
+                whileHover={message.trim() && canAfford && !disabled ? { scale: 1.05, y: -1 } : {}}
                 whileTap={message.trim() && canAfford && !disabled ? { scale: 0.95 } : {}}
               >
+                {/* Button Shimmer Effect */}
+                {message.trim() && canAfford && !disabled && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer" />
+                )}
+                
                 {canAfford ? (
-                  <Send className="w-5 h-5" />
+                  <Send className="w-5 h-5 relative z-10" />
                 ) : (
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 relative z-10">
                     <Zap className="w-4 h-4" />
                     <span className="text-sm">{personaCost}</span>
                   </div>
