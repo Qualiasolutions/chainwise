@@ -1,12 +1,12 @@
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 
-// Fixed light theme - no toggle functionality
+// Fixed dark purple/black theme - no toggle functionality
 const ThemeContext = createContext<{
-  theme: 'light'
+  theme: 'dark'
 }>({
-  theme: 'light',
+  theme: 'dark',
 })
 
 export const useTheme = () => useContext(ThemeContext)
@@ -16,9 +16,16 @@ export default function ThemeProvider({
 }: {
   children: React.ReactNode
 }) {
-  // Always use light theme
+  // Always use dark theme with purple/black styling
+  useEffect(() => {
+    // Force dark mode class on document
+    document.documentElement.classList.add('dark')
+    // Remove light mode class if it exists
+    document.documentElement.classList.remove('light')
+  }, [])
+
   return (
-    <ThemeContext.Provider value={{ theme: 'light' }}>
+    <ThemeContext.Provider value={{ theme: 'dark' }}>
       {children}
     </ThemeContext.Provider>
   )

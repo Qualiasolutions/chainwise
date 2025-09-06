@@ -353,14 +353,25 @@
     }
   }
 
-  /* Theme-specific utilities */
+  /* ChainWise dark purple/black theme gradient */
   .chainwise-gradient {
-    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 50%, #2563eb 100%);
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f0f23 100%);
+    position: relative;
   }
-
-  /* Light theme adjustments */
-  .light .chainwise-gradient {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #3b82f6 100%);
+  
+  .chainwise-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 50%, #2563eb 100%);
+    opacity: 0.15;
+    z-index: 0;
+  }
+  
+  /* Ensure content is above the gradient overlay */
+  .chainwise-gradient > * {
+    position: relative;
+    z-index: 1;
   }
 
   /* Theme transition for smooth switching */
