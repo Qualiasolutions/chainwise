@@ -1,5 +1,5 @@
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { DashboardLayout } from '@/components/dashboard-layout'
+import DashboardLayout from '@/components/dashboard-layout'
 import AlertsPage from '@/components/alerts/alerts-page'
 
 export default function Alerts() {
