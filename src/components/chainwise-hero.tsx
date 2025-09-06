@@ -1,10 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Play, TrendingUp } from "lucide-react"
+import { Play, TrendingUp, Bitcoin, Shield, Zap } from "lucide-react"
 import { useState, useEffect } from "react"
 import PulsingBorderShader from "./pulsing-border-shader"
 import { ArrowRightIcon } from "@radix-ui/react-icons"
+import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card"
+import { CometCard } from "@/components/ui/comet-card"
+import { PointerHighlight } from "@/components/ui/pointer-highlight"
 
 export default function ChainWiseHero() {
   const [mounted, setMounted] = useState(false)
@@ -104,33 +107,115 @@ export default function ChainWiseHero() {
             </div>
           </div>
 
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative">
-              {/* Glow effect behind the shader */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-3xl scale-110" />
+          {/* Right side - 3D Interactive Elements */}
+          <div className="flex justify-center lg:justify-end relative">
+            {/* Main 3D Card Container with PulsingBorderShader */}
+            <CardContainer className="inter-var">
+              <CardBody className="relative group/card w-auto sm:w-[35rem] h-auto rounded-xl">
+                {/* Central Pulsing Circle - Enhanced with 3D */}
+                <CardItem
+                  translateZ="100"
+                  rotateX={5}
+                  rotateY={5}
+                  className="relative"
+                >
+                  {/* Glow effect behind the shader */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-3xl scale-110" />
+                  
+                  {/* Main shader component */}
+                  <div className="relative">
+                    <PulsingBorderShader />
+                  </div>
+                </CardItem>
 
-              {/* Main shader component */}
-              <div className="relative">
-                <PulsingBorderShader />
-              </div>
+                {/* Floating 3D Feature Cards */}
+                {mounted && (
+                  <>
+                    {/* AI Features Card - Top Right */}
+                    <CardItem
+                      translateZ="50"
+                      translateX="100"
+                      translateY="-80"
+                      rotateY={10}
+                      className="absolute -top-4 -right-8"
+                    >
+                      <CometCard className="p-4 bg-black/80 border border-purple-500/30 backdrop-blur-sm">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                            <Zap className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <p className="text-white text-sm font-medium">AI Assistant</p>
+                            <p className="text-gray-400 text-xs">Active</p>
+                          </div>
+                        </div>
+                      </CometCard>
+                    </CardItem>
 
-              {/* Floating elements */}
-              {mounted && (
-                <>
-                  <div
-                    className="absolute -top-4 -right-4 w-3 h-3 bg-indigo-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0s" }}
-                  />
-                  <div
-                    className="absolute top-1/3 -left-6 w-2 h-2 bg-purple-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "1s" }}
-                  />
-                  <div
-                    className="absolute bottom-1/4 -right-8 w-4 h-4 bg-blue-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "2s" }}
-                  />
-                </>
-              )}
+                    {/* Portfolio Card - Top Left */}
+                    <CardItem
+                      translateZ="60"
+                      translateX="-120"
+                      translateY="-60"
+                      rotateY={-15}
+                      className="absolute top-8 -left-12"
+                    >
+                      <PointerHighlight className="p-4 rounded-xl border border-blue-500/30 bg-black/80 backdrop-blur-sm hover:bg-blue-500/5 transition-colors">
+                        <div className="flex items-center space-x-2">
+                          <Bitcoin className="w-6 h-6 text-orange-400" />
+                          <div>
+                            <p className="text-white text-sm font-semibold">$65,432</p>
+                            <p className="text-green-400 text-xs flex items-center">
+                              <TrendingUp className="w-3 h-3 mr-1" />
+                              +5.23%
+                            </p>
+                          </div>
+                        </div>
+                      </PointerHighlight>
+                    </CardItem>
+
+                    {/* Security Card - Bottom Right */}
+                    <CardItem
+                      translateZ="40"
+                      translateX="80"
+                      translateY="100"
+                      rotateY={8}
+                      className="absolute bottom-0 -right-4"
+                    >
+                      <CometCard className="p-3 bg-black/80 border border-green-500/30 backdrop-blur-sm">
+                        <div className="flex items-center space-x-2">
+                          <Shield className="w-5 h-5 text-green-400" />
+                          <span className="text-white text-xs font-medium">Secured</span>
+                        </div>
+                      </CometCard>
+                    </CardItem>
+
+                    {/* Animated floating particles */}
+                    <CardItem
+                      translateZ="20"
+                      className="absolute -top-8 right-4 w-2 h-2 bg-indigo-400 rounded-full animate-bounce"
+                      style={{ animationDelay: "0s" }}
+                    />
+                    <CardItem
+                      translateZ="30"
+                      className="absolute top-1/3 -left-8 w-3 h-3 bg-purple-400 rounded-full animate-bounce opacity-70"
+                      style={{ animationDelay: "1s" }}
+                    />
+                    <CardItem
+                      translateZ="25"
+                      className="absolute bottom-1/4 right-12 w-2 h-2 bg-blue-400 rounded-full animate-bounce opacity-80"
+                      style={{ animationDelay: "2s" }}
+                    />
+                  </>
+                )}
+              </CardBody>
+            </CardContainer>
+
+            {/* Additional moving background elements */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-12 left-8 w-1 h-1 bg-purple-400/40 rounded-full animate-pulse" />
+              <div className="absolute bottom-16 left-16 w-1 h-1 bg-blue-400/40 rounded-full animate-pulse" style={{ animationDelay: "1.5s" }} />
+              <div className="absolute top-1/2 right-12 w-1 h-1 bg-indigo-400/40 rounded-full animate-pulse" style={{ animationDelay: "0.5s" }} />
             </div>
           </div>
         </div>
