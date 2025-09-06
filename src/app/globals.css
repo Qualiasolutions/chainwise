@@ -27,7 +27,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
-    
+
     /* ChainWise custom variables inspired by landing page */
     --crypto-gradient-1: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 50%, #2563eb 100%);
     --crypto-gradient-2: radial-gradient(circle at 25% 25%, #4f46e5 0%, transparent 50%), 
@@ -58,11 +58,14 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 94.1%;
-    
+
     /* Dark mode ChainWise variables */
     --crypto-mesh-background: 
       linear-gradient(rgba(139, 92, 246, 0.07) 1px, transparent 1px),
       linear-gradient(90deg, rgba(139, 92, 246, 0.07) 1px, transparent 1px);
+  }
+  .theme {
+    --animate-gradient: gradient 8s linear infinite;
   }
 }
 
@@ -70,7 +73,7 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -84,7 +87,7 @@
     @apply relative overflow-hidden;
     background: #000000; /* Pure black from landing page */
   }
-  
+
   .crypto-background::before {
     content: '';
     @apply absolute inset-0 opacity-50;
@@ -92,11 +95,11 @@
     background-size: 50px 50px;
     animation: movingGrid 20s linear infinite;
   }
-  
+
   .blur-shape {
     @apply absolute rounded-full transition-transform duration-300 ease-out;
   }
-  
+
   .blur-shape-1 {
     width: 65%;
     height: 650px;
@@ -106,7 +109,7 @@
     filter: blur(130px);
     animation: backgroundPulse1 12s infinite ease-in-out;
   }
-  
+
   .blur-shape-2 {
     width: 85%;
     height: 850px;
@@ -116,26 +119,26 @@
     filter: blur(160px);
     animation: backgroundPulse2 14s infinite ease-in-out alternate;
   }
-  
+
   .crypto-card {
     @apply bg-card text-card-foreground border border-border/50 rounded-xl p-6 shadow-crypto backdrop-blur-sm;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   .dark .crypto-card {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   .crypto-button-primary {
     @apply bg-crypto-primary hover:bg-crypto-primary-dark text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-crypto hover:shadow-crypto-lg hover:scale-105;
   }
-  
+
   .crypto-button-secondary {
     @apply bg-crypto-secondary hover:bg-crypto-secondary-dark text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-[0_4px_14px_0_rgba(139,92,246,0.2)] hover:shadow-[0_6px_20px_rgba(139,92,246,0.3)] hover:scale-105;
   }
-  
+
   .crypto-input {
     @apply bg-background/50 border border-border/50 text-foreground placeholder:text-muted-foreground rounded-lg px-4 py-3 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-crypto-primary/50 focus:border-crypto-primary/50 backdrop-blur-sm;
   }
@@ -146,55 +149,55 @@
   .gradient-primary {
     background: var(--crypto-gradient-1);
   }
-  
+
   .gradient-mesh {
     background: var(--crypto-gradient-2);
   }
-  
+
   .gradient-success {
     @apply bg-gradient-to-r from-green-400 to-emerald-500;
   }
-  
+
   .gradient-danger {
     @apply bg-gradient-to-r from-red-400 to-rose-500;
   }
-  
+
   .gradient-warning {
     @apply bg-gradient-to-r from-yellow-400 to-orange-500;
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-crypto-gradient;
   }
-  
+
   .text-gradient-primary {
     @apply bg-clip-text text-transparent;
     background: var(--crypto-gradient-1);
   }
-  
+
   .card-shadow {
     @apply shadow-lg hover:shadow-xl transition-shadow duration-300;
   }
-  
+
   .glow {
     @apply shadow-glow;
   }
-  
+
   .glow-purple {
     @apply shadow-glow-purple;
   }
-  
+
   /* Animation utilities - use directly via Tailwind classes */
-  
+
   /* Responsive text utilities */
   .text-responsive-xl {
     @apply text-xl md:text-2xl lg:text-3xl;
   }
-  
+
   .text-responsive-2xl {
     @apply text-2xl md:text-3xl lg:text-4xl;
   }
-  
+
   .text-responsive-3xl {
     @apply text-3xl md:text-4xl lg:text-5xl;
   }
@@ -234,7 +237,7 @@
   content: '';
   @apply absolute inset-0 opacity-0 transition-opacity duration-300 bg-gradient-to-br from-[#9b87f5]/20 to-transparent rounded-full;
 }
-  
+
 .neumorphic-button:hover::after {
   @apply opacity-100;
 }
@@ -259,4 +262,21 @@
 /* Font display for pricing */
 .font-display {
   font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@theme inline {
+  @keyframes gradient {
+  to {
+    background-position: var(--bg-size, 300%) 0;
+    }
+  }
 }
