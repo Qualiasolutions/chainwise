@@ -1,0 +1,47 @@
+# Multi-stage production Dockerfile for ChainWise
+FROM node:18-alpine AS dependencies
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Build stage
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+
+# Build the application
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+RUN npm run build
+
+# Production runtime stage
+FROM node:18-alpine AS runtime
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# Set correct permissions
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node healthcheck.js
+
+CMD ["node", "server.js"]

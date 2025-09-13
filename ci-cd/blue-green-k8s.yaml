@@ -1,0 +1,195 @@
+# Blue-Green Deployment Configuration for ChainWise
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chainwise-app-blue
+  namespace: chainwise
+  labels:
+    app: chainwise
+    color: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: chainwise
+      color: blue
+  template:
+    metadata:
+      labels:
+        app: chainwise
+        color: blue
+    spec:
+      serviceAccountName: chainwise-service-account
+      containers:
+      - name: chainwise
+        image: chainwise:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: chainwise-config
+        env:
+        - name: DEPLOYMENT_COLOR
+          value: "blue"
+        - name: SUPABASE_SERVICE_ROLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: chainwise-secrets
+              key: supabase-service-role-key
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chainwise-app-green
+  namespace: chainwise
+  labels:
+    app: chainwise
+    color: green
+spec:
+  replicas: 0  # Initially scaled to 0
+  selector:
+    matchLabels:
+      app: chainwise
+      color: green
+  template:
+    metadata:
+      labels:
+        app: chainwise
+        color: green
+    spec:
+      serviceAccountName: chainwise-service-account
+      containers:
+      - name: chainwise
+        image: chainwise:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: chainwise-config
+        env:
+        - name: DEPLOYMENT_COLOR
+          value: "green"
+        - name: SUPABASE_SERVICE_ROLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: chainwise-secrets
+              key: supabase-service-role-key
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+# Blue Service (for testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: chainwise-service-blue
+  namespace: chainwise
+  labels:
+    app: chainwise
+    color: blue
+spec:
+  selector:
+    app: chainwise
+    color: blue
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer
+---
+# Green Service (for testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: chainwise-service-green
+  namespace: chainwise
+  labels:
+    app: chainwise
+    color: green
+spec:
+  selector:
+    app: chainwise
+    color: green
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer
+---
+# Main Production Service (switches between blue and green)
+apiVersion: v1
+kind: Service
+metadata:
+  name: chainwise-service
+  namespace: chainwise
+  labels:
+    app: chainwise
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  selector:
+    app: chainwise
+    color: blue  # Initially points to blue
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer
+  sessionAffinity: None
+---
+# Canary Service (for gradual rollouts)
+apiVersion: v1
+kind: Service
+metadata:
+  name: chainwise-service-canary
+  namespace: chainwise
+  labels:
+    app: chainwise
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "10"
+spec:
+  selector:
+    app: chainwise
+    color: green  # Points to the new version
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+  type: ClusterIP

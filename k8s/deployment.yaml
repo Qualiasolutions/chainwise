@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chainwise-app
+  namespace: chainwise
+  labels:
+    app: chainwise
+    tier: frontend
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: chainwise
+  template:
+    metadata:
+      labels:
+        app: chainwise
+        tier: frontend
+    spec:
+      containers:
+      - name: chainwise
+        image: chainwise:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: chainwise-config
+              key: NODE_ENV
+        - name: NEXT_PUBLIC_SUPABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: chainwise-config
+              key: NEXT_PUBLIC_SUPABASE_URL
+        - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: chainwise-config
+              key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        - name: SUPABASE_SERVICE_ROLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: chainwise-secrets
+              key: supabase-service-role-key
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: chainwise-secrets
+              key: stripe-secret-key
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: chainwise-secrets
+              key: openai-api-key
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - chainwise
+              topologyKey: kubernetes.io/hostname
