@@ -7,8 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ChainWise is an AI-powered cryptocurrency SaaS platform built with Next.js 14, featuring portfolio management, AI chat personas, subscription tiers, and advanced analytics. The application uses Supabase for database and auth, Stripe for payments, and integrates multiple crypto APIs.
 
 **Key Features:**
+- **Hero Landing Component**: Beautiful, responsive hero section with integrated chat launch functionality
 - **Professional AI Chat Interface**: Enterprise-grade streaming chat with glass-morphism design
 - **AI Personas**: ChainWise Assistant (Buddy), Market Analyst (Professor), Strategy Advisor (Trader)
+- **Seamless Hero-to-Chat Flow**: Direct navigation from Hero search to AI chat with session persistence
 - **Portfolio Management**: Multi-portfolio support with real-time analytics
 - **Smart Alerts System**: Price alerts with tier-based limits
 - **Subscription Tiers**: Free, Pro, Elite with feature gating and credit systems
@@ -133,6 +135,18 @@ Three-tier system (Free, Pro, Elite) with:
 
 ## Recent Updates & Fixes (Latest)
 
+### ✅ Hero Component Integration (Complete)
+- **Beautiful Hero Landing**: Modern, responsive Hero1 component with ChainWise branding
+- **Seamless Chat Integration**: Direct navigation from Hero search bar to AI chat interface
+- **Interactive Elements**: Suggestion pills that launch chat sessions with pre-filled messages
+- **Session Persistence**: Uses sessionStorage to carry initial messages from Hero to chat
+- **Responsive Design**: Fully mobile-optimized with smooth animations and transitions
+- **Bug Fixes**: Resolved critical "g is not a function" onClick error in chat input
+- **Components Added**: 
+  - `/src/components/ui/hero-1.tsx` - Main Hero component
+  - `/src/components/ui/hero-demo.tsx` - Demo wrapper component
+  - `/src/app/hero-test/page.tsx` - Test page for Hero component
+
 ### ✅ Professional Chat Interface Redesign (Complete)
 - **Enterprise-grade Design**: Replaced childish 3D characters with professional glass-morphism interface
 - **Streaming AI**: Implemented Vercel AI SDK for real-time streaming responses
@@ -243,6 +257,13 @@ export async function GET() {
 - Implement RLS policies for security
 - Use real-time subscriptions for live data
 - Handle query errors appropriately
+
+### Hero Component Patterns
+- Use `useRouter` from 'next/navigation' for navigation
+- Implement sessionStorage for cross-component data persistence
+- Follow ChainWise branding guidelines (gradients, colors, spacing)
+- Ensure responsive design with mobile-first approach
+- Use Framer Motion for smooth animations and transitions
 
 ## Testing Strategy
 
