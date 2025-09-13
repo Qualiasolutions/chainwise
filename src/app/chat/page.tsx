@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { ChatInterface } from './components/chat-interface'
+import { ProfessionalChatInterface } from '@/components/chat/professional-chat-interface'
 
 // Enhanced loading component for suspense
 function ChatLoading() {
@@ -57,7 +57,7 @@ export default function ChatPage() {
     <ProtectedRoute requireAuth={true}>
       <div className="min-h-screen overflow-hidden">
         <Suspense fallback={<ChatLoading />}>
-          <ChatInterface />
+          <ProfessionalChatInterface />
         </Suspense>
       </div>
     </ProtectedRoute>

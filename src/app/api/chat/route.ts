@@ -1,29 +1,70 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { openai } from '@ai-sdk/openai'
+import { streamText, convertToCoreMessages } from 'ai'
+import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { openAIService, type AIPersona } from '@/lib/openai-service'
-import { ChatMessage } from '@/types'
 import { z } from 'zod'
-import { 
-  handleAPIError, 
-  handleAuthError, 
-  validateCredits, 
-  createSuccessResponse, 
-  createErrorResponse 
-} from '@/lib/api-error-handler'
-import { PermissionChecker } from '@/lib/permissions'
 
 // Request validation schema
 const chatRequestSchema = z.object({
   messages: z.array(z.object({
-    id: z.string(),
+    id: z.string().optional(),
     role: z.enum(['user', 'assistant', 'system']),
     content: z.string(),
-    timestamp: z.string().or(z.date()).transform(val => new Date(val))
   })),
   persona: z.enum(['buddy', 'professor', 'trader']).default('buddy'),
-  sessionId: z.string().optional(),
-  context: z.any().optional()
 })
+
+// AI Personas with professional configurations
+const PERSONA_CONFIGS = {
+  buddy: {
+    name: 'ChainWise Assistant',
+    systemPrompt: `You are ChainWise Assistant, a professional and knowledgeable cryptocurrency advisor. 
+    Your role is to provide clear, educational guidance to users learning about cryptocurrency and blockchain technology.
+    
+    Guidelines:
+    - Provide accurate, up-to-date information about cryptocurrencies and blockchain
+    - Explain complex concepts in accessible terms
+    - Always emphasize the importance of research and risk management
+    - Maintain a professional, helpful tone
+    - Focus on education rather than specific investment advice
+    - Encourage responsible investing and never guarantee returns`,
+    temperature: 0.7,
+    maxTokens: 500,
+    creditCost: 5
+  },
+  professor: {
+    name: 'Market Analyst',
+    systemPrompt: `You are Market Analyst, a technical analysis expert specializing in cryptocurrency markets.
+    You provide in-depth market analysis, technical insights, and educational content.
+    
+    Guidelines:
+    - Analyze market trends using technical analysis principles
+    - Explain chart patterns, indicators, and market dynamics
+    - Provide educational content about trading and market analysis
+    - Use professional financial terminology with clear explanations
+    - Always include risk warnings and disclaimers
+    - Focus on analysis methodology rather than predictions`,
+    temperature: 0.6,
+    maxTokens: 750,
+    creditCost: 10
+  },
+  trader: {
+    name: 'Strategy Advisor',
+    systemPrompt: `You are Strategy Advisor, an advanced cryptocurrency trading strategist for experienced users.
+    You provide sophisticated trading insights and portfolio strategy guidance.
+    
+    Guidelines:
+    - Discuss advanced trading strategies and risk management
+    - Analyze portfolio composition and diversification
+    - Provide insights on market timing and entry/exit strategies
+    - Use professional trading terminology
+    - Emphasize risk management and position sizing
+    - Focus on strategy education rather than specific trade recommendations`,
+    temperature: 0.5,
+    maxTokens: 1000,
+    creditCost: 15
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,222 +72,105 @@ export async function POST(request: NextRequest) {
     
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    const authErrorResponse = handleAuthError(authError, user)
-    if (authErrorResponse) return authErrorResponse
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { 
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
 
     // Parse and validate request
     const body = await request.json()
-    const validatedData = chatRequestSchema.parse(body)
-    const { messages, persona, sessionId, context } = validatedData
+    const { messages, persona } = chatRequestSchema.parse(body)
 
-    // Get user with credit balance
+    // Get user credit information
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('id, credits_balance, subscription_tier')
+      .select('credits_balance, subscription_tier')
       .eq('id', user.id)
       .single()
 
-    if (userError) {
-      throw userError
+    if (userError || !userData) {
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    if (!userData) {
-      return createErrorResponse('User not found', 'NOT_FOUND')
-    }
-
-    // Check if user can use this persona
-    const canUsePersona = await PermissionChecker.canUseAIPersona(user.id, persona)
-    if (!canUsePersona) {
-      return createErrorResponse(
-        `${persona.charAt(0).toUpperCase() + persona.slice(1)} persona requires a higher subscription tier`,
-        'INSUFFICIENT_PERMISSIONS'
-      )
-    }
-
-    // Get persona configuration for credit cost
-    const personaConfig = openAIService.getPersonaConfig(persona)
-    const creditCost = personaConfig.creditCost
-
+    const personaConfig = PERSONA_CONFIGS[persona]
+    
     // Check if user has enough credits
-    const creditsErrorResponse = validateCredits(
-      userData.credits_balance, 
-      creditCost, 
-      personaConfig.name
-    )
-    if (creditsErrorResponse) return creditsErrorResponse
-
-    // Check if OpenAI is configured
-    if (!openAIService.isConfigured()) {
-      // Premium experience - no demo responses, require proper API configuration
-      return NextResponse.json(
-        { error: 'AI service is currently unavailable. Please contact support for assistance.' },
-        { status: 503 }
-      )
+    if (userData.credits_balance < personaConfig.creditCost) {
+      return new Response(JSON.stringify({ 
+        error: `Insufficient credits. Need ${personaConfig.creditCost} credits for ${personaConfig.name}` 
+      }), {
+        status: 402,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
 
-    // Create or get chat session
-    let chatSession
-    if (sessionId) {
-      const { data: existingSession } = await supabase
-        .from('ai_chat_sessions')
-        .select('*')
-        .eq('id', sessionId)
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single()
-      
-      chatSession = existingSession
-    }
+    // Convert messages to AI SDK format
+    const coreMessages = convertToCoreMessages(messages)
 
-    if (!chatSession) {
-      const { data: newSession, error: sessionError } = await supabase
-        .from('ai_chat_sessions')
-        .insert({
-          user_id: user.id,
-          persona,
-          title: messages[0]?.content.substring(0, 100) || 'New Chat',
-          is_active: true
-        })
-        .select()
-        .single()
+    // Add system prompt
+    const messagesWithSystem = [
+      { role: 'system' as const, content: personaConfig.systemPrompt },
+      ...coreMessages
+    ]
 
-      if (sessionError) {
-        throw sessionError
+    // Stream the response
+    const result = await streamText({
+      model: openai(process.env.OPENAI_MODEL || 'gpt-4o-mini'),
+      messages: messagesWithSystem,
+      temperature: personaConfig.temperature,
+      maxTokens: personaConfig.maxTokens,
+      async onFinish({ usage }) {
+        // Deduct credits after successful response
+        await supabase
+          .from('users')
+          .update({ 
+            credits_balance: userData.credits_balance - personaConfig.creditCost 
+          })
+          .eq('id', user.id)
+
+        // Log credit transaction
+        await supabase
+          .from('credit_transactions')
+          .insert({
+            user_id: user.id,
+            transaction_type: 'spent',
+            amount: -personaConfig.creditCost,
+            feature_used: `ai_chat_${persona}`,
+            description: `AI Chat with ${personaConfig.name}`,
+            metadata: {
+              persona,
+              tokens_used: usage.totalTokens,
+              model: process.env.OPENAI_MODEL || 'gpt-4o-mini'
+            }
+          })
       }
-      
-      chatSession = newSession
-    }
-
-    // Save user message to database
-    const lastUserMessage = messages[messages.length - 1]
-    await supabase
-      .from('ai_chat_messages')
-      .insert({
-        session_id: chatSession.id,
-        role: 'user',
-        content: lastUserMessage.content,
-        metadata: {}
-      })
-
-    // Generate AI response
-    const { content, tokensUsed } = await openAIService.generateResponse(
-      messages,
-      persona,
-      context
-    )
-
-    // Save AI response to database
-    await supabase
-      .from('ai_chat_messages')
-      .insert({
-        session_id: chatSession.id,
-        role: 'assistant',
-        content,
-        metadata: {
-          persona,
-          tokensUsed,
-          creditCost
-        }
-      })
-
-    // Deduct credits
-    const newBalance = userData.credits_balance - creditCost
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ credits_balance: newBalance })
-      .eq('id', user.id)
-
-    if (updateError) {
-      throw updateError
-    }
-
-    // Log the credit transaction
-    await supabase
-      .from('credit_transactions')
-      .insert({
-        user_id: user.id,
-        transaction_type: 'spent',
-        amount: -creditCost,
-        feature_used: `ai_chat_${persona}`,
-        description: `AI Chat with ${personaConfig.name}`,
-        metadata: {
-          session_id: chatSession.id,
-          tokens_used: tokensUsed,
-          persona
-        }
-      })
-
-    return createSuccessResponse({
-      message: content,
-      sessionId: chatSession.id,
-      tokensUsed,
-      creditsUsed: creditCost,
-      newBalance,
-      persona: personaConfig.name
     })
 
+    return result.toDataStreamResponse()
+
   } catch (error) {
-    return handleAPIError(error, 'chat')
-  }
-}
-
-// No demo responses - ChainWise is a premium product requiring proper API configuration
-
-// GET endpoint to fetch chat history
-export async function GET(request: NextRequest) {
-  try {
-    const supabase = await createClient()
+    console.error('Error in chat API:', error)
     
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    const authErrorResponse = handleAuthError(authError, user)
-    if (authErrorResponse) return authErrorResponse
-
-    const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('sessionId')
-    const limit = parseInt(searchParams.get('limit') || '50')
-
-    if (sessionId) {
-      // Get specific session with messages
-      const { data: chatSession, error: sessionError } = await supabase
-        .from('ai_chat_sessions')
-        .select(`
-          *,
-          messages:ai_chat_messages(*)
-        `)
-        .eq('id', sessionId)
-        .eq('user_id', user.id)
-        .order('created_at', { foreignTable: 'ai_chat_messages', ascending: true })
-        .limit(limit, { foreignTable: 'ai_chat_messages' })
-        .single()
-
-      if (sessionError || !chatSession) {
-        return createErrorResponse('Chat session not found', 'NOT_FOUND')
-      }
-
-      return createSuccessResponse(chatSession)
-    } else {
-      // Get all sessions for user with latest message
-      const { data: sessions, error: sessionsError } = await supabase
-        .from('ai_chat_sessions')
-        .select(`
-          *,
-          messages:ai_chat_messages!ai_chat_messages_session_id_fkey(*)
-        `)
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .order('updated_at', { ascending: false })
-        .order('created_at', { foreignTable: 'ai_chat_messages', ascending: false })
-        .limit(20)
-        .limit(1, { foreignTable: 'ai_chat_messages' })
-
-      if (sessionsError) {
-        throw sessionsError
-      }
-
-      return createSuccessResponse(sessions || [])
+    if (error instanceof z.ZodError) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid request data',
+        details: error.errors 
+      }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
     }
-  } catch (error) {
-    return handleAPIError(error, 'chat/history')
+
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error' 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }
