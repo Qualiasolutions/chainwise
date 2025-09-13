@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -59,6 +59,7 @@ export function ProfessionalChatInterface() {
   const [selectedPersona, setSelectedPersona] = useState<keyof typeof PERSONA_CONFIGS>('buddy')
   const [userCredits, setUserCredits] = useState<UserCredits>({ balance: 200, tier: 'elite' })
   const [showPersonaSelector, setShowPersonaSelector] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { messages, input, handleInputChange, handleSubmit, isLoading, error, setInput } = useChat({
     api: '/api/chat',
@@ -69,6 +70,40 @@ export function ProfessionalChatInterface() {
       console.error('Chat error:', error)
     }
   })
+
+  // Robust form submission handler to fix 'g is not a function' error
+  const handleFormSubmit = useCallback(async (e?: React.FormEvent) => {
+    try {
+      e?.preventDefault();
+      
+      // Comprehensive validation
+      if (!input || !input.trim()) {
+        console.warn('Cannot submit empty message');
+        return;
+      }
+      
+      if (isLoading || isSubmitting) {
+        console.warn('Already processing a request');
+        return;
+      }
+      
+      // Set submitting state for better UX
+      setIsSubmitting(true);
+      
+      // Ensure handleSubmit exists and is a function
+      if (handleSubmit && typeof handleSubmit === 'function') {
+        await handleSubmit(e);
+      } else {
+        console.error('handleSubmit function is not available');
+        throw new Error('Chat submission handler is not available. Please refresh the page.');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Error will be handled by useChat's onError callback
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [handleSubmit, input, isLoading, isSubmitting]);
 
   // Handle initial message from Hero component
   useEffect(() => {
@@ -173,42 +208,89 @@ export function ProfessionalChatInterface() {
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="p-6">
-          <Card className="bg-slate-800/50 backdrop-blur-xl border-slate-700/50">
-            <CardContent className="p-4">
-              <form onSubmit={handleSubmit} className="flex gap-4">
-                <ProfessionalChatInput
-                  value={input}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  placeholder={`Ask ${currentPersona.name} anything about crypto...`}
-                  onSubmit={handleSubmit}
-                />
-                <Button
-                  type="submit"
-                  disabled={!input?.trim() || isLoading}
-                  className={`px-6 bg-gradient-to-r ${currentPersona.color} hover:opacity-90 transition-opacity`}
-                >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Send className="w-5 h-5" />
+        {/* Redesigned Input Area */}
+        <div className="p-4 md:p-6">
+          <div className="relative">
+            <form onSubmit={handleFormSubmit} className="relative">
+              <div className="relative flex items-end bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-3 md:p-4 transition-all duration-200 focus-within:border-purple-500/50 focus-within:bg-slate-800/80 touch-manipulation">
+                {/* Input Field */}
+                <div className="flex-1 relative">
+                  <textarea
+                    value={input}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                    placeholder={`Ask ${currentPersona.name} anything about crypto...`}
+                    className="w-full bg-transparent text-slate-100 placeholder:text-slate-400 border-0 outline-none resize-none min-h-[44px] max-h-[120px] text-base leading-6 py-2 pr-4 touch-manipulation focus:outline-none"
+                    rows={1}
+                    style={{
+                      height: 'auto',
+                      minHeight: '44px',
+                      maxHeight: '120px'
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleFormSubmit();
+                      }
+                      
+                      // Auto-resize
+                      const target = e.target as HTMLTextAreaElement;
+                      setTimeout(() => {
+                        target.style.height = 'auto';
+                        const scrollHeight = Math.min(target.scrollHeight, 120);
+                        target.style.height = `${scrollHeight}px`;
+                      }, 0);
+                    }}
+                  />
+                  
+                  {/* Character count for long messages */}
+                  {input && input.length > 100 && (
+                    <div className="absolute -bottom-6 right-0 text-xs text-slate-500">
+                      {input.length}/2000
+                    </div>
                   )}
-                </Button>
-              </form>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2 ml-3">
+                  {/* Send Button */}
+                  <Button
+                    type="submit"
+                    disabled={!input?.trim() || isLoading || isSubmitting}
+                    className={`h-10 px-4 bg-gradient-to-r ${currentPersona.color} hover:opacity-90 transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
+                  >
+                    {isLoading || isSubmitting ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
               
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-3 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg p-3"
-                >
-                  {error.message}
-                </motion.div>
-              )}
-            </CardContent>
-          </Card>
+              {/* Keyboard shortcut hint */}
+              <div className="mt-2 text-center text-xs text-slate-500">
+                Press <kbd className="px-1.5 py-0.5 bg-slate-700/50 rounded text-slate-300">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-slate-700/50 rounded text-slate-300">Shift + Enter</kbd> for new line
+              </div>
+            </form>
+            
+            {/* Error Display */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl p-4 backdrop-blur-sm"
+              >
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <div className="font-medium">Chat Error</div>
+                    <div className="mt-1 opacity-90">{error.message}</div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
     </div>
