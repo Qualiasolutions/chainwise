@@ -7,14 +7,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ChainWise is an AI-powered cryptocurrency SaaS platform built with Next.js 14, featuring portfolio management, AI chat personas, subscription tiers, and advanced analytics. The application uses Supabase for database and auth, Stripe for payments, and integrates multiple crypto APIs.
 
 **Key Features:**
-- **Hero Landing Component**: Beautiful, responsive hero section with integrated chat launch functionality
+- **Professional Dashboard**: Enterprise-grade trader-style interface with real-time data integration
+- **Command Palette**: Power user interface with ⌘K shortcut for quick actions and navigation
+- **AI Assistant Hub**: Credit-based persona system (Buddy 5c, Professor 10c, Trader 15c) integrated into dashboard
+- **Real-time Portfolio**: Live P&L calculations, portfolio switching, and WebSocket status indicators
 - **Professional AI Chat Interface**: Enterprise-grade streaming chat with glass-morphism design
-- **AI Personas**: ChainWise Assistant (Buddy), Market Analyst (Professor), Strategy Advisor (Trader)
+- **Hero Landing Component**: Beautiful, responsive hero section with integrated chat launch functionality
 - **Seamless Hero-to-Chat Flow**: Direct navigation from Hero search to AI chat with session persistence
-- **Portfolio Management**: Multi-portfolio support with real-time analytics
+- **Portfolio Management**: Multi-portfolio support with real-time analytics and modular widgets
 - **Smart Alerts System**: Price alerts with tier-based limits
 - **Subscription Tiers**: Free, Pro, Elite with feature gating and credit systems
-- **Real-time Data**: CoinGecko API integration with server-side proxy
+- **Real-time Data**: CoinGecko API integration with server-side proxy and zero mock data
 
 ## Development Commands
 
@@ -60,13 +63,14 @@ The project uses Supabase for database and authentication. Key database operatio
 src/
 ├── app/                    # Next.js App Router pages
 │   ├── api/               # API routes organized by feature
-│   ├── dashboard/         # Main dashboard pages
+│   ├── dashboard/         # Professional dashboard (NEW: enterprise-grade interface)
 │   ├── portfolio/         # Portfolio management
 │   ├── chat/              # AI chat interface
 │   ├── alerts/            # Price alerts management
 │   └── auth/              # Authentication pages
 ├── components/            # Reusable UI components
 │   ├── ui/                # shadcn/ui base components + custom 3D components
+│   ├── dashboard/         # Professional dashboard components (NEW: trader-style interface)
 │   ├── chat/              # Professional chat interface components
 │   ├── portfolio/         # Portfolio management components
 │   ├── alerts/            # Price alerts components
@@ -135,6 +139,20 @@ Three-tier system (Free, Pro, Elite) with:
 
 ## Recent Updates & Fixes (Latest)
 
+### ✅ Professional Dashboard Integration (Complete - Latest)
+- **Enterprise-Grade Dashboard**: Completely replaced amateur unified dashboard with professional trader-style interface
+- **Real API Integration**: Connected to all ChainWise APIs (credits, portfolio, alerts, market-data) with zero mock data
+- **Professional Command Palette**: Power user interface with ⌘K shortcut for quick actions
+- **Real-time Features**: Live portfolio overview with P&L calculations, WebSocket status indicators
+- **AI Assistant Hub**: Credit-based persona system integrated directly into dashboard (Buddy 5c, Professor 10c, Trader 15c)
+- **Glass-morphism Design**: Professional ambient lighting effects and modular widget grid system
+- **Components Updated**:
+  - `/src/components/dashboard/professional-dashboard.tsx` - New enterprise dashboard (731 lines)
+  - `/src/app/dashboard/page.tsx` - Updated routing to use professional dashboard
+  - `/src/components/dashboard/unified-dashboard-backup.tsx` - Backed up old dashboard
+- **Zero Mock Data**: All features connect to real Supabase backend through existing service layer
+- **Production Ready**: Successfully deployed to chainwise.tech with full functionality
+
 ### ✅ Hero Component Integration (Complete)
 - **Beautiful Hero Landing**: Modern, responsive Hero1 component with ChainWise branding
 - **Seamless Chat Integration**: Direct navigation from Hero search bar to AI chat interface
@@ -168,11 +186,13 @@ Three-tier system (Free, Pro, Elite) with:
 - **Enhanced Validation**: Improved Zod schemas with proper transformations
 
 ### ✅ Current System Status
-- **All API Endpoints**: Functional and tested
-- **Chat Interface**: Enterprise-grade streaming working
-- **Portfolio Management**: Holdings CRUD operations working
+- **Professional Dashboard**: Enterprise-grade interface deployed to production
+- **All API Endpoints**: Functional and tested with real data integration
+- **Chat Interface**: Enterprise-grade streaming working with AI personas
+- **Portfolio Management**: Real-time portfolio overview with P&L calculations
 - **Alerts System**: Price alert creation and management working
-- **Authentication**: Supabase auth properly configured
+- **Authentication**: Supabase auth properly configured with protected routes
+- **Command Palette**: Professional ⌘K interface for power users
 - **Environment**: All variables loading correctly (.env.local)
 
 ## Development Guidelines
