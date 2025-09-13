@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const updateNotificationSchema = z.object({
-  read: z.boolean().optional()
+  is_read: z.boolean().optional()
 })
 
 // GET /api/notifications/[id] - Get specific notification

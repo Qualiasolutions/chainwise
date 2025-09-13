@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     // Apply filters
     if (read !== 'all') {
-      query = query.eq('read', read === 'true')
+      query = query.eq('is_read', read === 'true')
     }
 
     if (type !== 'all') {
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       message: validatedData.message,
       priority: validatedData.priority,
       metadata: validatedData.metadata,
-      read: false,
+      is_read: false,
       expires_at: validatedData.expiresAt ? new Date(validatedData.expiresAt).toISOString() : null
     }
 
@@ -152,9 +152,9 @@ export async function PATCH(request: NextRequest) {
 
     const { error } = await supabase
       .from('notifications')
-      .update({ read: true })
+      .update({ is_read: true })
       .eq('user_id', user.id)
-      .eq('read', false)
+      .eq('is_read', false)
 
     if (error) {
       console.error('Error marking notifications as read:', error)
