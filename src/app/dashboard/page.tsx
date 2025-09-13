@@ -1,12 +1,12 @@
 'use client'
 
 import ProtectedRoute from '@/components/ProtectedRoute'
-import UnifiedDashboard from '@/components/dashboard/unified-dashboard'
+import ProfessionalDashboard from '@/components/dashboard/professional-dashboard'
 
 export default function DashboardPage() {
   return (
     <ProtectedRoute requireAuth={true}>
-      <UnifiedDashboard />
+      <ProfessionalDashboard />
     </ProtectedRoute>
   )
 }
