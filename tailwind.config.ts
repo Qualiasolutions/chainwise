@@ -158,6 +158,12 @@ const config: Config = {
         'sparkles': 'sparkles 3s ease-in-out infinite',
         'beam': 'beam 2s ease-in-out infinite alternate',
         'meteor': 'meteor 5s linear infinite',
+        
+        // Premium glass-morphism animations
+        'spin-slow': 'spin 8s linear infinite',
+        'glow-pulse': 'glow-pulse 2s ease-in-out infinite alternate',
+        'glass-float': 'glass-float 4s ease-in-out infinite',
+        'shimmer': 'shimmer 3s linear infinite',
       },
       keyframes: {
         // Existing keyframes
@@ -229,6 +235,19 @@ const config: Config = {
           '0%': { transform: 'rotate(315deg) translateX(0)', opacity: '1' },
           '70%': { opacity: '1' },
           '100%': { transform: 'rotate(315deg) translateX(-500px)', opacity: '0' },
+        },
+        // Premium glass-morphism keyframes
+        'glow-pulse': {
+          '0%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.3)' },
+          '100%': { boxShadow: '0 0 40px rgba(139, 92, 246, 0.6), 0 0 60px rgba(139, 92, 246, 0.3)' },
+        },
+        'glass-float': {
+          '0%, 100%': { transform: 'translateY(0px) scale(1)' },
+          '50%': { transform: 'translateY(-8px) scale(1.02)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
       backgroundImage: {
