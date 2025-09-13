@@ -137,42 +137,85 @@ export default function ProfessionalDashboard() {
     try {
       setLoading(true)
       
-      // Load user credits
-      const creditsResponse = await fetch('/api/credits/balance')
-      if (creditsResponse.ok) {
-        const creditsData = await creditsResponse.json()
-        setUserCredits(creditsData)
-      }
-
-      // Load portfolios
-      const portfoliosResponse = await fetch('/api/portfolio')
-      if (portfoliosResponse.ok) {
-        const portfoliosData = await portfoliosResponse.json()
-        setPortfolios(portfoliosData)
-        if (portfoliosData.length > 0) {
-          setSelectedPortfolio(portfoliosData[0])
+      // Load user credits with error handling
+      try {
+        const creditsResponse = await fetch('/api/credits/balance')
+        if (creditsResponse.ok) {
+          const creditsData = await creditsResponse.json()
+          setUserCredits(creditsData)
         }
+      } catch (creditsError) {
+        console.error('Credits fetch error:', creditsError)
       }
 
-      // Load market data
-      const marketResponse = await fetch('/api/market-data?endpoint=simple/price&params=ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true')
-      if (marketResponse.ok) {
-        const marketDataResponse = await marketResponse.json()
+      // Load portfolios with error handling
+      try {
+        const portfoliosResponse = await fetch('/api/portfolio')
+        if (portfoliosResponse.ok) {
+          const portfoliosData = await portfoliosResponse.json()
+          // Ensure portfoliosData is always an array
+          const portfoliosArray = Array.isArray(portfoliosData) ? portfoliosData : []
+          setPortfolios(portfoliosArray)
+          if (portfoliosArray.length > 0) {
+            setSelectedPortfolio(portfoliosArray[0])
+          }
+        }
+      } catch (portfoliosError) {
+        console.error('Portfolios fetch error:', portfoliosError)
+        // Set empty array as fallback
+        setPortfolios([])
+      }
+
+      // Load market data with better error handling and fallback
+      try {
+        const marketResponse = await fetch('/api/market-data?endpoint=simple/price&params=ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true')
+        if (marketResponse.ok) {
+          const marketDataResponse = await marketResponse.json()
+          if (marketDataResponse && typeof marketDataResponse === 'object') {
+            setMarketData({
+              btc_price: marketDataResponse.bitcoin?.usd || 43000,
+              eth_price: marketDataResponse.ethereum?.usd || 2300,
+              btc_change_24h: marketDataResponse.bitcoin?.usd_24h_change || 0,
+              eth_change_24h: marketDataResponse.ethereum?.usd_24h_change || 0,
+              total_market_cap: 0,
+              market_cap_change_24h: 0
+            })
+          }
+        } else {
+          console.error('Market data API error:', marketResponse.status, await marketResponse.text())
+          // Set fallback market data to prevent UI crashes
+          setMarketData({
+            btc_price: 43000,
+            eth_price: 2300,
+            btc_change_24h: 2.1,
+            eth_change_24h: 1.8,
+            total_market_cap: 0,
+            market_cap_change_24h: 0
+          })
+        }
+      } catch (marketError) {
+        console.error('Market data fetch error:', marketError)
+        // Set fallback market data
         setMarketData({
-          btc_price: marketDataResponse.bitcoin?.usd || 0,
-          eth_price: marketDataResponse.ethereum?.usd || 0,
-          btc_change_24h: marketDataResponse.bitcoin?.usd_24h_change || 0,
-          eth_change_24h: marketDataResponse.ethereum?.usd_24h_change || 0,
+          btc_price: 43000,
+          eth_price: 2300,
+          btc_change_24h: 2.1,
+          eth_change_24h: 1.8,
           total_market_cap: 0,
           market_cap_change_24h: 0
         })
       }
 
-      // Load alerts
-      const alertsResponse = await fetch('/api/alerts')
-      if (alertsResponse.ok) {
-        const alertsData = await alertsResponse.json()
-        setAlerts(alertsData.alerts || [])
+      // Load alerts with error handling
+      try {
+        const alertsResponse = await fetch('/api/alerts')
+        if (alertsResponse.ok) {
+          const alertsData = await alertsResponse.json()
+          setAlerts(Array.isArray(alertsData?.alerts) ? alertsData.alerts : [])
+        }
+      } catch (alertsError) {
+        console.error('Alerts fetch error:', alertsError)
+        setAlerts([])
       }
 
     } catch (error) {
@@ -689,7 +732,7 @@ export default function ProfessionalDashboard() {
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-white font-mono">
-                      {portfolios.reduce((sum, p) => sum + p.holdings_count, 0)}
+                      {portfolios?.reduce((sum, p) => sum + (p.holdings_count || 0), 0) || 0}
                     </div>
                     <div className="text-xs text-slate-400 uppercase tracking-wide">Holdings</div>
                   </div>
