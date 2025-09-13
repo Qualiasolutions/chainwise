@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -60,7 +60,7 @@ export function ProfessionalChatInterface() {
   const [userCredits, setUserCredits] = useState<UserCredits>({ balance: 200, tier: 'elite' })
   const [showPersonaSelector, setShowPersonaSelector] = useState(true)
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error, setInput } = useChat({
     api: '/api/chat',
     body: {
       persona: selectedPersona
@@ -69,6 +69,15 @@ export function ProfessionalChatInterface() {
       console.error('Chat error:', error)
     }
   })
+
+  // Handle initial message from Hero component
+  useEffect(() => {
+    const initialMessage = sessionStorage.getItem('chatInitialMessage');
+    if (initialMessage && !showPersonaSelector) {
+      setInput(initialMessage);
+      sessionStorage.removeItem('chatInitialMessage');
+    }
+  }, [showPersonaSelector, setInput]);
 
   const handlePersonaSelect = (persona: keyof typeof PERSONA_CONFIGS) => {
     setSelectedPersona(persona)
@@ -174,6 +183,7 @@ export function ProfessionalChatInterface() {
                   onChange={handleInputChange}
                   disabled={isLoading}
                   placeholder={`Ask ${currentPersona.name} anything about crypto...`}
+                  onSubmit={handleSubmit}
                 />
                 <Button
                   type="submit"

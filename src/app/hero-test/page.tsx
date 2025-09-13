@@ -1,0 +1,11 @@
+'use client'
+
+import { Hero1 } from '@/components/ui/hero-1'
+
+export default function HeroTestPage() {
+  return (
+    <div className="w-full">
+      <Hero1 />
+    </div>
+  )
+}
