@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code BMAD Reference</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4a90e2, #357abd);
+            color: white;
+            padding: 24px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .content {
+            padding: 32px;
+        }
+        
+        .section {
+            margin-bottom: 32px;
+        }
+        
+        .section h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .workflow {
+            background: #f8f9fa;
+            padding: 16px;
+            border-left: 4px solid #4a90e2;
+            margin-bottom: 16px;
+        }
+        
+        .workflow h3 {
+            color: #4a90e2;
+            margin-bottom: 8px;
+        }
+        
+        .workflow ol {
+            padding-left: 20px;
+        }
+        
+        .workflow li {
+            margin-bottom: 4px;
+        }
+        
+        .agents {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .agent {
+            background: #f8f9fa;
+            padding: 16px;
+            border-left: 4px solid #28a745;
+            border-radius: 4px;
+        }
+        
+        .agent h4 {
+            color: #28a745;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 8px;
+        }
+        
+        .commands {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        
+        .command {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 16px;
+            border-radius: 4px;
+        }
+        
+        .command h4 {
+            color: #4a90e2;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 8px;
+        }
+        
+        .command .purpose {
+            background: #e8f5e8;
+            padding: 8px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .mcps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .mcp {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 16px;
+            border-radius: 4px;
+        }
+        
+        .mcp h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .connected {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .standards {
+            background: #fff3cd;
+            padding: 16px;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+        
+        .standards h3 {
+            color: #856404;
+            margin-bottom: 12px;
+        }
+        
+        .standards ul {
+            padding-left: 20px;
+        }
+        
+        .standards li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Claude Code BMAD Method Reference</h1>
+            <p>Build, Manage, Analyze, Deploy - AI Development Framework</p>
+        </div>
+        
+        <div class="content">
+            <!-- Quick Start -->
+            <div class="section">
+                <h2>🚀 Quick Start Workflow</h2>
+                
+                <div class="workflow">
+                    <h3>Planning Phase</h3>
+                    <ol>
+                        <li><code>*analyst</code> [project description] - Research and analysis</li>
+                        <li><code>*pm</code> Create requirements document</li>
+                        <li><code>*architect</code> Design system structure</li>
+                        <li>Review and approve plans</li>
+                    </ol>
+                </div>
+                
+                <div class="workflow">
+                    <h3>Development Phase</h3>
+                    <ol>
+                        <li><code>*sm</code> Break into development tasks</li>
+                        <li><code>*dev</code> Implement features</li>
+                        <li><code>*qa</code> Test and validate</li>
+                        <li><code>*security-auditor</code> Security review</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Specialized Agents -->
+            <div class="section">
+                <h2>🤖 BMAD Agents</h2>
+                <div class="agents">
+                    <div class="agent">
+                        <h4>*analyst</h4>
+                        <p>Market research, feasibility studies, competitive analysis</p>
+                    </div>
+                    <div class="agent">
+                        <h4>*pm</h4>
+                        <p>Requirements, user stories, project management</p>
+                    </div>
+                    <div class="agent">
+                        <h4>*architect</h4>
+                        <p>System design, technology selection, architecture</p>
+                    </div>
+                    <div class="agent">
+                        <h4>*sm</h4>
+                        <p>Sprint planning, task breakdown, progress tracking</p>
+                    </div>
+                    <div class="agent">
+                        <h4>*dev</h4>
+                        <p>Full-stack development, coding, implementation</p>
+                    </div>
+                    <div class="agent">
+                        <h4>*qa</h4>
+                        <p>Testing, quality assurance, bug validation</p>
+                    </div>
+                    <div class="agent">
+                        <h4>*security-auditor</h4>
+                        <p>Security review, vulnerability testing</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slash Commands -->
+            <div class="section">
+                <h2>⚡ Slash Commands</h2>
+                <div class="commands">
+                    <div class="command">
+                        <h4>/create-demo [description]</h4>
+                        <p>Build complete demo application from description</p>
+                        <div class="purpose">
+                            <strong>Use for:</strong> Quick prototypes, client demos, proof of concepts
+                        </div>
+                    </div>
+                    
+                    <div class="command">
+                        <h4>/diagnose [issue]</h4>
+                        <p>Debug and fix system issues automatically</p>
+                        <div class="purpose">
+                            <strong>Use for:</strong> Build errors, dependency problems, performance issues
+                        </div>
+                    </div>
+                    
+                    <div class="command">
+                        <h4>/enhance [feature]</h4>
+                        <p>Optimize and improve existing code/features</p>
+                        <div class="purpose">
+                            <strong>Use for:</strong> Performance improvements, code refactoring
+                        </div>
+                    </div>
+                    
+                    <div class="command">
+                        <h4>/remake [feature]</h4>
+                        <p>Rebuild feature with modern technologies</p>
+                        <div class="purpose">
+                            <strong>Use for:</strong> Legacy modernization, framework upgrades
+                        </div>
+                    </div>
+                    
+                    <div class="command">
+                        <h4>/generate-prp [project]</h4>
+                        <p>Create comprehensive project requirements</p>
+                        <div class="purpose">
+                            <strong>Use for:</strong> Large project planning, client documentation
+                        </div>
+                    </div>
+                    
+                    <div class="command">
+                        <h4>/execute-prp [file]</h4>
+                        <p>Implement complete project from requirements</p>
+                        <div class="purpose">
+                            <strong>Use for:</strong> End-to-end project delivery
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MCP Servers -->
+            <div class="section">
+                <h2>🔌 MCP Servers Status</h2>
+                <div class="mcps">
+                    <div class="mcp">
+                        <h4>Magic <span class="connected">✓ CONNECTED</span></h4>
+                        <p>AI-powered development automation</p>
+                        <small>npx -y @21st-dev/magic@latest</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>Filesystem <span class="connected">✓ CONNECTED</span></h4>
+                        <p>File system operations and management</p>
+                        <small>npx -y @modelcontextprotocol/server-filesystem</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>Memory <span class="connected">✓ CONNECTED</span></h4>
+                        <p>Persistent memory and state management</p>
+                        <small>npx -y @modelcontextprotocol/server-memory</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>WhatsApp <span class="connected">✓ CONNECTED</span></h4>
+                        <p>WhatsApp integration and messaging</p>
+                        <small>uv --directory /home/qualiasolutions/whatsapp-mcp</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>Context7 <span class="connected">✓ CONNECTED</span></h4>
+                        <p>Documentation and context lookup</p>
+                        <small>npx -y @upstash/context7-mcp@latest</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>Cursor Memory <span class="connected">✓ CONNECTED</span></h4>
+                        <p>IDE memory and context management</p>
+                        <small>uv tool run cursor-memory-mcp</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>Sequential Thinking <span class="connected">✓ CONNECTED</span></h4>
+                        <p>Advanced reasoning and planning</p>
+                        <small>npx -y @modelcontextprotocol/server-sequential-thinking</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>Supabase <span class="connected">✓ CONNECTED</span></h4>
+                        <p>Database and backend services</p>
+                        <small>npx -y @supabase/mcp-server-supabase@latest</small>
+                    </div>
+                    
+                    <div class="mcp">
+                        <h4>Playwright <span class="connected">✓ CONNECTED</span></h4>
+                        <p>Browser automation and E2E testing</p>
+                        <small>npx @playwright/mcp@latest</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Standards -->
+            <div class="section">
+                <h2>✅ Quality Standards</h2>
+                
+                <div class="standards">
+                    <h3>Every Deliverable Must Have:</h3>
+                    <ul>
+                        <li>Minimum 85% test coverage</li>
+                        <li>Security audit passed (OWASP compliant)</li>
+                        <li>Performance benchmarks met</li>
+                        <li>Accessibility compliance (WCAG 2.1 AA)</li>
+                        <li>Code review completed</li>
+                        <li>Documentation updated</li>
+                    </ul>
+                </div>
+                
+                <div class="workflow">
+                    <h3>Default Technology Stack</h3>
+                    <ol>
+                        <li>React 18+ with TypeScript 5.0+</li>
+                        <li>Node.js 20+ with Express/Fastify</li>
+                        <li>PostgreSQL 15+ with Redis caching</li>
+                        <li>Jest + React Testing Library + Playwright</li>
+                        <li>Tailwind CSS + Shadcn/UI components</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

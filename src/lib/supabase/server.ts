@@ -3,12 +3,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
 
+// Environment validation
+const validateEnvVars = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase environment variables on server:', {
+      url: !!supabaseUrl,
+      anonKey: !!supabaseAnonKey,
+      env: process.env.NODE_ENV
+    })
+    throw new Error('Supabase environment variables are not configured')
+  }
+  
+  return { supabaseUrl, supabaseAnonKey }
+}
+
 export const createClient = async () => {
+  const { supabaseUrl, supabaseAnonKey } = validateEnvVars()
   const cookieStore = await cookies()
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -31,11 +49,12 @@ export const createClient = async () => {
 }
 
 export const createServerActionClient = async () => {
+  const { supabaseUrl, supabaseAnonKey } = validateEnvVars()
   const cookieStore = await cookies()
 
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -52,6 +71,7 @@ export const createServerActionClient = async () => {
 }
 
 export const createMiddlewareClient = (request: NextRequest) => {
+  const { supabaseUrl, supabaseAnonKey } = validateEnvVars()
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -59,8 +79,8 @@ export const createMiddlewareClient = (request: NextRequest) => {
   })
 
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -87,9 +107,20 @@ export const createMiddlewareClient = (request: NextRequest) => {
 }
 
 export const createAdminClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error('Missing Supabase admin environment variables:', {
+      url: !!supabaseUrl,
+      serviceKey: !!serviceRoleKey
+    })
+    throw new Error('Supabase admin environment variables are not configured')
+  }
+
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    supabaseUrl,
+    serviceRoleKey,
     {
       cookies: {
         getAll() {

@@ -683,7 +683,7 @@ export default function UnifiedDashboard({ className }: DashboardProps) {
                       <p className="font-semibold text-white group-hover:text-purple-300 transition-colors">
                         {crypto.name}
                       </p>
-                      <p className="text-sm text-gray-400">{crypto.symbol.toUpperCase()}</p>
+                      <p className="text-sm text-gray-400">{crypto.symbol?.toUpperCase() || 'N/A'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-6">

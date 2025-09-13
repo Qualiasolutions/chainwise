@@ -742,7 +742,7 @@ export default function ProfessionalDashboard() {
                   </div>
                   <div className="text-center">
                     <div className="text-lg font-bold text-purple-400 font-mono">
-                      {userCredits?.tier.toUpperCase()}
+                      {userCredits?.tier?.toUpperCase() || 'FREE'}
                     </div>
                     <div className="text-xs text-slate-400 uppercase tracking-wide">Tier Status</div>
                   </div>

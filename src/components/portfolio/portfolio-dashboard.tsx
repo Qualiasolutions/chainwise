@@ -145,7 +145,10 @@ export default function PortfolioDashboard({
       }
       
       const data = await response.json()
-      const portfolioList = data.portfolios || []
+      console.log('Portfolio API response:', data) // Debug log
+      
+      // Handle both new API format and potential direct array response
+      const portfolioList = Array.isArray(data) ? data : (data.portfolios || [])
       
       setPortfolios(portfolioList)
       
@@ -158,7 +161,15 @@ export default function PortfolioDashboard({
       console.error('Error loading portfolios:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to load portfolios'
       setError(errorMessage)
-      toast.error(errorMessage)
+      
+      // If it's an auth error, don't show generic error message
+      if (!errorMessage.includes('Unauthorized')) {
+        toast.error(errorMessage)
+      }
+      
+      // Set empty portfolios array on error to show empty state instead of loading
+      setPortfolios([])
+      setSelectedPortfolio(null)
     } finally {
       setLoading(false)
     }
