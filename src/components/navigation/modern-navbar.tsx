@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -48,8 +48,37 @@ const navigation = [
 export function ModernNavbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
   const pathname = usePathname()
   const { user, signOut } = useSupabase()
+
+  // Swipe gesture detection for mobile menu
+  const minSwipeDistance = 50
+
+  const onTouchStart = useCallback((e: TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }, [])
+
+  const onTouchMove = useCallback((e: TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }, [])
+
+  const onTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+
+    // Close mobile menu on left swipe, open on right swipe from edge
+    if (isLeftSwipe && isMobileMenuOpen) {
+      setIsMobileMenuOpen(false)
+    } else if (isRightSwipe && !isMobileMenuOpen && touchStart < 50) {
+      setIsMobileMenuOpen(true)
+    }
+  }, [touchStart, touchEnd, isMobileMenuOpen, minSwipeDistance])
   
   // Real-time notifications
   const { 
@@ -68,9 +97,21 @@ export function ModernNavbar() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    
+    // Add touch event listeners for swipe gestures
+    document.addEventListener('touchstart', onTouchStart, { passive: true })
+    document.addEventListener('touchmove', onTouchMove, { passive: true })
+    document.addEventListener('touchend', onTouchEnd, { passive: true })
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      document.removeEventListener('touchstart', onTouchStart)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [onTouchStart, onTouchMove, onTouchEnd])
 
   const handleSignOut = async () => {
     try {

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface Enhanced3DCardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -25,25 +25,37 @@ const Enhanced3DCard = React.forwardRef<HTMLDivElement, Enhanced3DCardProps>(
     ...props 
   }, ref) => {
     const [isHovered, setIsHovered] = React.useState(false)
+    const [isMobile, setIsMobile] = React.useState(false)
+    const shouldReduceMotion = useReducedMotion()
+
+    React.useEffect(() => {
+      const checkMobile = () => {
+        setIsMobile(window.innerWidth <= 768)
+      }
+      
+      checkMobile()
+      window.addEventListener('resize', checkMobile)
+      return () => window.removeEventListener('resize', checkMobile)
+    }, [])
 
     const depthConfig = {
       shallow: {
-        blur: "8px",
+        blur: isMobile ? "6px" : "8px",
         shadow: "0 4px 20px rgba(0,0,0,0.1)",
         hoverShadow: "0 12px 40px rgba(0,0,0,0.15)",
-        transform: "translateY(-2px) scale(1.01)"
+        transform: isMobile ? "translateY(-1px) scale(1.005)" : "translateY(-2px) scale(1.01)"
       },
       medium: {
-        blur: "16px",
+        blur: isMobile ? "10px" : "16px",
         shadow: "0 8px 32px rgba(0,0,0,0.12)",
         hoverShadow: "0 20px 60px rgba(0,0,0,0.2)",
-        transform: "translateY(-4px) scale(1.02)"
+        transform: isMobile ? "translateY(-2px) scale(1.01)" : "translateY(-4px) scale(1.02)"
       },
       deep: {
-        blur: "24px",
+        blur: isMobile ? "14px" : "24px",
         shadow: "0 16px 48px rgba(0,0,0,0.15)",
         hoverShadow: "0 32px 80px rgba(0,0,0,0.25)",
-        transform: "translateY(-6px) scale(1.03)"
+        transform: isMobile ? "translateY(-3px) scale(1.015)" : "translateY(-6px) scale(1.03)"
       }
     }
 
@@ -76,8 +88,8 @@ const Enhanced3DCard = React.forwardRef<HTMLDivElement, Enhanced3DCardProps>(
     const cardVariants = {
       initial: { 
         opacity: 0, 
-        y: 20,
-        scale: 0.95,
+        y: shouldReduceMotion ? 0 : 20,
+        scale: shouldReduceMotion ? 1 : 0.95,
         rotateX: 0,
         rotateY: 0
       },
@@ -88,16 +100,16 @@ const Enhanced3DCard = React.forwardRef<HTMLDivElement, Enhanced3DCardProps>(
         rotateX: 0,
         rotateY: 0,
         transition: {
-          duration: 0.6,
+          duration: shouldReduceMotion ? 0.1 : (isMobile ? 0.4 : 0.6),
           ease: [0.16, 1, 0.3, 1],
-          staggerChildren: 0.1
+          staggerChildren: shouldReduceMotion ? 0 : 0.1
         }
       },
       hover: {
-        y: tiltEffect ? -6 : -4,
-        scale: 1.02,
+        y: shouldReduceMotion ? 0 : (tiltEffect && !isMobile ? -6 : -4),
+        scale: shouldReduceMotion ? 1 : (isMobile ? 1.01 : 1.02),
         transition: {
-          duration: 0.3,
+          duration: shouldReduceMotion ? 0.1 : 0.3,
           ease: [0.16, 1, 0.3, 1]
         }
       }
