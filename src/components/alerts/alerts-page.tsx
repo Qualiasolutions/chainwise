@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Bell, Plus, BarChart3, Settings } from 'lucide-react'
@@ -223,6 +223,9 @@ export default function AlertsPage() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Alert</DialogTitle>
+            <DialogDescription>
+              Set up price alerts to get notified when your cryptocurrencies reach specific price targets.
+            </DialogDescription>
           </DialogHeader>
           <AlertForm
             onSuccess={handleAlertSuccess}
@@ -236,6 +239,9 @@ export default function AlertsPage() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Alert</DialogTitle>
+            <DialogDescription>
+              Modify your existing price alert settings and notification preferences.
+            </DialogDescription>
           </DialogHeader>
           {editingAlert && (
             <AlertForm

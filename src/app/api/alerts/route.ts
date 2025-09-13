@@ -9,7 +9,16 @@ const createAlertSchema = z.object({
   targetPrice: z.number().positive(),
   condition: z.enum(['above', 'below']),
   message: z.string().optional()
-})
+}).transform(data => ({
+  crypto_id: data.cryptoId,
+  alert_type: data.condition === 'above' ? 'price_above' : 'price_below',
+  target_value: data.targetPrice,
+  // Store additional data in metadata
+  metadata: {
+    crypto_symbol: data.cryptoSymbol,
+    message: data.message
+  }
+}))
 
 const alertQuerySchema = z.object({
   active: z.string().optional().transform(val => val === 'true'),
@@ -137,11 +146,10 @@ export async function POST(request: NextRequest) {
       .from('user_alerts')
       .insert({
         user_id: user.id,
-        crypto_id: validatedData.cryptoId,
-        crypto_symbol: validatedData.cryptoSymbol,
-        target_price: validatedData.targetPrice,
-        condition: validatedData.condition,
-        message: validatedData.message || `Price alert for ${validatedData.cryptoSymbol}`,
+        crypto_id: validatedData.crypto_id,
+        alert_type: validatedData.alert_type,
+        target_value: validatedData.target_value,
+        metadata: validatedData.metadata,
         is_active: true
       })
       .select()
