@@ -147,7 +147,7 @@ export function ProfessionalChatInterface() {
                       variant="outline"
                       size="sm"
                       className="border-slate-600 text-slate-300 hover:bg-slate-800"
-                      onClick={() => handleInputChange({ target: { value: `Tell me about ${topic.toLowerCase()}` } } as any)}
+                      onClick={() => handleInputChange({ target: { value: `Tell me about ${topic.toLowerCase()}` } } as React.ChangeEvent<HTMLTextAreaElement>)}
                     >
                       {topic}
                     </Button>
@@ -177,7 +177,7 @@ export function ProfessionalChatInterface() {
                 />
                 <Button
                   type="submit"
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input?.trim() || isLoading}
                   className={`px-6 bg-gradient-to-r ${currentPersona.color} hover:opacity-90 transition-opacity`}
                 >
                   {isLoading ? (

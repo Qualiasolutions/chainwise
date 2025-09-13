@@ -77,13 +77,13 @@ export function ProfessionalChatInput({
         />
 
         {/* Character count or hint */}
-        {isFocused && value.length > 100 && (
+        {isFocused && (value?.length || 0) > 100 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="absolute -bottom-6 right-0 text-xs text-slate-500"
           >
-            {value.length}/2000
+{value?.length || 0}/2000
           </motion.div>
         )}
       </div>
@@ -119,7 +119,7 @@ export function ProfessionalChatInput({
       </div>
 
       {/* Keyboard shortcut hint */}
-      {isFocused && !value && (
+      {isFocused && !value?.trim() && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

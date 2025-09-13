@@ -5,12 +5,16 @@ import { z } from 'zod'
 // Request validation schemas
 const addHoldingSchema = z.object({
   cryptoId: z.string().min(1),
-  symbol: z.string().min(1).max(10).toUpperCase(),
+  symbol: z.string().min(1).max(10),
   name: z.string().min(1),
   amount: z.number().positive(),
   averagePurchasePriceUsd: z.number().positive(),
-  firstPurchaseDate: z.string().datetime().optional().transform(val => val ? new Date(val).toISOString() : new Date().toISOString())
-})
+  firstPurchaseDate: z.string().optional().default(() => new Date().toISOString().split('T')[0])
+}).transform(data => ({
+  ...data,
+  symbol: data.symbol.toUpperCase(),
+  firstPurchaseDate: data.firstPurchaseDate ? new Date(data.firstPurchaseDate + 'T00:00:00.000Z').toISOString() : new Date().toISOString()
+}))
 
 // GET /api/portfolio/[id]/holdings - Get portfolio holdings
 export async function GET(
