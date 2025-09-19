@@ -64,9 +64,9 @@ export function DottedSurface({ className, ...props }: DottedSurfaceProps) {
 
                 positions.push(x, y, z);
                 if (theme === 'dark') {
-                    colors.push(200, 200, 200);
+                    colors.push(1, 1, 1); // Pure white for dark theme
                 } else {
-                    colors.push(0, 0, 0);
+                    colors.push(0, 0, 0); // Pure black for light theme
                 }
             }
         }
