@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       persona: persona as PersonaId,
       message,
       conversationHistory,
-      maxTokens: persona === 'trader' ? 600 : persona === 'professor' ? 500 : 400,
+      maxTokens: persona === 'trader' ? 600 : persona === 'professor' ? 300 : 400,
       temperature: persona === 'trader' ? 0.5 : 0.7
     })
 

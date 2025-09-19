@@ -22,6 +22,8 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 - `npm run lint` - Run ESLint
 - `npm run start` - Start production server
 
+**Note**: No test framework is currently configured. The project uses TypeScript and ESLint errors ignored during builds (see `next.config.ts`).
+
 ## Tech Stack
 
 - **Framework**: Next.js 15.5.3 with App Router + TypeScript 5 + React 19
@@ -102,6 +104,17 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 - TypeScript and ESLint errors ignored during builds (for faster development)
 - Located in `next.config.ts`
 
+### Environment Variables
+Environment configuration files are present:
+- `.env.example` - Template with all required variables and Supabase credentials
+- `.env.local.example` - Local development template
+- `.env.local` - Local environment (not tracked in git)
+
+Required for full functionality:
+- `OPENAI_API_KEY` - For AI chat features
+- `STRIPE_*` keys - For payment processing
+- `COINGECKO_API_KEY` - Optional, for enhanced API rate limits
+
 ## API Routes
 
 ### Portfolio Management
@@ -157,6 +170,14 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 - AI responses are currently mocked (not real OpenAI)
 - react-globe.gl causing build issues with HTML imports (development works fine)
 - Stripe payment processing integration needs API keys configuration
+
+### Development Workflow
+When working on this codebase:
+1. Always run `npm run dev` to start the development server
+2. Use `npm run lint` to check code quality before committing
+3. Check browser console for runtime errors (build-time errors are ignored)
+4. Supabase database is fully configured and production-ready
+5. All UI components use shadcn/ui - check existing components before creating new ones
 
 ## Important Notes
 
