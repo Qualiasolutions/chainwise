@@ -18,8 +18,8 @@ export default function Home() {
               ChainWise
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              The most advanced crypto trading platform with AI-powered insights,
-              real-time market data, and institutional-grade tools.
+              Advanced crypto trading platform with AI-powered insights, real-time market data,
+              and professional-grade tools for serious traders.
             </p>
           </div>
 
@@ -46,7 +46,7 @@ export default function Home() {
               </div>
               <CardTitle>Advanced Analytics</CardTitle>
               <CardDescription>
-                Professional-grade charts with TradingView integration and custom indicators
+                Professional trading charts with advanced technical analysis and custom indicators
               </CardDescription>
             </CardHeader>
           </Card>
@@ -68,9 +68,9 @@ export default function Home() {
               <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mb-4">
                 <Shield className="h-6 w-6 text-white" />
               </div>
-              <CardTitle>Bank-Grade Security</CardTitle>
+              <CardTitle>Secure Trading</CardTitle>
               <CardDescription>
-                Multi-layer security with cold storage, 2FA, and institutional insurance
+                Advanced security protocols and encrypted transactions for safe crypto trading
               </CardDescription>
             </CardHeader>
           </Card>
@@ -82,7 +82,7 @@ export default function Home() {
               </div>
               <CardTitle>Real-Time Data</CardTitle>
               <CardDescription>
-                Live market feeds from 100+ exchanges with microsecond latency
+                Real-time cryptocurrency data and market feeds with low-latency updates
               </CardDescription>
             </CardHeader>
           </Card>
