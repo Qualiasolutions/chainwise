@@ -6,60 +6,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
-
-// AI Personas configuration
-const AI_PERSONAS = {
-  buddy: {
-    id: 'buddy',
-    name: 'Buddy',
-    tier: 'free',
-    creditCost: 1,
-    description: 'Casual crypto advice and friendly guidance'
-  },
-  professor: {
-    id: 'professor',
-    name: 'Professor',
-    tier: 'pro',
-    creditCost: 2,
-    description: 'Educational insights and deep analysis'
-  },
-  trader: {
-    id: 'trader',
-    name: 'Trader',
-    tier: 'elite',
-    creditCost: 3,
-    description: 'Professional trading signals and strategies'
-  }
-} as const
-
-// Mock AI responses - TODO: Replace with OpenAI API
-const generateMockResponse = async (persona: string, userMessage: string): Promise<string> => {
-  const responses = {
-    buddy: [
-      "Hey there! That's a great question about crypto. Based on what you're asking, here's my friendly take...",
-      "Nice! I love talking crypto with fellow enthusiasts. Let me break this down in simple terms...",
-      "Awesome question! As your crypto buddy, here's what I think you should know..."
-    ],
-    professor: [
-      "Excellent inquiry. From an analytical perspective, we must consider several key factors...",
-      "This is a sophisticated question that requires deep analysis. Let me provide educational insights...",
-      "From a technical analysis standpoint, there are multiple layers to consider here..."
-    ],
-    trader: [
-      "Based on current market conditions and technical indicators, here's my professional assessment...",
-      "Looking at the charts and market dynamics, I see several trading opportunities...",
-      "From a risk management perspective, here's what the data is telling us..."
-    ]
-  }
-
-  const personaResponses = responses[persona as keyof typeof responses] || responses.buddy
-  const randomResponse = personaResponses[Math.floor(Math.random() * personaResponses.length)]
-
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
-
-  return `${randomResponse} Your message about "${userMessage.substring(0, 50)}${userMessage.length > 50 ? '...' : ''}" is spot on. Here's my detailed response with insights tailored to your needs.`
-}
+import { OpenAIService } from '@/lib/openai/service'
+import { AI_PERSONAS, PersonaId } from '@/lib/openai/personas'
 
 export async function POST(request: NextRequest) {
   try {
@@ -132,8 +80,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    // Generate AI response (mock for now)
-    const aiResponse = await generateMockResponse(persona, message)
+    // Get conversation history for context
+    let conversationHistory: any[] = []
+    if (sessionId) {
+      const { data: existingSession } = await supabase
+        .from('ai_chat_sessions')
+        .select('messages')
+        .eq('id', sessionId)
+        .eq('user_id', profile.id)
+        .single()
+
+      if (existingSession?.messages) {
+        conversationHistory = Array.isArray(existingSession.messages) ? existingSession.messages : []
+        // Convert to OpenAI format (last 10 messages for context)
+        conversationHistory = conversationHistory.slice(-10).map((msg: any) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        }))
+      }
+    }
+
+    // Generate AI response using OpenAI
+    const aiResponse = await OpenAIService.generateChatResponse({
+      persona: persona as PersonaId,
+      message,
+      conversationHistory,
+      maxTokens: persona === 'trader' ? 600 : persona === 'professor' ? 500 : 400,
+      temperature: persona === 'trader' ? 0.5 : 0.7
+    })
 
     // Handle session management
     let chatSession

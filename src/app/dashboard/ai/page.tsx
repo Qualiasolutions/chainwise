@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { UpgradeModal } from "@/components/UpgradeModal"
 
-// AI Personas configuration based on README.md
+// AI Personas configuration matching OpenAI personas
 const AI_PERSONAS = {
   buddy: {
     id: 'buddy',
@@ -35,7 +35,7 @@ const AI_PERSONAS = {
     gradient: 'from-blue-500 to-cyan-500',
     tier: 'free',
     creditCost: 1,
-    features: ['Basic market insights', 'Friendly conversation', 'General crypto advice']
+    features: ['Basic market insights', 'Friendly conversation', 'General crypto advice', 'Simple explanations']
   },
   professor: {
     id: 'professor',
@@ -45,7 +45,7 @@ const AI_PERSONAS = {
     gradient: 'from-purple-500 to-indigo-500',
     tier: 'pro',
     creditCost: 2,
-    features: ['Educational content', 'Technical analysis', 'Market research', 'Investment strategies']
+    features: ['Educational content', 'Technical analysis', 'Market research', 'Investment strategies', 'Historical context']
   },
   trader: {
     id: 'trader',
@@ -55,7 +55,7 @@ const AI_PERSONAS = {
     gradient: 'from-emerald-500 to-teal-500',
     tier: 'elite',
     creditCost: 3,
-    features: ['Trading signals', 'Risk management', 'Portfolio optimization', 'Advanced strategies']
+    features: ['Trading signals', 'Risk management', 'Portfolio optimization', 'Advanced strategies', 'Professional insights']
   }
 }
 
