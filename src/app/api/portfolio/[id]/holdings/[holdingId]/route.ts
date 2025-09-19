@@ -183,7 +183,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Build update object
-    const updates: any = {
+    const updates: Record<string, unknown> = {
       current_price: currentPrice
     }
 

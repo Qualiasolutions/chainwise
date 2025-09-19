@@ -6,7 +6,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
-import { SUPABASE_PROJECT_ID } from '@/lib/supabase/client'
 
 // AI Personas configuration
 const AI_PERSONAS = {
@@ -258,7 +257,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
 

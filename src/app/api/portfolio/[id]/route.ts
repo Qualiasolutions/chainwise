@@ -79,9 +79,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       dayChange: 0,
       dayChangePercentage: 0,
       holdingsCount: holdings.length,
-      bestPerformer: null as any,
-      worstPerformer: null as any,
-      allocation: [] as any[]
+      bestPerformer: null,
+      worstPerformer: null,
+      allocation: []
     }
 
     if (holdings.length > 0) {

@@ -140,7 +140,7 @@ export class MCPSupabaseClient {
     throw new Error('Not implemented - requires MCP integration')
   }
 
-  async updateChatSession(sessionId: string, messages: any[], creditsUsed: number): Promise<AiChatSession> {
+  async updateChatSession(sessionId: string, messages: unknown[], creditsUsed: number): Promise<AiChatSession> {
     const query = `
       UPDATE ai_chat_sessions
       SET messages = $2, credits_used = $3, updated_at = NOW()

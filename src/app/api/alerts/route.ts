@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { symbol, alertType, targetValue, name } = body
+    const { symbol, alertType, targetValue } = body
 
     // Validation
     if (!symbol || !alertType || !targetValue) {

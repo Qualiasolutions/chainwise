@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const { targetValue, isActive } = body
 
     // Build update object
-    const updates: any = {}
+    const updates: Record<string, unknown> = {}
 
     if (targetValue !== undefined) {
       if (targetValue <= 0) {
