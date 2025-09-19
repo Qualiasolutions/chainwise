@@ -1,5 +1,6 @@
 import HeroSection from "@/components/hero-section"
 import HowItWorks from "@/components/how-it-works"
+import ChainWiseOrbitalTimeline from "@/components/chainwise-orbital-timeline"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
@@ -12,6 +13,11 @@ export default function Home() {
 
       {/* How It Works Section */}
       <HowItWorks />
+
+      {/* Interactive Development Roadmap */}
+      <div id="roadmap" className="min-h-screen">
+        <ChainWiseOrbitalTimeline />
+      </div>
 
       {/* CTA Section */}
       <div className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950">
