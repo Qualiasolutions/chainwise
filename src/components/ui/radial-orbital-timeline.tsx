@@ -4,7 +4,7 @@ import { ArrowRight, Link, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import CelestialBloomShader from "@/components/ui/celestial-bloom-shader";
+import CyberneticGridShader from "@/components/ui/cybernetic-grid-shader";
 
 interface TimelineItem {
   id: number;
@@ -159,7 +159,7 @@ export default function RadialOrbitalTimeline({
       ref={containerRef}
       onClick={handleContainerClick}
     >
-      <CelestialBloomShader className="absolute inset-0 w-full h-full" />
+      <CyberneticGridShader className="absolute inset-0 w-full h-full" />
       <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
         <div
           className="absolute w-full h-full flex items-center justify-center"
