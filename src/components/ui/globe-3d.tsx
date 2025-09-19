@@ -16,6 +16,24 @@ const GlobeComponent = dynamic(() => import("react-globe.gl"), {
 export default function Globe3D() {
   const globeEl = useRef<any>();
   const [globeReady, setGlobeReady] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 160 });
+
+  useEffect(() => {
+    // Set dimensions based on screen size, only on client side
+    const updateDimensions = () => {
+      if (typeof window !== 'undefined') {
+        setDimensions({
+          width: 800,
+          height: window.innerWidth > 768 ? 256 : 160
+        });
+      }
+    };
+
+    updateDimensions();
+    window?.addEventListener('resize', updateDimensions);
+
+    return () => window?.removeEventListener('resize', updateDimensions);
+  }, []);
 
   useEffect(() => {
     if (!globeEl.current || !globeReady) return;
@@ -46,8 +64,8 @@ export default function Globe3D() {
         bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
         backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
         onGlobeReady={() => setGlobeReady(true)}
-        width={800}
-        height={window?.innerWidth > 768 ? 256 : 160}
+        width={dimensions.width}
+        height={dimensions.height}
         animateIn={false}
         showAtmosphere={true}
         atmosphereColor="#9b87f5"
