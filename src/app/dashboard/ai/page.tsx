@@ -19,11 +19,15 @@ import {
   Star,
   Clock,
   CreditCard,
-  Crown
+  Crown,
+  Shield
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { UpgradeModal } from "@/components/UpgradeModal"
+import { DCAPlanner } from "@/components/premium/dca-planner-modal"
+import { PortfolioAllocator } from "@/components/premium/portfolio-allocator-modal"
+import { ScamDetector } from "@/components/premium/scam-detector-modal"
 
 // AI Personas configuration matching OpenAI personas
 const AI_PERSONAS = {
@@ -449,6 +453,130 @@ export default function AIPage() {
                 <p className="text-xs text-gray-500 mt-2">
                   This conversation will cost {AI_PERSONAS[selectedPersona].creditCost} credit{AI_PERSONAS[selectedPersona].creditCost > 1 ? 's' : ''} per message
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Premium Tools Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Premium AI Tools</h2>
+            <p className="text-muted-foreground">
+              Advanced AI-powered tools for professional crypto analysis
+            </p>
+          </div>
+          {(profile?.tier === 'free' || !profile) && (
+            <UpgradeModal requiredTier="pro" personaName="Premium Tools">
+              <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                <Crown className="h-4 w-4 mr-2" />
+                Unlock Premium Tools
+              </Button>
+            </UpgradeModal>
+          )}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {/* DCA Planner */}
+          <Card className="ai-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                DCA & Exit Planner
+                <Badge variant="secondary">5 Credits</Badge>
+              </CardTitle>
+              <CardDescription>
+                AI-powered Dollar Cost Averaging strategy with smart exit planning
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Optimized DCA schedules</li>
+                  <li>• Risk management strategies</li>
+                  <li>• Exit strategy planning</li>
+                  <li>• Professional trading advice</li>
+                </ul>
+                {(profile?.tier === 'pro' || profile?.tier === 'elite') ? (
+                  <DCAPlanner />
+                ) : (
+                  <UpgradeModal requiredTier="pro" personaName="DCA Planner">
+                    <Button variant="outline" className="w-full" disabled>
+                      <Crown className="h-4 w-4 mr-2" />
+                      Upgrade Required
+                    </Button>
+                  </UpgradeModal>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Portfolio Allocator */}
+          <Card className="ai-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-purple-600" />
+                Portfolio Allocator
+                <Badge variant="secondary">8 Credits</Badge>
+              </CardTitle>
+              <CardDescription>
+                AI-driven portfolio allocation and rebalancing recommendations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Smart allocation analysis</li>
+                  <li>• Risk-adjusted portfolios</li>
+                  <li>• Rebalancing strategies</li>
+                  <li>• Diversification insights</li>
+                </ul>
+                {(profile?.tier === 'pro' || profile?.tier === 'elite') ? (
+                  <PortfolioAllocator />
+                ) : (
+                  <UpgradeModal requiredTier="pro" personaName="Portfolio Allocator">
+                    <Button variant="outline" className="w-full" disabled>
+                      <Crown className="h-4 w-4 mr-2" />
+                      Upgrade Required
+                    </Button>
+                  </UpgradeModal>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Scam Detection */}
+          <Card className="ai-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-red-600" />
+                Scam & Risk Detector
+                <Badge variant="secondary">3 Credits</Badge>
+              </CardTitle>
+              <CardDescription>
+                Advanced scam detection and risk analysis for crypto projects
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Smart contract analysis</li>
+                  <li>• Social sentiment scoring</li>
+                  <li>• Developer activity tracking</li>
+                  <li>• Risk assessment reports</li>
+                </ul>
+                {(profile?.tier === 'pro' || profile?.tier === 'elite') ? (
+                  <ScamDetector />
+                ) : (
+                  <UpgradeModal requiredTier="pro" personaName="Scam & Risk Detector">
+                    <Button variant="outline" className="w-full" disabled>
+                      <Crown className="h-4 w-4 mr-2" />
+                      Upgrade Required
+                    </Button>
+                  </UpgradeModal>
+                )}
               </div>
             </CardContent>
           </Card>
