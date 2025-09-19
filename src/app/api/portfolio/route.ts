@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
+import { cryptoAPI } from '@/lib/crypto-api'
 export async function GET() {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
@@ -58,12 +59,66 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch portfolios' }, { status: 500 })
     }
 
-    // Calculate portfolio metrics for each portfolio
-    const portfoliosWithMetrics = portfolios.map(portfolio => {
+    // Get all unique crypto symbols from all portfolios for live price fetching
+    const allHoldings = portfolios.flatMap(p => p.portfolio_holdings || [])
+    const uniqueSymbols = [...new Set(allHoldings.map(h => h.symbol.toLowerCase()))]
+
+    // Fetch live prices for all holdings at once
+    let livePrices: Record<string, Record<string, number>> = {}
+    try {
+      if (uniqueSymbols.length > 0) {
+        // Map symbol to CoinGecko ID (this is a simplified mapping - in production you'd have a proper symbol->id mapping)
+        const symbolToId: Record<string, string> = {
+          'btc': 'bitcoin',
+          'eth': 'ethereum',
+          'bnb': 'binancecoin',
+          'ada': 'cardano',
+          'xrp': 'ripple',
+          'sol': 'solana',
+          'dot': 'polkadot',
+          'doge': 'dogecoin',
+          'matic': 'polygon',
+          'avax': 'avalanche-2',
+          'link': 'chainlink',
+          'uni': 'uniswap',
+          // Add more mappings as needed
+        }
+
+        const coinIds = uniqueSymbols.map(symbol => symbolToId[symbol] || symbol).filter(Boolean)
+
+        if (coinIds.length > 0) {
+          livePrices = await cryptoAPI.getSimplePrice(coinIds, ['usd'])
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to fetch live prices, using stored prices as fallback:', error)
+    }
+
+    // Calculate portfolio metrics for each portfolio with live prices
+    const portfoliosWithMetrics = await Promise.all(portfolios.map(async portfolio => {
       const holdings = portfolio.portfolio_holdings || []
 
       const totalValue = holdings.reduce((sum, holding) => {
-        const currentPrice = holding.current_price || holding.purchase_price
+        const symbol = holding.symbol.toLowerCase()
+        const symbolToId: Record<string, string> = {
+          'btc': 'bitcoin',
+          'eth': 'ethereum',
+          'bnb': 'binancecoin',
+          'ada': 'cardano',
+          'xrp': 'ripple',
+          'sol': 'solana',
+          'dot': 'polkadot',
+          'doge': 'dogecoin',
+          'matic': 'polygon',
+          'avax': 'avalanche-2',
+          'link': 'chainlink',
+          'uni': 'uniswap',
+        }
+
+        const coinId = symbolToId[symbol] || symbol
+        const livePrice = livePrices[coinId]?.usd
+        const currentPrice = livePrice || holding.current_price || holding.purchase_price
+
         return sum + (holding.amount * currentPrice)
       }, 0)
 
@@ -73,6 +128,42 @@ export async function GET() {
 
       const totalPnL = totalValue - totalInvested
       const totalPnLPercentage = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0
+
+      // Update holdings with live prices in database (async, don't wait for it)
+      holdings.forEach(async holding => {
+        const symbol = holding.symbol.toLowerCase()
+        const symbolToId: Record<string, string> = {
+          'btc': 'bitcoin',
+          'eth': 'ethereum',
+          'bnb': 'binancecoin',
+          'ada': 'cardano',
+          'xrp': 'ripple',
+          'sol': 'solana',
+          'dot': 'polkadot',
+          'doge': 'dogecoin',
+          'matic': 'polygon',
+          'avax': 'avalanche-2',
+          'link': 'chainlink',
+          'uni': 'uniswap',
+        }
+
+        const coinId = symbolToId[symbol] || symbol
+        const livePrice = livePrices[coinId]?.usd
+
+        if (livePrice && livePrice !== holding.current_price) {
+          try {
+            await supabase
+              .from('portfolio_holdings')
+              .update({
+                current_price: livePrice,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', holding.id)
+          } catch (error) {
+            console.warn(`Failed to update price for holding ${holding.id}:`, error)
+          }
+        }
+      })
 
       return {
         ...portfolio,
@@ -84,7 +175,7 @@ export async function GET() {
           holdingsCount: holdings.length
         }
       }
-    })
+    }))
 
     return NextResponse.json({
       portfolios: portfoliosWithMetrics,

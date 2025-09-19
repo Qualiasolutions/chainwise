@@ -17,12 +17,17 @@ import {
   Bitcoin,
   Coins,
   Target,
-  Zap
+  Zap,
+  Loader2,
+  AlertCircle
 } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Line, LineChart, Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
+import { usePortfolio } from "@/hooks/usePortfolio"
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import Link from "next/link"
 
-// Mock data for the stunning dashboard
+// Mock chart data for portfolio performance (will be replaced with real historical data)
 const portfolioData = [
   { time: "00:00", value: 45000, volume: 2400 },
   { time: "04:00", value: 47500, volume: 1398 },
@@ -53,8 +58,25 @@ const chartConfig = {
 }
 
 export default function DashboardPage() {
-  const [totalValue, setTotalValue] = useState(54750)
-  const [dailyChange, setDailyChange] = useState(5.2)
+  const { user } = useSupabaseAuth()
+  const { portfolios, loading, error, getTotalPortfolioValue, getTotalPortfolioPnL, getTotalPortfolioPnLPercentage, getDefaultPortfolio } = usePortfolio()
+
+  // Get portfolio metrics
+  const totalValue = getTotalPortfolioValue()
+  const totalPnL = getTotalPortfolioPnL()
+  const totalPnLPercentage = getTotalPortfolioPnLPercentage()
+  const defaultPortfolio = getDefaultPortfolio()
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading your portfolio...</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 space-y-6 p-6">
@@ -65,20 +87,54 @@ export default function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-muted-foreground">
-            Welcome back! Here's your portfolio overview.
+            {user ? `Welcome back, ${user.user_metadata?.full_name || user.email}! Here's your portfolio overview.` : "Welcome! Here's your portfolio overview."}
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Analytics
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/analytics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
+            </Link>
           </Button>
-          <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            <Zap className="h-4 w-4 mr-2" />
-            Ask AI
+          <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
+            <Link href="/dashboard/ai">
+              <Zap className="h-4 w-4 mr-2" />
+              Ask AI
+            </Link>
           </Button>
         </div>
       </div>
+
+      {/* Error State */}
+      {error && (
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-4 w-4" />
+              <span>Error loading portfolio data: {error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {portfolios.length === 0 && !error && (
+        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
+          <CardContent className="p-6 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <DollarSign className="h-12 w-12 text-blue-600" />
+              <div>
+                <h3 className="text-lg font-semibold">No portfolios yet</h3>
+                <p className="text-sm text-muted-foreground">Create your first portfolio to start tracking your investments</p>
+              </div>
+              <Button asChild>
+                <Link href="/portfolio">Create Portfolio</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -89,45 +145,69 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
-              ${totalValue.toLocaleString()}
+              ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <div className="flex items-center text-xs text-blue-600 dark:text-blue-400">
-              <TrendingUp className="h-3 w-3 mr-1" />
-              +{dailyChange}% from yesterday
+              {totalPnLPercentage >= 0 ? (
+                <TrendingUp className="h-3 w-3 mr-1" />
+              ) : (
+                <TrendingDown className="h-3 w-3 mr-1" />
+              )}
+              {totalPnLPercentage >= 0 ? '+' : ''}{totalPnLPercentage.toFixed(2)}% total return
             </div>
           </CardContent>
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/20 rounded-full -mr-16 -mt-16" />
         </Card>
 
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/30">
+        <Card className={`relative overflow-hidden border-0 ${totalPnL >= 0
+          ? 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/30'
+          : 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/30'
+        }`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">24h Change</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
+            {totalPnL >= 0 ? (
+              <TrendingUp className="h-4 w-4 text-green-600" />
+            ) : (
+              <TrendingDown className="h-4 w-4 text-red-600" />
+            )}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700 dark:text-green-300">
-              +$2,847
+            <div className={`text-2xl font-bold ${totalPnL >= 0
+              ? 'text-green-700 dark:text-green-300'
+              : 'text-red-700 dark:text-red-300'
+            }`}>
+              {totalPnL >= 0 ? '+' : ''}${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <div className="flex items-center text-xs text-green-600 dark:text-green-400">
-              <ArrowUpRight className="h-3 w-3 mr-1" />
-              +5.2% increase
+            <div className={`flex items-center text-xs ${totalPnL >= 0
+              ? 'text-green-600 dark:text-green-400'
+              : 'text-red-600 dark:text-red-400'
+            }`}>
+              {totalPnL >= 0 ? (
+                <ArrowUpRight className="h-3 w-3 mr-1" />
+              ) : (
+                <ArrowDownRight className="h-3 w-3 mr-1" />
+              )}
+              {totalPnL >= 0 ? '+' : ''}{totalPnLPercentage.toFixed(2)}% change
             </div>
           </CardContent>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-green-200/20 rounded-full -mr-16 -mt-16" />
+          <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 ${totalPnL >= 0
+            ? 'bg-green-200/20'
+            : 'bg-red-200/20'
+          }`} />
         </Card>
 
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">AI Insights</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Portfolios</CardTitle>
             <Activity className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-              8
+              {portfolios.length}
             </div>
             <div className="flex items-center text-xs text-purple-600 dark:text-purple-400">
               <Target className="h-3 w-3 mr-1" />
-              New recommendations
+              Total portfolios
             </div>
           </CardContent>
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200/20 rounded-full -mr-16 -mt-16" />
@@ -135,16 +215,16 @@ export default function DashboardPage() {
 
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Market Analysis</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Holdings</CardTitle>
             <Coins className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
-              Bullish
+              {portfolios.reduce((total, portfolio) => total + (portfolio.metrics?.holdingsCount || 0), 0)}
             </div>
             <div className="flex items-center text-xs text-orange-600 dark:text-orange-400">
               <BarChart3 className="h-3 w-3 mr-1" />
-              AI confidence: 82%
+              Across all portfolios
             </div>
           </CardContent>
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200/20 rounded-full -mr-16 -mt-16" />

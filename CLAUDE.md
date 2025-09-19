@@ -129,6 +129,13 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 - Ready for OpenAI API integration
 - Credit system with tier-based access controls
 
+### Recent Updates (September 19, 2025)
+- **Header Design Overhaul**: Complete glassmorphism redesign with dark gradients, backdrop blur effects, and purple/blue theming
+- **Hero Section Cleanup**: Removed bulky dashboard preview for streamlined focus on 3D globe
+- **Build Error Resolution**: Fixed all Turbopack syntax errors and invalid CSS classes
+- **Mobile Navigation**: Enhanced responsive design with consistent glassmorphism styling
+- **Authentication Flow**: Improved callback page with proper error handling and user feedback
+
 ### Known Issues
 - TypeScript/ESLint errors ignored in build (see `next.config.ts`)
 - AI responses are currently mocked (not real OpenAI)

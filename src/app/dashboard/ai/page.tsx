@@ -141,7 +141,8 @@ export default function AIPage() {
     // Check if user has enough credits
     const userCredits = profile?.credits || 0
     if (userCredits < personaConfig.creditCost) {
-      // TODO: Show upgrade modal
+      // TODO: Show upgrade modal or redirect to billing
+      alert(`Insufficient credits. You need ${personaConfig.creditCost} credits to use ${personaConfig.name}.`)
       return
     }
 
@@ -156,11 +157,29 @@ export default function AIPage() {
     setInputMessage('')
     setIsLoading(true)
 
-    // Simulate AI response (will be replaced with real OpenAI integration)
-    setTimeout(() => {
+    try {
+      // Call real chat API
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: inputMessage,
+          persona: selectedPersona,
+          sessionId: null // For now, create new session each time - can be enhanced later
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get AI response')
+      }
+
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: generateMockResponse(inputMessage, selectedPersona),
+        content: data.response,
         sender: 'ai',
         persona: selectedPersona,
         timestamp: new Date(),
@@ -168,35 +187,33 @@ export default function AIPage() {
       }
 
       setMessages(prev => [...prev, aiResponse])
+
+      // Update user credits in the UI (will be refetched on next auth state change)
+      // This is a temporary solution until we implement proper state management
+      if (profile && data.creditsRemaining !== undefined) {
+        // Update the profile credits optimistically
+        profile.credits = data.creditsRemaining
+      }
+
+    } catch (error: any) {
+      console.error('Chat error:', error)
+
+      // Show error message as AI response
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: `Sorry, I encountered an error: ${error.message}. Please try again.`,
+        sender: 'ai',
+        persona: selectedPersona,
+        timestamp: new Date()
+      }
+
+      setMessages(prev => [...prev, errorResponse])
+    } finally {
       setIsLoading(false)
-
-      // TODO: Deduct credits in Supabase database
-      // This will be implemented when we add real credit management
-    }, 1500)
-  }
-
-  const generateMockResponse = (message: string, persona: keyof typeof AI_PERSONAS) => {
-    const responses = {
-      buddy: [
-        "That's a great question! From what I understand, crypto can be exciting but also risky. My advice is to start small and learn as you go. What specific aspect interests you most?",
-        "I love your curiosity! The crypto world is constantly evolving. Remember to only invest what you can afford to lose, and always do your research. Want me to explain anything specific?",
-        "Crypto can seem overwhelming at first, but don't worry! I'm here to help break it down in simple terms. Think of it like digital money with some really cool features."
-      ],
-      professor: [
-        "Excellent inquiry! Let me provide you with a comprehensive analysis. Based on current market indicators and historical patterns, we can observe several key trends that warrant detailed examination...",
-        "This is a multifaceted topic that requires careful consideration of various economic factors, technological developments, and regulatory landscapes. Allow me to elaborate on the fundamentals...",
-        "Your question touches on some sophisticated concepts in cryptocurrency economics. Let's examine this through the lens of modern portfolio theory and behavioral finance principles..."
-      ],
-      trader: [
-        "From a technical analysis perspective, I'm seeing some interesting signals in the market structure. The risk-reward ratio here suggests a strategic approach focusing on position sizing and stop-loss management.",
-        "Based on current market dynamics and volume analysis, there are several high-probability setups emerging. Key resistance levels and support zones indicate potential entry points for professional traders.",
-        "This market condition presents both opportunities and risks. My recommendation focuses on capital preservation while maximizing alpha generation through systematic approach to trade execution."
-      ]
     }
-
-    const personaResponses = responses[persona]
-    return personaResponses[Math.floor(Math.random() * personaResponses.length)]
   }
+
+  // Mock response function removed - now using real API integration
 
   return (
     <div className="flex-1 space-y-6">
