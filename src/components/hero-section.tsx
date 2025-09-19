@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import Globe3D from "@/components/ui/globe-3d";
 
 export default function HeroSection() {
-  const scrollToRoadmap = () => {
-    const element = document.getElementById('roadmap');
+  const scrollToFeatures = () => {
+    const element = document.querySelector('.main-container');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
@@ -71,10 +71,10 @@ export default function HeroSection() {
               Get Started Free
             </Link>
             <button
-              onClick={scrollToRoadmap}
+              onClick={scrollToFeatures}
               className="flex w-full items-center justify-center gap-2 text-white/70 transition-colors hover:text-white sm:w-auto cursor-pointer"
             >
-              <span>View Roadmap</span>
+              <span>View Features</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
