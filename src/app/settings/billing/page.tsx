@@ -234,7 +234,7 @@ export default function BillingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {plans.map((plan) => {
               const Icon = plan.icon;
-              const isCurrent = plan.id === subscription.plan;
+              const isCurrent = plan.id === currentSubscription.plan;
 
               return (
                 <Card key={plan.id} className={`relative ${isCurrent ? 'ring-2 ring-purple-500' : ''}`}>

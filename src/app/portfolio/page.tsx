@@ -115,7 +115,9 @@ export default function PortfolioPage() {
         throw new Error(data.error || 'Failed to fetch holdings')
       }
 
-      if (enrichedHoldings.length === 0) {
+      const { enrichedHoldings } = data
+
+      if (!enrichedHoldings || enrichedHoldings.length === 0) {
         setHoldings([])
         setMetrics({
           totalValue: 0,
