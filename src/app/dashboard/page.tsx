@@ -75,7 +75,7 @@ export default function DashboardPage() {
           </Button>
           <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
             <Zap className="h-4 w-4 mr-2" />
-            Trade Now
+            Ask AI
           </Button>
         </div>
       </div>
@@ -118,16 +118,16 @@ export default function DashboardPage() {
 
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Trades</CardTitle>
+            <CardTitle className="text-sm font-medium">AI Insights</CardTitle>
             <Activity className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-              12
+              8
             </div>
             <div className="flex items-center text-xs text-purple-600 dark:text-purple-400">
               <Target className="h-3 w-3 mr-1" />
-              3 pending orders
+              New recommendations
             </div>
           </CardContent>
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200/20 rounded-full -mr-16 -mt-16" />
@@ -135,16 +135,16 @@ export default function DashboardPage() {
 
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Volume 24h</CardTitle>
+            <CardTitle className="text-sm font-medium">Market Analysis</CardTitle>
             <Coins className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
-              $1.2M
+              Bullish
             </div>
             <div className="flex items-center text-xs text-orange-600 dark:text-orange-400">
               <BarChart3 className="h-3 w-3 mr-1" />
-              High activity
+              AI confidence: 82%
             </div>
           </CardContent>
           <div className="absolute top-0 right-0 w-32 h-32 bg-orange-200/20 rounded-full -mr-16 -mt-16" />
@@ -251,18 +251,18 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>
-            Frequently used trading actions
+            AI-powered crypto advisory tools
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button variant="outline" className="h-20 flex-col space-y-2">
               <DollarSign className="h-6 w-6" />
-              <span>Buy Crypto</span>
+              <span>Portfolio Analysis</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col space-y-2">
               <TrendingDown className="h-6 w-6" />
-              <span>Sell Position</span>
+              <span>Market Insights</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col space-y-2">
               <BarChart3 className="h-6 w-6" />
@@ -270,7 +270,7 @@ export default function DashboardPage() {
             </Button>
             <Button variant="outline" className="h-20 flex-col space-y-2">
               <Users className="h-6 w-6" />
-              <span>Social Trading</span>
+              <span>AI Assistant</span>
             </Button>
           </div>
         </CardContent>

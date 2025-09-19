@@ -2,20 +2,33 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { TrendingUp, BarChart3, Shield, Zap, Users, Target } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16 pt-24"> {/* Add top padding for header */}
         <div className="text-center space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-              ChainWise
-            </h1>
+          <div className="space-y-6">
+            {/* Logo and Brand */}
+            <div className="flex justify-center mb-6">
+              <div className="flex items-center space-x-4">
+                <Image
+                  src="/logo.png"
+                  alt="ChainWise Logo"
+                  width={64}
+                  height={64}
+                  className="rounded-xl shadow-lg"
+                />
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+                  ChainWise
+                </h1>
+              </div>
+            </div>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              Advanced crypto trading platform with AI-powered insights, real-time market data,
-              and professional-grade tools for serious traders.
+              AI-powered crypto advisory platform with intelligent insights, real-time market data,
+              and professional-grade analysis tools.
             </p>
           </div>
 
@@ -26,9 +39,11 @@ export default function Home() {
                 Launch Dashboard
               </Link>
             </Button>
-            <Button variant="outline" size="lg">
-              <TrendingUp className="mr-2 h-5 w-5" />
-              View Demo
+            <Button asChild variant="outline" size="lg">
+              <Link href="/auth/signup">
+                <Users className="mr-2 h-5 w-5" />
+                Get Started Free
+              </Link>
             </Button>
           </div>
         </div>

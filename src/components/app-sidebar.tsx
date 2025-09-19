@@ -25,13 +25,15 @@ import {
   Bitcoin,
   Coins,
   Target,
-  Activity
+  Activity,
+  Brain
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import {
   Sidebar,
   SidebarContent,
@@ -40,23 +42,18 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-// This is sample data for the stunning crypto trading platform
-const data = {
+// Dynamic data for ChainWise AI advisory platform
+const getDynamicData = (user: any) => ({
   user: {
-    name: "Alex Thompson",
-    email: "alex@chainwise.app",
-    avatar: "/avatars/shadcn.jpg",
+    name: user?.user_metadata?.full_name || user?.email || "User",
+    email: user?.email || "",
+    avatar: user?.user_metadata?.avatar_url || "",
   },
   teams: [
     {
-      name: "Personal Portfolio",
-      logo: PieChart,
-      plan: "Elite",
-    },
-    {
-      name: "Trading Team",
-      logo: TrendingUp,
-      plan: "Pro",
+      name: "ChainWise AI",
+      logo: Bot,
+      plan: "AI Advisory",
     },
   ],
   navMain: [
@@ -74,10 +71,6 @@ const data = {
           title: "Analytics",
           url: "/dashboard/analytics",
         },
-        {
-          title: "Performance",
-          url: "/dashboard/performance",
-        },
       ],
     },
     {
@@ -86,43 +79,12 @@ const data = {
       icon: PieChart,
       items: [
         {
-          title: "Holdings",
-          url: "/portfolio/holdings",
+          title: "View Portfolio",
+          url: "/portfolio",
         },
         {
-          title: "Allocation",
-          url: "/portfolio/allocation",
-        },
-        {
-          title: "History",
-          url: "/portfolio/history",
-        },
-        {
-          title: "P&L Report",
-          url: "/portfolio/pnl",
-        },
-      ],
-    },
-    {
-      title: "Trading",
-      url: "/trading",
-      icon: TrendingUp,
-      items: [
-        {
-          title: "Spot Trading",
-          url: "/trading/spot",
-        },
-        {
-          title: "Futures",
-          url: "/trading/futures",
-        },
-        {
-          title: "Options",
-          url: "/trading/options",
-        },
-        {
-          title: "Order History",
-          url: "/trading/orders",
+          title: "Analytics",
+          url: "/portfolio/analytics",
         },
       ],
     },
@@ -133,19 +95,11 @@ const data = {
       items: [
         {
           title: "Live Prices",
-          url: "/market/prices",
+          url: "/market",
         },
         {
-          title: "Watchlist",
-          url: "/market/watchlist",
-        },
-        {
-          title: "Heatmap",
-          url: "/market/heatmap",
-        },
-        {
-          title: "News & Analysis",
-          url: "/market/news",
+          title: "Market Overview",
+          url: "/market/overview",
         },
       ],
     },
@@ -159,60 +113,30 @@ const data = {
           url: "/dashboard/ai",
         },
         {
-          title: "Market Insights",
+          title: "AI Insights",
           url: "/dashboard/ai/insights",
-        },
-        {
-          title: "Strategy Builder",
-          url: "/dashboard/ai/strategy",
-        },
-      ],
-    },
-    {
-      title: "Wallet",
-      url: "/wallet",
-      icon: Wallet,
-      items: [
-        {
-          title: "Deposits",
-          url: "/wallet/deposits",
-        },
-        {
-          title: "Withdrawals",
-          url: "/wallet/withdrawals",
-        },
-        {
-          title: "Transfer",
-          url: "/wallet/transfer",
         },
       ],
     },
   ],
   projects: [
     {
-      name: "Bitcoin Strategy",
-      url: "/strategies/bitcoin",
-      icon: Bitcoin,
+      name: "AI Market Analysis",
+      url: "/dashboard/ai",
+      icon: Brain,
     },
     {
-      name: "DeFi Portfolio",
-      url: "/strategies/defi",
-      icon: Coins,
-    },
-    {
-      name: "Swing Trading",
-      url: "/strategies/swing",
-      icon: Target,
-    },
-    {
-      name: "Scalping Bot",
-      url: "/strategies/scalping",
-      icon: Zap,
+      name: "Portfolio Insights",
+      url: "/portfolio",
+      icon: Activity,
     },
   ],
-}
+})
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useSupabaseAuth()
+  const data = getDynamicData(user)
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
