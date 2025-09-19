@@ -18,10 +18,12 @@ import {
   Zap,
   Star,
   Clock,
-  CreditCard
+  CreditCard,
+  Crown
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import { UpgradeModal } from "@/components/UpgradeModal"
 
 // AI Personas configuration based on README.md
 const AI_PERSONAS = {
@@ -141,8 +143,13 @@ export default function AIPage() {
     // Check if user has enough credits
     const userCredits = profile?.credits || 0
     if (userCredits < personaConfig.creditCost) {
-      // TODO: Show upgrade modal or redirect to billing
-      alert(`Insufficient credits. You need ${personaConfig.creditCost} credits to use ${personaConfig.name}.`)
+      // Show proper upgrade modal for credit refill
+      const upgradeModal = document.querySelector('[data-upgrade-modal-trigger]') as HTMLElement
+      if (upgradeModal) {
+        upgradeModal.click()
+      } else {
+        alert(`Insufficient credits. You need ${personaConfig.creditCost} credits to use ${personaConfig.name}. Please upgrade your plan.`)
+      }
       return
     }
 
@@ -235,6 +242,14 @@ export default function AIPage() {
               <Badge variant="outline">{(profile?.tier || 'free').toUpperCase()}</Badge>
             </CardContent>
           </Card>
+          {profile?.tier === 'free' && (
+            <UpgradeModal requiredTier="pro" personaName="Professor & Trader">
+              <Button variant="outline" size="sm" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                <Crown className="h-4 w-4 mr-2" />
+                Upgrade
+              </Button>
+            </UpgradeModal>
+          )}
         </div>
       </div>
 
@@ -297,7 +312,14 @@ export default function AIPage() {
 
                     {!canUse && (
                       <div className="absolute inset-0 bg-black/5 rounded-lg flex items-center justify-center">
-                        <Badge variant="secondary">Upgrade Required</Badge>
+                        <UpgradeModal requiredTier={persona.tier} personaName={persona.name}>
+                          <Badge
+                            variant="secondary"
+                            className="cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors"
+                          >
+                            Upgrade Required
+                          </Badge>
+                        </UpgradeModal>
                       </div>
                     )}
                   </div>

@@ -1,53 +1,63 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Calendar, Receipt, AlertCircle, Crown, Brain, User } from "lucide-react";
+import { CreditCard, Calendar, Receipt, AlertCircle, Crown, Brain, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 export default function BillingPage() {
-  const [loading, setLoading] = useState(false);
+  const { user, profile } = useSupabaseAuth();
+  const [loading, setLoading] = useState(true);
+  const [subscriptionData, setSubscriptionData] = useState<any>(null);
+  const [subscriptionHistory, setSubscriptionHistory] = useState<any[]>([]);
+  const [creditTransactions, setCreditTransactions] = useState<any[]>([]);
 
-  // Mock user subscription data
-  const subscription = {
-    plan: "pro",
-    status: "active",
-    price: 12.99,
-    next_billing: "2024-10-19",
-    payment_method: {
-      type: "card",
-      last4: "4242",
-      brand: "visa",
-      exp_month: 12,
-      exp_year: 2027
-    }
+  // Fetch billing data from Supabase
+  useEffect(() => {
+    const fetchBillingData = async () => {
+      if (!user || !profile) return;
+
+      try {
+        setLoading(true);
+
+        // Fetch subscription history
+        const subResponse = await fetch('/api/subscription/history');
+        if (subResponse.ok) {
+          const subData = await subResponse.json();
+          setSubscriptionHistory(subData.subscriptions || []);
+          setSubscriptionData(subData.current || null);
+        }
+
+        // Fetch credit transactions (recent)
+        const creditResponse = await fetch('/api/credits/transactions');
+        if (creditResponse.ok) {
+          const creditData = await creditResponse.json();
+          setCreditTransactions(creditData.transactions || []);
+        }
+
+      } catch (error) {
+        console.error('Error fetching billing data:', error);
+        toast.error('Failed to load billing information');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBillingData();
+  }, [user, profile]);
+
+  // Current subscription (fallback to profile data if no subscription history)
+  const currentSubscription = subscriptionData || {
+    plan: profile?.tier || 'free',
+    status: 'active',
+    price: profile?.tier === 'pro' ? 12.99 : profile?.tier === 'elite' ? 24.99 : 0,
+    next_billing: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    payment_method: null
   };
-
-  const invoices = [
-    {
-      id: "inv_001",
-      date: "2024-09-19",
-      amount: 12.99,
-      status: "paid",
-      description: "PRO Plan - Monthly"
-    },
-    {
-      id: "inv_002",
-      date: "2024-08-19",
-      amount: 12.99,
-      status: "paid",
-      description: "PRO Plan - Monthly"
-    },
-    {
-      id: "inv_003",
-      date: "2024-07-19",
-      amount: 12.99,
-      status: "paid",
-      description: "PRO Plan - Monthly"
-    }
-  ];
 
   const plans = [
     {
@@ -126,6 +136,23 @@ export default function BillingPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
+                <div className="h-8 bg-muted rounded w-2/3"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Current Subscription */}
@@ -144,13 +171,13 @@ export default function BillingPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-semibold">
-                  {plans.find(p => p.id === subscription.plan)?.name} Plan
+                  {plans.find(p => p.id === currentSubscription.plan)?.name || currentSubscription.plan?.toUpperCase()} Plan
                 </h3>
-                {getPlanBadge(subscription.plan)}
-                {getStatusBadge(subscription.status)}
+                {getPlanBadge(currentSubscription.plan)}
+                {getStatusBadge(currentSubscription.status)}
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold">${subscription.price}</div>
+                <div className="text-2xl font-bold">${currentSubscription.price}</div>
                 <div className="text-sm text-muted-foreground">per month</div>
               </div>
             </div>
@@ -160,14 +187,20 @@ export default function BillingPage() {
                 <div className="text-sm font-medium">Next Billing Date</div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
-                  {new Date(subscription.next_billing).toLocaleDateString()}
+                  {currentSubscription.next_billing ?
+                    new Date(currentSubscription.next_billing).toLocaleDateString() :
+                    'No billing scheduled'
+                  }
                 </div>
               </div>
               <div>
                 <div className="text-sm font-medium">Payment Method</div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <CreditCard className="w-4 h-4" />
-                  {subscription.payment_method.brand.toUpperCase()} ****{subscription.payment_method.last4}
+                  {currentSubscription.payment_method ?
+                    `${currentSubscription.payment_method.brand?.toUpperCase()} ****${currentSubscription.payment_method.last4}` :
+                    'No payment method'
+                  }
                 </div>
               </div>
             </div>
@@ -231,14 +264,17 @@ export default function BillingPage() {
                         ))}
                       </div>
 
-                      <Button
-                        variant={isCurrent ? "secondary" : "default"}
-                        size="sm"
-                        className="w-full"
-                        disabled={isCurrent || loading}
-                      >
-                        {isCurrent ? "Current Plan" : "Switch Plan"}
-                      </Button>
+                      {isCurrent ? (
+                        <Button variant="secondary" size="sm" className="w-full" disabled>
+                          Current Plan
+                        </Button>
+                      ) : (
+                        <UpgradeModal requiredTier={plan.id} personaName={plan.name}>
+                          <Button size="sm" className="w-full">
+                            Switch Plan
+                          </Button>
+                        </UpgradeModal>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -248,43 +284,58 @@ export default function BillingPage() {
         </CardContent>
       </Card>
 
-      {/* Billing History */}
+      {/* Credit Transaction History */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Receipt className="w-5 h-5" />
-            Billing History
+            <CreditCard className="w-5 h-5" />
+            Credit History
           </CardTitle>
           <CardDescription>
-            View and download your previous invoices
+            View your AI credit usage and refill history
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {invoices.map((invoice) => (
-              <div key={invoice.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                    <Receipt className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm">{invoice.description}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(invoice.date).toLocaleDateString()}
+            {creditTransactions.length > 0 ? (
+              creditTransactions.slice(0, 10).map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      transaction.status === 'credit'
+                        ? 'bg-green-100 dark:bg-green-900'
+                        : 'bg-red-100 dark:bg-red-900'
+                    }`}>
+                      <CreditCard className={`w-4 h-4 ${
+                        transaction.status === 'credit'
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`} />
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">{transaction.description}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(transaction.date).toLocaleDateString()} • {transaction.ai_persona || 'System'}
+                      </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-3">
+                    <div className={`font-medium ${
+                      transaction.status === 'credit' ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {transaction.status === 'credit' ? '+' : '-'}{transaction.amount}
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {transaction.type}
+                    </Badge>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="font-medium">${invoice.amount}</div>
-                  <Badge variant="outline" className="text-xs">
-                    {invoice.status}
-                  </Badge>
-                  <Button variant="ghost" size="sm">
-                    Download
-                  </Button>
-                </div>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-8">
+                No credit transactions yet
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -299,8 +350,13 @@ export default function BillingPage() {
                 Billing Information
               </div>
               <div className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                Your subscription will automatically renew on {new Date(subscription.next_billing).toLocaleDateString()}.
-                You can cancel anytime before your next billing date to avoid charges.
+                {currentSubscription.plan === 'free' ? (
+                  'Upgrade to PRO or ELITE to get monthly AI credits and unlock advanced features.'
+                ) : (
+                  `Your ${currentSubscription.plan?.toUpperCase()} subscription ${currentSubscription.next_billing ?
+                    `will renew on ${new Date(currentSubscription.next_billing).toLocaleDateString()}` :
+                    'is currently active'}. You can cancel anytime.`
+                )}
               </div>
             </div>
           </div>

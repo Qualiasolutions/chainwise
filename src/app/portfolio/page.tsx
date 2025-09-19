@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DataTable } from "@/components/ui/data-table"
 import { PriceCard } from "@/components/ui/price-card"
 import { Progress } from "@/components/ui/progress"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   PieChart,
   TrendingUp,
@@ -18,7 +24,9 @@ import {
   Target,
   BarChart3,
   Wallet,
-  ArrowUpDown
+  ArrowUpDown,
+  Trash2,
+  MoreHorizontal
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
@@ -26,6 +34,8 @@ import { supabase } from "@/lib/supabase/client"
 import { cryptoAPI, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
 import { ColumnDef } from "@tanstack/react-table"
 import { motion } from "framer-motion"
+import { AddAssetModal } from "@/components/AddAssetModal"
+import { toast } from "sonner"
 
 interface PortfolioHolding {
   id: string
@@ -53,146 +63,156 @@ interface PortfolioMetrics {
 
 export default function PortfolioPage() {
   const { user, profile } = useSupabaseAuth()
+  const [portfolioId, setPortfolioId] = useState<string | null>(null)
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([])
   const [metrics, setMetrics] = useState<PortfolioMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   // Fetch portfolio data
-  useEffect(() => {
-    const fetchPortfolioData = async () => {
-      if (!user || !profile) return
+  const fetchPortfolioData = useCallback(async () => {
+    if (!user || !profile) return
 
-      try {
-        setLoading(true)
-        setError(null)
+    try {
+      setLoading(true)
+      setError(null)
 
-        // Get user's default portfolio
-        const { data: portfolios, error: portfolioError } = await supabase
+      // Get user's default portfolio
+      const { data: portfolios, error: portfolioError } = await supabase
+        .from('portfolios')
+        .select('id')
+        .eq('user_id', profile.id)
+        .eq('is_default', true)
+        .limit(1)
+
+      if (portfolioError) throw portfolioError
+
+      if (!portfolios || portfolios.length === 0) {
+        // Create default portfolio if none exists
+        const { data: newPortfolio, error: createError } = await supabase
           .from('portfolios')
-          .select('id')
-          .eq('user_id', profile.id)
-          .eq('is_default', true)
-          .limit(1)
-
-        if (portfolioError) throw portfolioError
-
-        if (!portfolios || portfolios.length === 0) {
-          // Create default portfolio if none exists
-          const { data: newPortfolio, error: createError } = await supabase
-            .from('portfolios')
-            .insert({
-              user_id: profile.id,
-              name: 'My Portfolio',
-              description: 'Default portfolio',
-              is_default: true
-            })
-            .select('id')
-            .single()
-
-          if (createError) throw createError
-          portfolios.push(newPortfolio)
-        }
-
-        const portfolioId = portfolios[0].id
-
-        // Get portfolio holdings
-        const { data: rawHoldings, error: holdingsError } = await supabase
-          .from('portfolio_holdings')
-          .select('*')
-          .eq('portfolio_id', portfolioId)
-
-        if (holdingsError) throw holdingsError
-
-        if (!rawHoldings || rawHoldings.length === 0) {
-          setHoldings([])
-          setMetrics({
-            totalValue: 0,
-            totalPnL: 0,
-            totalPnLPercentage: 0,
-            dayChange: 0,
-            dayChangePercentage: 0,
-            topGainer: null,
-            topLoser: null
+          .insert({
+            user_id: profile.id,
+            name: 'My Portfolio',
+            description: 'Default portfolio',
+            is_default: true
           })
-          setLoading(false)
-          return
-        }
+          .select('id')
+          .single()
 
-        // Get current prices for all holdings
-        const cryptoIds = rawHoldings.map(h => h.symbol.toLowerCase())
-        const priceData = await cryptoAPI.getSimplePrice(cryptoIds)
-
-        // Calculate portfolio metrics
-        const processedHoldings: PortfolioHolding[] = rawHoldings.map(holding => {
-          const cryptoId = holding.symbol.toLowerCase()
-          const currentPrice = priceData[cryptoId]?.usd || holding.current_price || holding.purchase_price
-          const value = holding.amount * currentPrice
-          const pnl = value - (holding.amount * holding.purchase_price)
-          const pnlPercentage = ((currentPrice - holding.purchase_price) / holding.purchase_price) * 100
-
-          return {
-            id: holding.id,
-            symbol: holding.symbol,
-            name: holding.name,
-            amount: holding.amount,
-            purchase_price: holding.purchase_price,
-            current_price: currentPrice,
-            purchase_date: holding.purchase_date,
-            value,
-            pnl,
-            pnlPercentage,
-            allocation: 0 // Will be calculated below
-          }
-        })
-
-        // Calculate allocations
-        const totalValue = processedHoldings.reduce((sum, holding) => sum + holding.value, 0)
-        processedHoldings.forEach(holding => {
-          holding.allocation = totalValue > 0 ? (holding.value / totalValue) * 100 : 0
-        })
-
-        // Calculate portfolio metrics
-        const totalPnL = processedHoldings.reduce((sum, holding) => sum + holding.pnl, 0)
-        const totalPnLPercentage = totalValue > 0 ? (totalPnL / (totalValue - totalPnL)) * 100 : 0
-
-        const topGainer = processedHoldings.reduce((max, holding) =>
-          holding.pnlPercentage > (max?.pnlPercentage || -Infinity) ? holding : max,
-          null as PortfolioHolding | null
-        )
-
-        const topLoser = processedHoldings.reduce((min, holding) =>
-          holding.pnlPercentage < (min?.pnlPercentage || Infinity) ? holding : min,
-          null as PortfolioHolding | null
-        )
-
-        setHoldings(processedHoldings)
-        setMetrics({
-          totalValue,
-          totalPnL,
-          totalPnLPercentage,
-          dayChange: 0, // TODO: Calculate from price history
-          dayChangePercentage: 0,
-          topGainer,
-          topLoser
-        })
-
-        // Update portfolio total in database
-        await supabase
-          .from('portfolios')
-          .update({ total_value: totalValue })
-          .eq('id', portfolioId)
-
-      } catch (err) {
-        console.error('Error fetching portfolio data:', err)
-        setError('Failed to fetch portfolio data. Please try again.')
-      } finally {
-        setLoading(false)
+        if (createError) throw createError
+        portfolios.push(newPortfolio)
       }
-    }
 
-    fetchPortfolioData()
+      const currentPortfolioId = portfolios[0].id
+      setPortfolioId(currentPortfolioId)
+
+      // Use new API endpoint for better performance and features
+      const response = await fetch(`/api/portfolio/${currentPortfolioId}/holdings`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch holdings')
+      }
+
+      if (enrichedHoldings.length === 0) {
+        setHoldings([])
+        setMetrics({
+          totalValue: 0,
+          totalPnL: 0,
+          totalPnLPercentage: 0,
+          dayChange: 0,
+          dayChangePercentage: 0,
+          topGainer: null,
+          topLoser: null
+        })
+        setLoading(false)
+        return
+      }
+
+      // Convert API response to UI format
+      const processedHoldings: PortfolioHolding[] = enrichedHoldings.map((holding: any) => ({
+        id: holding.id,
+        symbol: holding.symbol.toUpperCase(),
+        name: holding.name,
+        amount: holding.amount,
+        purchase_price: holding.purchase_price,
+        current_price: holding.current_price,
+        purchase_date: holding.purchase_date,
+        value: holding.currentValue,
+        pnl: holding.totalPnL,
+        pnlPercentage: holding.pnlPercentage,
+        allocation: 0 // Will be calculated below
+      }))
+
+      // Calculate allocations
+      const totalValue = processedHoldings.reduce((sum, holding) => sum + holding.value, 0)
+      processedHoldings.forEach(holding => {
+        holding.allocation = totalValue > 0 ? (holding.value / totalValue) * 100 : 0
+      })
+
+      // Calculate portfolio metrics
+      const totalPnL = processedHoldings.reduce((sum, holding) => sum + holding.pnl, 0)
+      const totalPnLPercentage = totalValue > 0 ? (totalPnL / (totalValue - totalPnL)) * 100 : 0
+
+      const topGainer = processedHoldings.reduce((max, holding) =>
+        holding.pnlPercentage > (max?.pnlPercentage || -Infinity) ? holding : max,
+        null as PortfolioHolding | null
+      )
+
+      const topLoser = processedHoldings.reduce((min, holding) =>
+        holding.pnlPercentage < (min?.pnlPercentage || Infinity) ? holding : min,
+        null as PortfolioHolding | null
+      )
+
+      setHoldings(processedHoldings)
+      setMetrics({
+        totalValue,
+        totalPnL,
+        totalPnLPercentage,
+        dayChange: 0, // TODO: Calculate from price history
+        dayChangePercentage: 0,
+        topGainer,
+        topLoser
+      })
+
+    } catch (err) {
+      console.error('Error fetching portfolio data:', err)
+      setError('Failed to fetch portfolio data. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }, [user, profile])
+
+  useEffect(() => {
+    fetchPortfolioData()
+  }, [fetchPortfolioData])
+
+  // Delete holding function
+  const handleDeleteHolding = async (holdingId: string, symbol: string) => {
+    if (!portfolioId) return
+
+    const confirmDelete = window.confirm(`Are you sure you want to remove ${symbol} from your portfolio?`)
+    if (!confirmDelete) return
+
+    try {
+      const response = await fetch(`/api/portfolio/${portfolioId}/holdings/${holdingId}`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete holding')
+      }
+
+      toast.success(data.message || `${symbol} removed from portfolio`)
+      fetchPortfolioData() // Refresh the portfolio
+    } catch (error: any) {
+      console.error('Delete holding error:', error)
+      toast.error(error.message)
+    }
+  }
 
   // Table columns for holdings
   const columns: ColumnDef<PortfolioHolding>[] = [
@@ -287,11 +307,31 @@ export default function PortfolioPage() {
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <Edit className="h-4 w-4" />
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => {
+                // TODO: Implement edit functionality
+                toast.info("Edit functionality coming soon!")
+              }}
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Holding
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleDeleteHolding(row.original.id, row.original.symbol)}
+              className="text-red-600 dark:text-red-400"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Holding
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     }
   ]
@@ -351,10 +391,9 @@ export default function PortfolioPage() {
             Track your cryptocurrency investments and performance
           </p>
         </div>
-        <Button className="purple-gradient">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Asset
-        </Button>
+        {portfolioId && (
+          <AddAssetModal portfolioId={portfolioId} onAssetAdded={fetchPortfolioData} />
+        )}
       </div>
 
       {/* Portfolio Metrics */}
@@ -446,10 +485,14 @@ export default function PortfolioPage() {
                   <p className="text-muted-foreground mb-6">
                     Start building your portfolio by adding your first cryptocurrency holding.
                   </p>
-                  <Button className="purple-gradient">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Asset
-                  </Button>
+                  {portfolioId && (
+                    <AddAssetModal portfolioId={portfolioId} onAssetAdded={fetchPortfolioData}>
+                      <Button className="purple-gradient">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Your First Asset
+                      </Button>
+                    </AddAssetModal>
+                  )}
                 </CardContent>
               </Card>
             )}
