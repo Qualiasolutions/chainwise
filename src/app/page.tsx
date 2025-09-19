@@ -1,6 +1,6 @@
 import HeroSection from "@/components/hero-section"
 import HowItWorks from "@/components/how-it-works"
-import ChainWiseOrbitalTimeline from "@/components/chainwise-orbital-timeline"
+import ChainWiseTimeline from "@/components/chainwise-timeline"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
@@ -16,7 +16,7 @@ export default function Home() {
 
       {/* Interactive Development Roadmap */}
       <div id="roadmap" className="min-h-screen">
-        <ChainWiseOrbitalTimeline />
+        <ChainWiseTimeline />
       </div>
 
       {/* CTA Section */}
