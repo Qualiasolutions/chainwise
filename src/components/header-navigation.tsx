@@ -181,6 +181,7 @@ export function HeaderNavigation() {
           )}
         </div>
         </div>
+      </div>
 
       {/* Mobile Navigation - Only show if user is authenticated */}
       {user && (
@@ -188,48 +189,48 @@ export function HeaderNavigation() {
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-purple-950/90 to-slate-950/95 backdrop-blur-xl border-t border-white/10 shadow-lg shadow-purple-500/10" />
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
           <div className="relative">
-          <nav className="flex items-center justify-around py-2">
-            <Link
-              href="/dashboard"
-              className={cn(
-                "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/dashboard" ? "text-purple-300" : "text-white/70"
-              )}
-            >
-              <Bot className="h-5 w-5 mb-1" />
-              Dashboard
-            </Link>
-            <Link
-              href="/portfolio"
-              className={cn(
-                "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/portfolio" ? "text-purple-300" : "text-white/70"
-              )}
-            >
-              <User className="h-5 w-5 mb-1" />
-              Portfolio
-            </Link>
-            <Link
-              href="/dashboard/ai"
-              className={cn(
-                "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/dashboard/ai" ? "text-purple-300" : "text-white/70"
-              )}
-            >
-              <Bot className="h-5 w-5 mb-1" />
-              AI Assistant
-            </Link>
-            <Link
-              href="/contact"
-              className={cn(
-                "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/contact" ? "text-purple-300" : "text-white/70"
-              )}
-            >
-              <User className="h-5 w-5 mb-1" />
-              Contact
-            </Link>
-          </nav>
+            <nav className="flex items-center justify-around py-2">
+              <Link
+                href="/dashboard"
+                className={cn(
+                  "flex flex-col items-center py-2 px-3 text-xs",
+                  pathname === "/dashboard" ? "text-purple-300" : "text-white/70"
+                )}
+              >
+                <Bot className="h-5 w-5 mb-1" />
+                Dashboard
+              </Link>
+              <Link
+                href="/portfolio"
+                className={cn(
+                  "flex flex-col items-center py-2 px-3 text-xs",
+                  pathname === "/portfolio" ? "text-purple-300" : "text-white/70"
+                )}
+              >
+                <User className="h-5 w-5 mb-1" />
+                Portfolio
+              </Link>
+              <Link
+                href="/dashboard/ai"
+                className={cn(
+                  "flex flex-col items-center py-2 px-3 text-xs",
+                  pathname === "/dashboard/ai" ? "text-purple-300" : "text-white/70"
+                )}
+              >
+                <Bot className="h-5 w-5 mb-1" />
+                AI Assistant
+              </Link>
+              <Link
+                href="/contact"
+                className={cn(
+                  "flex flex-col items-center py-2 px-3 text-xs",
+                  pathname === "/contact" ? "text-purple-300" : "text-white/70"
+                )}
+              >
+                <User className="h-5 w-5 mb-1" />
+                Contact
+              </Link>
+            </nav>
           </div>
         </div>
       )}

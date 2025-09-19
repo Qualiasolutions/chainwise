@@ -96,11 +96,11 @@
   }
 
   .ai-card {
-    @apply backdrop-blur-sm bg-white/80 dark:bg-card/90 border shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply backdrop-blur-sm bg-white/80 dark:bg-slate-800/90 border shadow-lg hover:shadow-xl transition-all duration-300;
   }
 
   .metric-card {
-    @apply relative overflow-hidden border shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-card/90;
+    @apply relative overflow-hidden border shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90;
   }
 
   .crypto-item {
