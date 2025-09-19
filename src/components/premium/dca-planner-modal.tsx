@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, DollarSign, Clock, Shield, Target, AlertTriangle } from 'lucide-react'
-import { useAuth } from '@/hooks/useSupabaseAuth'
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { useToast } from '@/hooks/use-toast'
 
 interface DCARequest {
@@ -47,7 +47,7 @@ export function DCAPlanner() {
     goals: ''
   })
 
-  const { user } = useAuth()
+  const { user } = useSupabaseAuth()
   const { toast } = useToast()
 
   const handleInputChange = (field: keyof DCARequest, value: any) => {

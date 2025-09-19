@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Target, DollarSign, PieChart, TrendingUp, Shield, Clock, AlertTriangle } from 'lucide-react'
-import { useAuth } from '@/hooks/useSupabaseAuth'
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { useToast } from '@/hooks/use-toast'
 
 interface AllocationRequest {
@@ -50,7 +50,7 @@ export function PortfolioAllocator() {
     }
   })
 
-  const { user } = useAuth()
+  const { user } = useSupabaseAuth()
   const { toast } = useToast()
 
   const handleInputChange = (field: keyof AllocationRequest, value: any) => {

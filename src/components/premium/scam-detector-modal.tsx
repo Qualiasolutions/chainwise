@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Shield, AlertTriangle, CheckCircle, XCircle, Eye, Users, Code, TrendingDown } from 'lucide-react'
-import { useAuth } from '@/hooks/useSupabaseAuth'
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { useToast } from '@/hooks/use-toast'
 import { Progress } from '@/components/ui/progress'
 
@@ -51,7 +51,7 @@ export function ScamDetector() {
     additionalInfo: ''
   })
 
-  const { user } = useAuth()
+  const { user } = useSupabaseAuth()
   const { toast } = useToast()
 
   const handleInputChange = (field: keyof ScamDetectionRequest, value: any) => {
