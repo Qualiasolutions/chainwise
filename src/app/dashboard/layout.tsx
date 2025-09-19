@@ -7,7 +7,6 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import DashboardSkeleton from "@/components/ui/dashboard-skeleton"
 import AuthRequired from "@/components/auth/AuthRequired"
-import { SimpleThemeToggle } from "@/components/theme-toggle"
 
 function DashboardBreadcrumb() {
   return (

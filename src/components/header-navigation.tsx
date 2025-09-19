@@ -23,7 +23,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { SimpleThemeToggle } from "@/components/theme-toggle"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { cn } from "@/lib/utils"
 
@@ -114,8 +113,6 @@ export function HeaderNavigation() {
 
         {/* Right side - Auth buttons or User menu */}
         <div className="flex items-center space-x-2">
-          <SimpleThemeToggle />
-
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

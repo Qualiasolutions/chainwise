@@ -34,8 +34,12 @@ export default function SignInPage() {
     setError(null)
 
     try {
-      await signIn(email, password)
-      router.push("/dashboard")
+      const result = await signIn(email, password)
+      if (result.error) {
+        setError(result.error)
+      } else {
+        router.push("/dashboard")
+      }
     } catch (err: any) {
       setError(err.message || "Failed to sign in. Please check your credentials.")
     } finally {
@@ -48,8 +52,12 @@ export default function SignInPage() {
     setError(null)
 
     try {
-      await signInWithGoogle()
-      // Redirect will be handled by the auth callback
+      const result = await signInWithGoogle()
+      if (result.error) {
+        setError(result.error)
+        setLoading(false)
+      }
+      // If successful, redirect will be handled by the auth callback
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google")
       setLoading(false)
