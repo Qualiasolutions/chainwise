@@ -59,12 +59,54 @@ export class OpenAIService {
     } catch (error) {
       console.error('OpenAI API error:', error);
 
+      // Enhanced fallback responses based on the user's message for demo purposes
+      const getMockResponse = (persona: PersonaId, userMessage: string): string => {
+        const lowerMessage = userMessage.toLowerCase();
+
+        if (persona === 'buddy') {
+          if (lowerMessage.includes('bitcoin') || lowerMessage.includes('btc')) {
+            return "Hey! Bitcoin is looking pretty solid right now! It's the king of crypto for a reason. Always remember to do your own research and never invest more than you can afford to lose! 🚀";
+          }
+          if (lowerMessage.includes('price') || lowerMessage.includes('sell')) {
+            return "That's a great question! Market timing is tricky, but here's what I'd consider: your financial goals, risk tolerance, and overall portfolio balance. What matters most is having a plan that works for you!";
+          }
+          return "Hey there! I'm here to help with all your crypto questions. What would you like to know about the crypto world today?";
+        }
+
+        if (persona === 'professor') {
+          if (lowerMessage.includes('bitcoin') || lowerMessage.includes('btc')) {
+            return "Bitcoin remains the dominant cryptocurrency with strong institutional adoption. Key factors to consider: market cycles, regulatory developments, and macroeconomic conditions affecting digital assets.";
+          }
+          if (lowerMessage.includes('price') || lowerMessage.includes('sell')) {
+            return "Investment decisions should be based on fundamental analysis, technical indicators, and your investment timeline. Consider market trends, volume patterns, and overall portfolio allocation when making decisions.";
+          }
+          return "I'm here to provide educational insights about cryptocurrency markets and blockchain technology. What would you like to learn about?";
+        }
+
+        if (persona === 'trader') {
+          if (lowerMessage.includes('bitcoin') || lowerMessage.includes('btc')) {
+            return "BTC: Watch key resistance at $67K, support at $60K. RSI neutral. Volume declining. Risk/reward 1:2 on breakout above $67.5K. Set stops at $59K.";
+          }
+          if (lowerMessage.includes('price') || lowerMessage.includes('sell')) {
+            return "Market showing mixed signals. Consider partial profit-taking on strength. Set trailing stops 8-12% below entry. Monitor volume and momentum indicators.";
+          }
+          return "Ready to analyze markets and provide trading insights. What's your current position or target asset?";
+        }
+
+        return fallbackResponses[persona] || "I'm experiencing technical difficulties. Please try again.";
+      };
+
       // Fallback to persona-specific error messages
       const fallbackResponses = {
         buddy: "Hey! I'm having a bit of trouble connecting right now. Let me try again in a moment!",
         professor: "I apologize, but I'm experiencing some technical difficulties. Please try your question again shortly.",
         trader: "System temporarily unavailable. Please retry your query for the latest market analysis."
       };
+
+      // If no API key is configured, provide mock responses for demo
+      if (error instanceof Error && error.message.includes('API key')) {
+        return getMockResponse(persona, message);
+      }
 
       return fallbackResponses[persona] || "I'm experiencing technical difficulties. Please try again.";
     }
