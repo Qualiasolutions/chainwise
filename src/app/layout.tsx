@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { HeaderNavigation } from "@/components/header-navigation";
+import PageWrapper from "@/components/page-wrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -89,7 +90,9 @@ export default function RootLayout({
         <ThemeProvider>
           <HeaderNavigation />
           <main className="min-h-screen">
-            {children}
+            <PageWrapper>
+              {children}
+            </PageWrapper>
           </main>
         </ThemeProvider>
       </body>

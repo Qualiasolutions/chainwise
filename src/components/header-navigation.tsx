@@ -36,8 +36,17 @@ export function HeaderNavigation() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
+    <header className="fixed top-0 z-50 w-full">
+      {/* Glassmorphism Header */}
+      <div className="relative">
+        {/* Background with gradient and blur */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-purple-950/85 to-slate-950/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-purple-500/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 via-blue-600/5 to-purple-600/10" />
+        {/* Subtle bottom glow */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
+
+        {/* Content */}
+        <div className="relative container flex h-16 max-w-screen-2xl items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
           <Image
@@ -47,7 +56,7 @@ export function HeaderNavigation() {
             height={32}
             className="rounded-lg"
           />
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+          <span className="text-xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent">
             ChainWise
           </span>
         </Link>
@@ -171,17 +180,20 @@ export function HeaderNavigation() {
             </div>
           )}
         </div>
-      </div>
+        </div>
 
       {/* Mobile Navigation - Only show if user is authenticated */}
       {user && (
-        <div className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur">
+        <div className="md:hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-purple-950/90 to-slate-950/95 backdrop-blur-xl border-t border-white/10 shadow-lg shadow-purple-500/10" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/30 to-transparent" />
+          <div className="relative">
           <nav className="flex items-center justify-around py-2">
             <Link
               href="/dashboard"
               className={cn(
                 "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/dashboard" ? "text-primary" : "text-muted-foreground"
+                pathname === "/dashboard" ? "text-purple-300" : "text-white/70"
               )}
             >
               <Bot className="h-5 w-5 mb-1" />
@@ -191,7 +203,7 @@ export function HeaderNavigation() {
               href="/portfolio"
               className={cn(
                 "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/portfolio" ? "text-primary" : "text-muted-foreground"
+                pathname === "/portfolio" ? "text-purple-300" : "text-white/70"
               )}
             >
               <User className="h-5 w-5 mb-1" />
@@ -201,7 +213,7 @@ export function HeaderNavigation() {
               href="/dashboard/ai"
               className={cn(
                 "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/dashboard/ai" ? "text-primary" : "text-muted-foreground"
+                pathname === "/dashboard/ai" ? "text-purple-300" : "text-white/70"
               )}
             >
               <Bot className="h-5 w-5 mb-1" />
@@ -211,13 +223,14 @@ export function HeaderNavigation() {
               href="/contact"
               className={cn(
                 "flex flex-col items-center py-2 px-3 text-xs",
-                pathname === "/contact" ? "text-primary" : "text-muted-foreground"
+                pathname === "/contact" ? "text-purple-300" : "text-white/70"
               )}
             >
               <User className="h-5 w-5 mb-1" />
               Contact
             </Link>
           </nav>
+          </div>
         </div>
       )}
     </header>
