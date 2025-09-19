@@ -36,7 +36,6 @@ const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/market", label: "Market", icon: TrendingUp },
   { href: "/portfolio", label: "Portfolio", icon: Wallet },
-  { href: "/trading", label: "Trading", icon: BarChart3 },
   { href: "/dashboard/ai", label: "AI Chat", icon: Bot, badge: "AI" },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 }
 ]

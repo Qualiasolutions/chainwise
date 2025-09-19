@@ -4,26 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-ChainWise is a production-ready AI-powered cryptocurrency advisory platform with complete subscription system, animated pricing, and comprehensive settings management. All major features are complete with real API integrations (CoinGecko + Supabase).
+ChainWise is a production-ready AI-powered cryptocurrency advisory platform with full authentication system and enterprise-grade security. All major features are complete with real API integrations (CoinGecko + Supabase).
 
 **Key Pages (run `npm run dev`):**
-- `/` - Landing page with 3D globe, animated pricing, and orbital timeline
 - `/market` - Live crypto market data
 - `/portfolio` - Portfolio management with real database
-- `/trading` - Professional trading interface
 - `/dashboard/analytics` - Portfolio analytics
 - `/dashboard/ai` - AI chat with three personas
-- `/checkout` - Subscription checkout flow with Stripe integration ready
-- `/settings` - Complete user settings with profile, billing, and account management
 
 ## Development Commands
 
-- `npm run dev` - Start development server with Turbopack (localhost:3000)
-- `npm run build` - Build for production with Turbopack
-- `npm run lint` - Run ESLint (currently no specific targets configured)
+- `npm run dev` - Start development server (localhost:3000)
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
 - `npm run start` - Start production server
-
-**Note**: No test framework is currently configured in this project.
 
 ## Tech Stack
 
@@ -32,8 +26,7 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 - **Authentication**: Supabase Auth with Google OAuth
 - **APIs**: CoinGecko for crypto data, Supabase for user data
 - **UI**: Tailwind CSS + shadcn/ui + Framer Motion + next-themes
-- **3D Graphics**: react-globe.gl for interactive 3D globe visualization
-- **WebGL**: Custom shaders for animated pricing backgrounds
+- **WebGL**: Three.js with custom GLSL shaders (CyberneticGridShader)
 - **Charts**: Recharts for crypto visualizations
 - **Tables**: TanStack React Table
 - **Forms**: React Hook Form + Zod validation
@@ -53,20 +46,6 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 - Protected routes with `src/components/auth/AuthRequired.tsx`
 
 ## Key Features
-
-### Subscription & Pricing System
-- **Animated WebGL Pricing Page**: Custom shaders with glassy morphism effects
-- **Three Tiers**: Buddy ($0), Professor ($12.99), Trader ($24.99)
-- **Complete Checkout Flow**: `/checkout` with success pages and email confirmations
-- **Stripe Integration Ready**: Payment processing infrastructure prepared
-- **Multi-type Ripple Buttons**: Custom animated interaction components
-
-### Settings Management
-- **Complete Settings System**: Located in `/settings` with sidebar navigation
-- **Profile Management**: User profiles with avatar upload and statistics
-- **Billing Management**: Subscription management, payment methods, invoice history
-- **Account Security**: Password changes, 2FA, session management, account deletion
-- **Supabase MCP Integration**: Real database connectivity for all user settings
 
 ### AI Chat System
 - Three personas: Buddy (free), Professor (pro), Trader (elite)
