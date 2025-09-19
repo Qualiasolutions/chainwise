@@ -41,7 +41,7 @@ export default function PageWrapper({ children }: PageWrapperProps) {
       )}
 
       {/* Content */}
-      <div className={!isHomePage && !isAuthPage ? "container mx-auto px-4 max-w-7xl" : ""}>
+      <div className={!isHomePage && !isAuthPage && !isDashboard ? "container mx-auto px-4 max-w-7xl" : ""}>
         {children}
       </div>
     </motion.div>
