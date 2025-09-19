@@ -65,8 +65,16 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950 p-4">
-      <Card className="w-full max-w-md border-0 shadow-2xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4">
+      {/* Modern Background */}
+      <div className="absolute inset-0 bg-background" />
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 via-transparent to-blue-500/10" />
+      <div className="absolute top-20 left-20 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+
+      {/* Content */}
+      <div className="relative z-10">
+        <Card className="w-full max-w-md ai-card">
         <CardHeader className="space-y-6 text-center">
           {/* Logo */}
           <div className="flex justify-center">
@@ -78,7 +86,7 @@ export default function SignInPage() {
                 height={40}
                 className="rounded-lg"
               />
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold text-gradient-primary">
                 ChainWise
               </span>
             </div>
@@ -151,7 +159,7 @@ export default function SignInPage() {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full btn-modern"
               disabled={loading}
             >
               {loading ? "Signing in..." : "Sign In"}
@@ -206,6 +214,7 @@ export default function SignInPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

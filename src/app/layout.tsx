@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { HeaderNavigation } from "@/components/header-navigation";
+import { ModernNavigation } from "@/components/modern-navigation";
 import PageWrapper from "@/components/page-wrapper";
 
 const geistSans = Geist({
@@ -88,7 +88,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <HeaderNavigation />
+          <ModernNavigation />
           <main className="min-h-screen">
             <PageWrapper>
               {children}

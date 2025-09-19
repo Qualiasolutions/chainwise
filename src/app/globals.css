@@ -41,39 +41,39 @@
   }
 
   .dark {
-    /* ChainWise Design System - Dark Theme (OKLCH) */
-    --background: oklch(0.3015 0.0572 282.4176);
-    --foreground: oklch(0.9730 0.0133 286.1503);
-    --card: oklch(0.3015 0.0572 282.4176);
-    --card-foreground: oklch(1.0000 0 0);
-    --popover: oklch(0.3015 0.0572 282.4176);
-    --popover-foreground: oklch(1.0000 0 0);
-    --primary: oklch(0.5417 0.1790 288.0332);
-    --primary-foreground: oklch(1.0000 0 0);
-    --secondary: oklch(0.9174 0.0435 292.6901);
-    --secondary-foreground: oklch(0.4143 0.1039 288.1742);
-    --muted: oklch(0.9580 0.0133 286.1454);
-    --muted-foreground: oklch(0.5426 0.0465 284.7435);
-    --accent: oklch(0.9221 0.0373 262.1410);
-    --accent-foreground: oklch(0.3015 0.0572 282.4176);
-    --destructive: oklch(0.6861 0.2061 14.9941);
-    --destructive-foreground: oklch(1.0000 0 0);
-    --border: oklch(0.9115 0.0216 285.9625);
-    --input: oklch(0.9115 0.0216 285.9625);
-    --ring: oklch(0.5417 0.1790 288.0332);
-    --chart-1: oklch(0.5417 0.1790 288.0332);
-    --chart-2: oklch(0.7042 0.1602 288.9880);
-    --chart-3: oklch(0.5679 0.2113 276.7065);
-    --chart-4: oklch(0.6356 0.1922 281.8054);
-    --chart-5: oklch(0.4509 0.1758 279.3838);
-    --sidebar: oklch(0.9580 0.0133 286.1454);
-    --sidebar-foreground: oklch(0.3015 0.0572 282.4176);
-    --sidebar-primary: oklch(0.5417 0.1790 288.0332);
-    --sidebar-primary-foreground: oklch(1.0000 0 0);
-    --sidebar-accent: oklch(0.9221 0.0373 262.1410);
-    --sidebar-accent-foreground: oklch(0.3015 0.0572 282.4176);
-    --sidebar-border: oklch(0.9115 0.0216 285.9625);
-    --sidebar-ring: oklch(0.5417 0.1790 288.0332);
+    /* ChainWise Design System - Dark Theme (OKLCH) - Modern Purple/Blue */
+    --background: oklch(0.15 0.02 280);  /* Very dark purple-tinted background */
+    --foreground: oklch(0.95 0.005 280);  /* Almost white text */
+    --card: oklch(0.18 0.025 280);  /* Slightly lighter than background */
+    --card-foreground: oklch(0.95 0.005 280);
+    --popover: oklch(0.20 0.03 280);
+    --popover-foreground: oklch(0.95 0.005 280);
+    --primary: oklch(0.65 0.20 280);  /* Vibrant purple */
+    --primary-foreground: oklch(1.0 0 0);
+    --secondary: oklch(0.25 0.04 280);  /* Muted purple */
+    --secondary-foreground: oklch(0.90 0.01 280);
+    --muted: oklch(0.25 0.03 280);
+    --muted-foreground: oklch(0.65 0.02 280);
+    --accent: oklch(0.60 0.18 260);  /* Blue accent */
+    --accent-foreground: oklch(0.95 0.005 280);
+    --destructive: oklch(0.65 0.25 25);
+    --destructive-foreground: oklch(1.0 0 0);
+    --border: oklch(0.25 0.03 280);
+    --input: oklch(0.25 0.03 280);
+    --ring: oklch(0.65 0.20 280);
+    --chart-1: oklch(0.65 0.20 280);
+    --chart-2: oklch(0.60 0.18 260);
+    --chart-3: oklch(0.55 0.16 240);
+    --chart-4: oklch(0.70 0.15 290);
+    --chart-5: oklch(0.50 0.14 270);
+    --sidebar: oklch(0.16 0.02 280);
+    --sidebar-foreground: oklch(0.90 0.01 280);
+    --sidebar-primary: oklch(0.65 0.20 280);
+    --sidebar-primary-foreground: oklch(1.0 0 0);
+    --sidebar-accent: oklch(0.22 0.03 280);
+    --sidebar-accent-foreground: oklch(0.95 0.005 280);
+    --sidebar-border: oklch(0.25 0.03 280);
+    --sidebar-ring: oklch(0.65 0.20 280);
   }
 }
 
@@ -89,18 +89,142 @@
   }
 }
 
-/* AI Advisor Platform Enhancements */
+/* ChainWise Modern Design System */
 @layer components {
+  /* Modern Gradients */
   .ai-gradient {
-    @apply bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600;
+    @apply bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600;
   }
 
+  .glass-gradient {
+    background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.1) 0%,
+      rgba(59, 130, 246, 0.05) 50%,
+      rgba(139, 92, 246, 0.1) 100%);
+  }
+
+  /* Modern Cards with Glassmorphism */
   .ai-card {
-    @apply backdrop-blur-sm bg-white/80 dark:bg-slate-800/90 border shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply relative overflow-hidden backdrop-blur-xl bg-card/50 border border-border/50 shadow-xl hover:shadow-2xl transition-all duration-300;
+    background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.05) 0%,
+      rgba(59, 130, 246, 0.02) 100%);
   }
 
+  .ai-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent,
+      rgba(139, 92, 246, 0.5),
+      transparent);
+  }
+
+  /* Modern Navigation */
+  .nav-item-modern {
+    @apply relative px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200;
+    @apply hover:bg-accent/10 hover:text-primary;
+  }
+
+  .nav-item-modern.active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  .nav-item-modern.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 1rem;
+    right: 1rem;
+    height: 2px;
+    background: linear-gradient(90deg,
+      transparent,
+      rgb(139, 92, 246),
+      transparent);
+  }
+
+  /* Modern Buttons */
+  .btn-modern {
+    @apply relative overflow-hidden px-6 py-2.5 rounded-lg font-medium transition-all duration-300;
+    @apply bg-gradient-to-r from-violet-600 to-indigo-600 text-white;
+    @apply hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5;
+    @apply active:translate-y-0 active:shadow-md;
+  }
+
+  .btn-modern-outline {
+    @apply relative px-6 py-2.5 rounded-lg font-medium transition-all duration-300;
+    @apply border border-primary/50 text-primary bg-transparent;
+    @apply hover:bg-primary/10 hover:border-primary hover:-translate-y-0.5;
+    @apply active:translate-y-0;
+  }
+
+  /* Glow Effects */
+  .glow-purple {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3),
+                0 0 40px rgba(139, 92, 246, 0.2),
+                0 0 60px rgba(139, 92, 246, 0.1);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3),
+                0 0 40px rgba(59, 130, 246, 0.2),
+                0 0 60px rgba(59, 130, 246, 0.1);
+  }
+
+  /* Text Gradients */
+  .text-gradient {
+    @apply bg-gradient-to-r from-violet-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent;
+  }
+
+  /* Modern Metric Cards */
   .metric-card {
-    @apply relative overflow-hidden border shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-white/90 dark:bg-slate-800/90;
+    @apply relative overflow-hidden border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300;
+    @apply backdrop-blur-xl bg-card/50;
+    background: linear-gradient(135deg,
+      rgba(139, 92, 246, 0.03) 0%,
+      rgba(59, 130, 246, 0.01) 100%);
+  }
+
+  /* Animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes slide-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 0.3s ease-out;
   }
 
   .crypto-item {
