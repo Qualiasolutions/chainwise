@@ -1,5 +1,4 @@
 import HeroSection from "@/components/hero-section"
-import HowItWorks from "@/components/how-it-works"
 import ChainWiseTimeline from "@/components/chainwise-timeline"
 import ChainWisePricing from "@/components/chainwise-pricing"
 import { Button } from "@/components/ui/button"
@@ -11,9 +10,6 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero Section with 3D Globe */}
       <HeroSection />
-
-      {/* How It Works Section */}
-      <HowItWorks />
 
       {/* Interactive Development Roadmap */}
       <div id="roadmap" className="min-h-screen">
