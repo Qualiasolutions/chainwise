@@ -6,16 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
-import { SUPABASE_PROJECT_ID } from '@/lib/supabase/client'
-
-// This would use MCP tools in production - showing structure for now
-function useMCPQuery(query: string, params: any[] = []) {
-  // In actual implementation, this would call mcp__supabase__execute_sql
-  // For now, throwing to show where MCP integration should happen
-  throw new Error(`MCP Query not implemented: ${query}`)
-}
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
 
