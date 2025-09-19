@@ -1,6 +1,7 @@
 import HeroSection from "@/components/hero-section"
 import HowItWorks from "@/components/how-it-works"
 import ChainWiseTimeline from "@/components/chainwise-timeline"
+import ChainWisePricing from "@/components/chainwise-pricing"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
@@ -18,6 +19,9 @@ export default function Home() {
       <div id="roadmap" className="min-h-screen">
         <ChainWiseTimeline />
       </div>
+
+      {/* Pricing Section */}
+      <ChainWisePricing />
 
       {/* CTA Section */}
       <div className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-slate-950 dark:via-blue-950 dark:to-purple-950">

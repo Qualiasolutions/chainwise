@@ -7,25 +7,36 @@ import dynamic from "next/dynamic";
 const GlobeComponent = dynamic(() => import("react-globe.gl"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-40 md:h-64 flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
     </div>
   ),
 });
 
-export default function Globe3D() {
+interface Globe3DProps {
+  isFullScreen?: boolean;
+}
+
+export default function Globe3D({ isFullScreen = false }: Globe3DProps) {
   const globeEl = useRef<any>();
   const [globeReady, setGlobeReady] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 800, height: 160 });
 
   useEffect(() => {
-    // Set dimensions based on screen size, only on client side
+    // Set dimensions based on screen size and usage type
     const updateDimensions = () => {
       if (typeof window !== 'undefined') {
-        setDimensions({
-          width: 800,
-          height: window.innerWidth > 768 ? 256 : 160
-        });
+        if (isFullScreen) {
+          setDimensions({
+            width: window.innerWidth,
+            height: window.innerHeight
+          });
+        } else {
+          setDimensions({
+            width: 800,
+            height: window.innerWidth > 768 ? 256 : 160
+          });
+        }
       }
     };
 
@@ -33,7 +44,7 @@ export default function Globe3D() {
     window?.addEventListener('resize', updateDimensions);
 
     return () => window?.removeEventListener('resize', updateDimensions);
-  }, []);
+  }, [isFullScreen]);
 
   useEffect(() => {
     if (!globeEl.current || !globeReady) return;
@@ -41,9 +52,10 @@ export default function Globe3D() {
     // Configure the globe controls and view
     const globe = globeEl.current;
 
-    // Set initial camera position
+    // Set initial camera position - further back for full screen
+    const altitude = isFullScreen ? 3.5 : 2.5;
     globe.pointOfView(
-      { lat: 23.5, lng: 0, altitude: 2.5 },
+      { lat: 23.5, lng: 0, altitude },
       1000
     );
 
@@ -54,10 +66,14 @@ export default function Globe3D() {
       globe.controls().enableZoom = false;
       globe.controls().enablePan = false;
     }
-  }, [globeReady]);
+  }, [globeReady, isFullScreen]);
+
+  const containerClasses = isFullScreen
+    ? "w-full h-full absolute inset-0 overflow-hidden"
+    : "w-full h-40 md:h-64 relative overflow-hidden";
 
   return (
-    <div className="w-full h-40 md:h-64 relative overflow-hidden">
+    <div className={containerClasses}>
       <GlobeComponent
         ref={globeEl}
         globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"

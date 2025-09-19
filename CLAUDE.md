@@ -15,10 +15,12 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 
 ## Development Commands
 
-- `npm run dev` - Start development server (localhost:3000)
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
+- `npm run dev` - Start development server with Turbopack (localhost:3000)
+- `npm run build` - Build for production with Turbopack
+- `npm run lint` - Run ESLint (currently no specific targets configured)
 - `npm run start` - Start production server
+
+**Note**: No test framework is currently configured in this project.
 
 ## Tech Stack
 
