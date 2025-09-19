@@ -31,35 +31,35 @@ export default function BillingPage() {
       date: "2024-09-19",
       amount: 12.99,
       status: "paid",
-      description: "Professor Plan - Monthly"
+      description: "PRO Plan - Monthly"
     },
     {
       id: "inv_002",
       date: "2024-08-19",
       amount: 12.99,
       status: "paid",
-      description: "Professor Plan - Monthly"
+      description: "PRO Plan - Monthly"
     },
     {
       id: "inv_003",
       date: "2024-07-19",
       amount: 12.99,
       status: "paid",
-      description: "Professor Plan - Monthly"
+      description: "PRO Plan - Monthly"
     }
   ];
 
   const plans = [
     {
       id: "free",
-      name: "Buddy",
+      name: "FREE",
       price: 0,
       icon: User,
       features: ["5 questions per day", "Basic AI insights", "Community access"]
     },
     {
       id: "pro",
-      name: "Professor",
+      name: "PRO",
       price: 12.99,
       icon: Brain,
       popular: true,
@@ -67,10 +67,10 @@ export default function BillingPage() {
     },
     {
       id: "elite",
-      name: "Trader",
+      name: "ELITE",
       price: 24.99,
       icon: Crown,
-      features: ["Everything in Pro", "Trading signals", "Custom AI training", "1-on-1 sessions"]
+      features: ["Everything in PRO", "Trading signals", "Custom AI training", "1-on-1 sessions"]
     }
   ];
 
@@ -105,11 +105,11 @@ export default function BillingPage() {
   const getPlanBadge = (plan: string) => {
     switch (plan) {
       case "pro":
-        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">Professor</Badge>;
+        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">PRO</Badge>;
       case "elite":
-        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Trader</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">ELITE</Badge>;
       default:
-        return <Badge variant="secondary">Buddy</Badge>;
+        return <Badge variant="secondary">FREE</Badge>;
     }
   };
 

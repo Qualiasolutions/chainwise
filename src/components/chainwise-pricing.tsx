@@ -8,7 +8,7 @@ import { AnimatedGlassyPricing } from "@/components/ui/animated-glassy-pricing";
 const chainwisePricingTiers = [
   {
     id: "free",
-    name: "Buddy",
+    name: "FREE",
     price: 0,
     period: "month",
     description: "Perfect for crypto beginners who want to explore AI insights",
@@ -26,7 +26,7 @@ const chainwisePricingTiers = [
   },
   {
     id: "pro",
-    name: "Professor",
+    name: "PRO",
     price: 12.99,
     originalPrice: 19.99,
     period: "month",
@@ -48,13 +48,13 @@ const chainwisePricingTiers = [
   },
   {
     id: "elite",
-    name: "Trader",
+    name: "ELITE",
     price: 24.99,
     originalPrice: 34.99,
     period: "month",
     description: "Professional-grade tools for crypto trading experts",
     features: [
-      "Everything in Professor",
+      "Everything in PRO",
       "Advanced trading signals",
       "Institutional-grade analysis",
       "Custom AI model training",

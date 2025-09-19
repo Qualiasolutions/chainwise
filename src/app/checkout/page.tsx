@@ -10,7 +10,7 @@ import Link from "next/link";
 
 const plans = {
   pro: {
-    name: "Professor",
+    name: "PRO",
     price: 12.99,
     originalPrice: 19.99,
     period: "month",
@@ -28,14 +28,14 @@ const plans = {
     ]
   },
   elite: {
-    name: "Trader",
+    name: "ELITE",
     price: 24.99,
     originalPrice: 34.99,
     period: "month",
     description: "Professional-grade tools for crypto trading experts",
     icon: Crown,
     features: [
-      "Everything in Professor",
+      "Everything in PRO",
       "Advanced trading signals",
       "Institutional-grade analysis",
       "Custom AI model training",
