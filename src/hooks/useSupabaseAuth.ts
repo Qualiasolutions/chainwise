@@ -162,7 +162,7 @@ export const useSupabaseAuth = () => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -177,6 +177,17 @@ export const useSupabaseAuth = () => {
         return { error: error.message }
       }
 
+      // Check if email confirmation is required
+      if (data?.user && !data.session) {
+        setAuthState(prev => ({ ...prev, loading: false }))
+        return {
+          error: null,
+          requiresConfirmation: true,
+          message: 'Please check your email and click the confirmation link to complete your registration.'
+        }
+      }
+
+      setAuthState(prev => ({ ...prev, loading: false }))
       return { error: null }
     } catch (error) {
       const errorMessage = 'An unexpected error occurred'

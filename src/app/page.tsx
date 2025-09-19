@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { TrendingUp, BarChart3, Shield, Zap, Users, Target } from "lucide-react"
 import Link from "next/link"
 
@@ -11,9 +10,6 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center space-y-8">
           <div className="space-y-4">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              🚀 Next-Gen Crypto Trading Platform
-            </Badge>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
               ChainWise
             </h1>

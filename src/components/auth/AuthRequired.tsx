@@ -6,22 +6,26 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
-import { LogIn, UserPlus, Mail, Lock, Chrome } from 'lucide-react'
+import { LogIn, UserPlus, Mail, Lock, Chrome, CheckCircle } from 'lucide-react'
 
 export default function AuthRequired() {
   const [isSignUp, setIsSignUp] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const { signIn, signUp, signInWithGoogle, loading, error } = useSupabaseAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSuccessMessage('')
 
     if (isSignUp) {
-      await signUp(email, password, fullName)
+      const result = await signUp(email, password, fullName)
+      if (result?.requiresConfirmation) {
+        setSuccessMessage(result.message)
+      }
     } else {
       await signIn(email, password)
     }
@@ -36,14 +40,11 @@ export default function AuthRequired() {
       <div className="w-full max-w-md space-y-6">
         {/* Logo/Brand */}
         <div className="text-center space-y-2">
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300">
-            🚀 Next-Gen Crypto Platform
-          </Badge>
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
             ChainWise
           </h1>
           <p className="text-muted-foreground">
-            AI-powered crypto advisor platform
+            AI-powered crypto trading platform
           </p>
         </div>
 
@@ -137,6 +138,15 @@ export default function AuthRequired() {
                 </div>
               )}
 
+              {successMessage && (
+                <div className="text-sm text-green-600 dark:text-green-400 text-center p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center justify-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    {successMessage}
+                  </div>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -177,7 +187,7 @@ export default function AuthRequired() {
         {/* Features Preview */}
         <div className="text-center space-y-2">
           <p className="text-xs text-muted-foreground">
-            ✨ AI-powered insights • 📊 Professional analytics • 🔒 Bank-grade security
+            AI-powered insights • Professional analytics • Secure trading
           </p>
         </div>
       </div>
