@@ -104,7 +104,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     )
 
     return NextResponse.json({
-      holdings: enrichedHoldings,
+      enrichedHoldings: enrichedHoldings,
+      holdings: enrichedHoldings, // Keep both for backward compatibility
       success: true
     })
 
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const body = await request.json()
-    const { symbol, name, amount, purchasePrice, purchaseDate } = body
+    const { symbol, name, amount, purchasePrice, purchaseDate, coinGeckoId } = body
 
     // Validation
     if (!symbol || !name || !amount || !purchasePrice || !purchaseDate) {
@@ -202,11 +203,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }, { status: 400 })
     }
 
-    // Get current price for the crypto
+    // Get current price for the crypto using CoinGecko ID if available
     let currentPrice = purchasePrice
     try {
-      const cryptoData = await cryptoAPI.getCrypto(symbol.toLowerCase())
-      currentPrice = cryptoData?.current_price || purchasePrice
+      if (coinGeckoId) {
+        const cryptoData = await cryptoAPI.getCrypto(coinGeckoId)
+        currentPrice = cryptoData?.current_price || purchasePrice
+      } else {
+        // Fallback to symbol-based lookup
+        const cryptoData = await cryptoAPI.getCrypto(symbol.toLowerCase())
+        currentPrice = cryptoData?.current_price || purchasePrice
+      }
     } catch (error) {
       console.warn(`Failed to get current price for ${symbol}:`, error)
     }

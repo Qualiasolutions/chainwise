@@ -133,11 +133,12 @@ export function AddAssetModal({ portfolioId, onAssetAdded, children }: AddAssetM
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          symbol: selectedCrypto!.id,
+          symbol: selectedCrypto!.symbol,
           name: selectedCrypto!.name,
           amount: parseFloat(amount),
           purchasePrice: parseFloat(purchasePrice),
-          purchaseDate: new Date(purchaseDate).toISOString()
+          purchaseDate: new Date(purchaseDate).toISOString(),
+          coinGeckoId: selectedCrypto!.id  // Add the ID for price fetching
         })
       })
 
