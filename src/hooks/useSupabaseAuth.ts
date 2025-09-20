@@ -23,38 +23,25 @@ export const useSupabaseAuth = () => {
 
   const fetchUserProfile = async (authUser: SupabaseUser) => {
     try {
-      const { data: profile, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_id', authUser.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') {
-        throw error
-      }
+      // Try to get existing profile using MCP helper
+      const profile = await mcpSupabase.getUserByAuthId(authUser.id)
 
       // Create profile if it doesn't exist
       if (!profile) {
-        const newProfile: User = {
-          id: crypto.randomUUID(),
+        const newProfileData: UserInsert = {
           auth_id: authUser.id,
           email: authUser.email || '',
           full_name: authUser.user_metadata?.full_name || null,
+          bio: null,
+          location: null,
+          website: null,
+          avatar_url: authUser.user_metadata?.avatar_url || null,
           tier: 'free',
           credits: 3,
-          monthly_credits: 3,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          monthly_credits: 3
         }
 
-        const { data: createdProfile, error: createError } = await supabase
-          .from('users')
-          .insert(newProfile)
-          .select()
-          .single()
-
-        if (createError) throw createError
-
+        const createdProfile = await mcpSupabase.createUser(newProfileData)
         return createdProfile
       }
 
@@ -245,11 +232,23 @@ export const useSupabaseAuth = () => {
     }
   }
 
+  const refreshProfile = async () => {
+    if (authState.user) {
+      const profile = await fetchUserProfile(authState.user)
+      setAuthState(prev => ({
+        ...prev,
+        profile,
+        error: null
+      }))
+    }
+  }
+
   return {
     ...authState,
     signIn,
     signUp,
     signOut,
-    signInWithGoogle
+    signInWithGoogle,
+    refreshProfile
   }
 }

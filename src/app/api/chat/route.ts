@@ -8,6 +8,7 @@ import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { OpenAIService } from '@/lib/openai/service'
 import { AI_PERSONAS, PersonaId } from '@/lib/openai/personas'
+import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,12 +21,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile
-    const { data: profile } = await supabase
-      .from('users')
-      .select('id, tier, credits')
-      .eq('auth_id', session.user.id)
-      .single()
+    // Get user profile using MCP helper
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
@@ -64,34 +61,34 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
-    // TODO: Use MCP for credit deduction
-    // await mcpSupabase.recordCreditUsage(profile.id, personaConfig.creditCost, `AI chat with ${personaConfig.name}`, persona, sessionId)
+    // Use MCP for credit deduction and transaction recording
+    const creditUsageSuccess = await mcpSupabase.recordCreditUsage(
+      profile.id,
+      personaConfig.creditCost,
+      `AI chat with ${personaConfig.name}`,
+      persona,
+      sessionId
+    )
 
-    // For now, use direct supabase call - this will be replaced with MCP
-    const { error: creditError } = await supabase
-      .from('users')
-      .update({
-        credits: profile.credits - personaConfig.creditCost
-      })
-      .eq('id', profile.id)
-
-    if (creditError) {
-      console.error('Credit deduction error:', creditError)
+    if (!creditUsageSuccess) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
     // Get conversation history for context
     let conversationHistory: any[] = []
+    let existingSession: any = null
     if (sessionId) {
-      const { data: existingSession } = await supabase
+      // TODO: Replace with MCP helper when available
+      const { data: session } = await supabase
         .from('ai_chat_sessions')
         .select('messages')
         .eq('id', sessionId)
         .eq('user_id', profile.id)
         .single()
 
-      if (existingSession?.messages) {
-        conversationHistory = Array.isArray(existingSession.messages) ? existingSession.messages : []
+      existingSession = session
+      if (session?.messages) {
+        conversationHistory = Array.isArray(session.messages) ? session.messages : []
         // Convert to OpenAI format (last 10 messages for context)
         conversationHistory = conversationHistory.slice(-10).map((msg: any) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -113,50 +110,35 @@ export async function POST(request: NextRequest) {
     let chatSession
     let updatedMessages
 
-    if (sessionId) {
+    if (sessionId && existingSession) {
       // Update existing session
-      const { data: existingSession } = await supabase
-        .from('ai_chat_sessions')
-        .select('messages, credits_used')
-        .eq('id', sessionId)
-        .eq('user_id', profile.id)
-        .single()
-
-      if (existingSession) {
-        const currentMessages = Array.isArray(existingSession.messages) ? existingSession.messages : []
-        updatedMessages = [
-          ...currentMessages,
-          {
-            id: crypto.randomUUID(),
-            content: message,
-            sender: 'user',
-            timestamp: new Date().toISOString()
-          },
-          {
-            id: crypto.randomUUID(),
-            content: aiResponse,
-            sender: 'ai',
-            persona,
-            timestamp: new Date().toISOString()
-          }
-        ]
-
-        const { data: updated, error } = await supabase
-          .from('ai_chat_sessions')
-          .update({
-            messages: updatedMessages,
-            credits_used: (existingSession.credits_used || 0) + personaConfig.creditCost
-          })
-          .eq('id', sessionId)
-          .select()
-          .single()
-
-        if (error) {
-          console.error('Session update error:', error)
-          return NextResponse.json({ error: 'Failed to update chat session' }, { status: 500 })
+      const currentMessages = Array.isArray(existingSession.messages) ? existingSession.messages : []
+      updatedMessages = [
+        ...currentMessages,
+        {
+          id: crypto.randomUUID(),
+          content: message,
+          sender: 'user',
+          timestamp: new Date().toISOString()
+        },
+        {
+          id: crypto.randomUUID(),
+          content: aiResponse,
+          sender: 'ai',
+          persona,
+          timestamp: new Date().toISOString()
         }
+      ]
 
-        chatSession = updated
+      try {
+        chatSession = await mcpSupabase.updateChatSession(
+          sessionId,
+          updatedMessages,
+          (existingSession.credits_used || 0) + personaConfig.creditCost
+        )
+      } catch (error) {
+        console.error('Session update error:', error)
+        return NextResponse.json({ error: 'Failed to update chat session' }, { status: 500 })
       }
     }
 
@@ -178,41 +160,20 @@ export async function POST(request: NextRequest) {
         }
       ]
 
-      const { data: newSession, error } = await supabase
-        .from('ai_chat_sessions')
-        .insert({
+      try {
+        chatSession = await mcpSupabase.createChatSession({
           user_id: profile.id,
-          persona,
-          messages: updatedMessages,
+          persona: persona as any,
+          messages: updatedMessages as any,
           credits_used: personaConfig.creditCost
         })
-        .select()
-        .single()
-
-      if (error) {
+      } catch (error) {
         console.error('Session creation error:', error)
         return NextResponse.json({ error: 'Failed to create chat session' }, { status: 500 })
       }
-
-      chatSession = newSession
     }
 
-    // Record credit transaction
-    try {
-      await supabase
-        .from('credit_transactions')
-        .insert({
-          user_id: profile.id,
-          transaction_type: 'spend',
-          amount: -personaConfig.creditCost,
-          description: `AI chat with ${personaConfig.name}`,
-          ai_persona: persona,
-          session_id: chatSession.id
-        })
-    } catch (error) {
-      console.warn('Credit transaction recording failed:', error)
-      // Non-blocking error
-    }
+    // Credit transaction is already recorded by mcpSupabase.recordCreditUsage above
 
     return NextResponse.json({
       response: aiResponse,
@@ -242,18 +203,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile
-    const { data: profile } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_id', session.user.id)
-      .single()
+    // Get user profile using MCP helper
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // TODO: Replace with MCP query
+    // TODO: Add getChatSessions method to MCP helper
+    // For now, use direct query
     const { data: sessions, error } = await supabase
       .from('ai_chat_sessions')
       .select('*')
@@ -271,10 +229,10 @@ export async function GET() {
       success: true
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Chat sessions API error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     )
   }

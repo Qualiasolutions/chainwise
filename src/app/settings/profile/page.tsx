@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export default function ProfilePage() {
-  const { user: authUser, profile, loading: authLoading } = useSupabaseAuth();
+  const { user: authUser, profile, loading: authLoading, refreshProfile } = useSupabaseAuth();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -55,6 +55,9 @@ export default function ProfilePage() {
       }
 
       toast.success("Profile updated successfully!");
+
+      // Refresh the profile data
+      await refreshProfile();
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast.error(error.message || "Failed to update profile");
