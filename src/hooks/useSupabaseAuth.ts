@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { User as SupabaseUser } from '@supabase/auth-helpers-nextjs'
 import { supabase } from '@/lib/supabase/client'
-import { User } from '@/lib/supabase/types'
+import { User, UserInsert } from '@/lib/supabase/types'
+import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 interface AuthState {
   user: SupabaseUser | null

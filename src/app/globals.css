@@ -263,7 +263,8 @@
 
   /* Cybernetic Bento Grid Styles */
   .main-container {
-    @apply min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden flex items-center justify-center p-8;
+    @apply min-h-screen relative overflow-hidden flex items-center justify-center p-8;
+    background: linear-gradient(135deg, #0a0613 0%, #150d27 100%);
   }
 
   .main-container::before {
@@ -274,15 +275,38 @@
     right: 0;
     bottom: 0;
     background:
-      radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 80%, rgba(120, 200, 255, 0.1) 0%, transparent 50%);
+      radial-gradient(circle at 70% 30%, rgba(155, 135, 245, 0.15) 0%, rgba(13, 10, 25, 0) 60%),
+      radial-gradient(circle at 30% 70%, rgba(155, 135, 245, 0.10) 0%, rgba(13, 10, 25, 0) 60%),
+      radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(120, 200, 255, 0.08) 0%, transparent 50%);
     pointer-events: none;
+    z-index: 1;
+  }
+
+  .main-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(155, 135, 245, 0.03) 2px,
+        rgba(155, 135, 245, 0.03) 4px
+      );
+    pointer-events: none;
+    z-index: 2;
   }
 
   .bento-grid {
-    @apply grid grid-cols-3 gap-4 w-full;
+    @apply grid grid-cols-3 gap-4 w-full relative;
     grid-template-rows: repeat(3, minmax(200px, 1fr));
+    z-index: 10;
   }
 
   .bento-item {

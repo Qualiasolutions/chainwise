@@ -42,7 +42,7 @@ const BentoItem: React.FC<BentoItemProps> = ({ className = '', children }) => {
 export const CyberneticBentoGrid: React.FC = () => {
   return (
     <div className="main-container">
-      <div className="w-full max-w-6xl z-10">
+      <div className="w-full max-w-6xl z-10 relative">
         <h1 className="text-4xl sm:text-5xl font-bold text-white text-center mb-8">
           Core Features
         </h1>

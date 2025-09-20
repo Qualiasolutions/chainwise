@@ -4,7 +4,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { Database } from '@/lib/supabase/types'
+import { Database, UserUpdate } from '@/lib/supabase/types'
+import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 export async function PUT(request: NextRequest) {
   try {
@@ -17,12 +18,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile
-    const { data: profile } = await supabase
-      .from('users')
-      .select('id')
-      .eq('auth_id', session.user.id)
-      .single()
+    // Get user profile using MCP helper
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
@@ -48,34 +45,26 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid website' }, { status: 400 })
     }
 
-    // Update user profile
-    const { data: updatedProfile, error } = await supabase
-      .from('users')
-      .update({
-        full_name: full_name?.trim() || null,
-        bio: bio?.trim() || null,
-        location: location?.trim() || null,
-        website: website?.trim() || null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', profile.id)
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Profile update error:', error)
-      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
+    // Prepare update data
+    const updateData: UserUpdate = {
+      full_name: full_name?.trim() || null,
+      bio: bio?.trim() || null,
+      location: location?.trim() || null,
+      website: website?.trim() || null,
     }
+
+    // Update user profile using MCP helper
+    const updatedProfile = await mcpSupabase.updateUser(profile.id, updateData)
 
     return NextResponse.json({
       profile: updatedProfile,
       success: true
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Profile API error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error.message || 'Internal server error' },
       { status: 500 }
     )
   }
