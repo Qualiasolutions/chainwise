@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils"
 import { cryptoAPI, CryptoData, MarketData, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
 import { ColumnDef } from "@tanstack/react-table"
 import { motion } from "framer-motion"
+import Link from "next/link"
 
 interface CryptoTableRow extends CryptoData {
   watchlisted?: boolean
@@ -94,19 +95,21 @@ export default function MarketPage() {
       id: "name",
       header: "Name",
       cell: ({ row }) => (
-        <div className="flex items-center space-x-3">
-          <img
-            src={row.original.image}
-            alt={row.original.name}
-            className="w-8 h-8 rounded-full"
-          />
-          <div>
-            <div className="font-medium">{row.original.name}</div>
-            <div className="text-sm text-muted-foreground uppercase">
-              {row.original.symbol}
+        <Link href={`/market/${row.original.id}`} className="block">
+          <div className="flex items-center space-x-3 hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors cursor-pointer">
+            <img
+              src={row.original.image}
+              alt={row.original.name}
+              className="w-8 h-8 rounded-full"
+            />
+            <div>
+              <div className="font-medium">{row.original.name}</div>
+              <div className="text-sm text-muted-foreground uppercase">
+                {row.original.symbol}
+              </div>
             </div>
           </div>
-        </div>
+        </Link>
       ),
       size: 200
     },
@@ -379,35 +382,37 @@ export default function MarketPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
-                  <Card className="ai-card hover:shadow-lg transition-all duration-200 cursor-pointer">
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <img
-                          src={trending.item.large}
-                          alt={trending.item.name}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div>
-                          <div className="font-medium">{trending.item.name}</div>
-                          <div className="text-sm text-muted-foreground uppercase">
-                            {trending.item.symbol}
+                  <Link href={`/market/${trending.item.id}`}>
+                    <Card className="ai-card hover:shadow-lg transition-all duration-200 cursor-pointer">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <img
+                            src={trending.item.large}
+                            alt={trending.item.name}
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <div>
+                            <div className="font-medium">{trending.item.name}</div>
+                            <div className="text-sm text-muted-foreground uppercase">
+                              {trending.item.symbol}
+                            </div>
+                          </div>
+                          <Badge variant="secondary" className="ml-auto">
+                            #{trending.item.market_cap_rank}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm text-muted-foreground">
+                            Trending #{index + 1}
+                          </div>
+                          <div className="flex items-center space-x-1 text-sm">
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                            <span className="text-green-500">Trending</span>
                           </div>
                         </div>
-                        <Badge variant="secondary" className="ml-auto">
-                          #{trending.item.market_cap_rank}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-muted-foreground">
-                          Trending #{index + 1}
-                        </div>
-                        <div className="flex items-center space-x-1 text-sm">
-                          <TrendingUp className="h-4 w-4 text-green-500" />
-                          <span className="text-green-500">Trending</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 </motion.div>
               ))}
             </div>

@@ -119,6 +119,102 @@ class CryptoAPI {
     const currenciesStr = vs_currencies.join(',')
     return this.fetchAPI(`/simple/price?ids=${idsStr}&vs_currencies=${currenciesStr}&include_24hr_change=true`)
   }
+
+  // Get detailed coin data for individual coin pages
+  async getCoinDetails(id: string): Promise<any> {
+    try {
+      return await this.fetchAPI(`/coins/${id}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`)
+    } catch (error) {
+      console.error(`Error fetching coin details for ${id}:`, error)
+      throw error
+    }
+  }
+
+  // Get portfolio performance data with individual coin breakdown
+  async getPortfolioPerformanceData(holdings: Array<{id: string, amount: number, symbol: string}>, days: number = 7): Promise<any[]> {
+    try {
+      if (holdings.length === 0) return []
+
+      const ids = holdings.map(h => h.id).join(',')
+
+      // Get current prices first
+      const currentData = await this.fetchAPI(
+        `/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&per_page=250&page=1&sparkline=false`
+      )
+
+      // Generate time points for the chart
+      const timePoints = []
+      const now = new Date()
+      for (let i = days; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
+        timePoints.push({
+          time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          timestamp: date.getTime()
+        })
+      }
+
+      // For each time point, calculate portfolio values
+      const portfolioData = await Promise.all(
+        timePoints.map(async (point, index) => {
+          const dataPoint: any = {
+            time: point.time,
+            timestamp: point.timestamp,
+            total: 0
+          }
+
+          // For each holding, calculate its value at this time point
+          for (const holding of holdings) {
+            const crypto = currentData.find((c: CryptoData) => c.id === holding.id)
+            if (crypto) {
+              // Simulate price variation for demonstration (in real app, use historical data)
+              const variation = 1 + (Math.random() - 0.5) * 0.1 * (days - index) / days
+              const historicalPrice = crypto.current_price * variation
+              const value = historicalPrice * holding.amount
+
+              dataPoint[holding.symbol] = value
+              dataPoint.total += value
+            }
+          }
+
+          return dataPoint
+        })
+      )
+
+      return portfolioData
+    } catch (error) {
+      console.error('Error generating portfolio performance data:', error)
+      // Return mock data as fallback
+      return this.generateMockPortfolioData(holdings, days)
+    }
+  }
+
+  // Fallback mock data generator
+  private generateMockPortfolioData(holdings: Array<{id: string, amount: number, symbol: string}>, days: number): any[] {
+    const timePoints = []
+    const now = new Date()
+
+    for (let i = days; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000)
+      const dataPoint: any = {
+        time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: date.getTime(),
+        total: 0
+      }
+
+      // Mock values for each coin
+      holdings.forEach((holding, index) => {
+        const baseValue = 1000 * (index + 1) // Different base values
+        const variation = 1 + (Math.random() - 0.5) * 0.2
+        const value = baseValue * variation
+        dataPoint[holding.symbol] = value
+        dataPoint.total += value
+      })
+
+      timePoints.push(dataPoint)
+    }
+
+    return timePoints
+  }
 }
 
 export const cryptoAPI = new CryptoAPI()

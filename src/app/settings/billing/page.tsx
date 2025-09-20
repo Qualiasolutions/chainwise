@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EnhancedCard, EnhancedCardContent, EnhancedCardDescription, EnhancedCardHeader, EnhancedCardTitle } from "@/components/ui/enhanced-card";
 import { Button } from "@/components/ui/button";
+import { RippleButton } from "@/components/ui/ripple-button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, Calendar, Receipt, AlertCircle, Crown, Brain, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -156,17 +158,17 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       {/* Current Subscription */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <EnhancedCard glow gradient>
+        <EnhancedCardHeader>
+          <EnhancedCardTitle className="flex items-center gap-2">
             <CreditCard className="w-5 h-5" />
             Current Subscription
-          </CardTitle>
-          <CardDescription>
+          </EnhancedCardTitle>
+          <EnhancedCardDescription>
             Manage your ChainWise subscription and billing information
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </EnhancedCardDescription>
+        </EnhancedCardHeader>
+        <EnhancedCardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -183,54 +185,58 @@ export default function BillingPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
-              <div>
+              <div className="min-w-0">
                 <div className="text-sm font-medium">Next Billing Date</div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  {currentSubscription.next_billing ?
-                    new Date(currentSubscription.next_billing).toLocaleDateString() :
-                    'No billing scheduled'
-                  }
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {currentSubscription.next_billing ?
+                      new Date(currentSubscription.next_billing).toLocaleDateString() :
+                      'No billing scheduled'
+                    }
+                  </span>
                 </div>
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-sm font-medium">Payment Method</div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CreditCard className="w-4 h-4" />
-                  {currentSubscription.payment_method ?
-                    `${currentSubscription.payment_method.brand?.toUpperCase()} ****${currentSubscription.payment_method.last4}` :
-                    'No payment method'
-                  }
+                  <CreditCard className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {currentSubscription.payment_method ?
+                      `${currentSubscription.payment_method.brand?.toUpperCase()} ****${currentSubscription.payment_method.last4}` :
+                      'No payment method'
+                    }
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={handleUpdatePayment} disabled={loading}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <RippleButton variant="outline" onClick={handleUpdatePayment} disabled={loading} className="flex-1 sm:flex-none">
                 Update Payment Method
-              </Button>
-              <Button
-                variant="outline"
+              </RippleButton>
+              <RippleButton
+                variant="destructive"
                 onClick={handleCancelSubscription}
                 disabled={loading}
-                className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950"
+                className="flex-1 sm:flex-none"
               >
                 Cancel Subscription
-              </Button>
+              </RippleButton>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </EnhancedCardContent>
+      </EnhancedCard>
 
       {/* Available Plans */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Available Plans</CardTitle>
-          <CardDescription>
+      <EnhancedCard glow>
+        <EnhancedCardHeader>
+          <EnhancedCardTitle>Available Plans</EnhancedCardTitle>
+          <EnhancedCardDescription>
             Compare plans and upgrade or downgrade your subscription
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </EnhancedCardDescription>
+        </EnhancedCardHeader>
+        <EnhancedCardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {plans.map((plan) => {
               const Icon = plan.icon;
@@ -270,9 +276,9 @@ export default function BillingPage() {
                         </Button>
                       ) : (
                         <UpgradeModal requiredTier={plan.id} personaName={plan.name}>
-                          <Button size="sm" className="w-full">
+                          <RippleButton variant="purple" size="sm" className="w-full">
                             Switch Plan
-                          </Button>
+                          </RippleButton>
                         </UpgradeModal>
                       )}
                     </div>
@@ -281,21 +287,21 @@ export default function BillingPage() {
               );
             })}
           </div>
-        </CardContent>
-      </Card>
+        </EnhancedCardContent>
+      </EnhancedCard>
 
       {/* Credit Transaction History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <EnhancedCard>
+        <EnhancedCardHeader>
+          <EnhancedCardTitle className="flex items-center gap-2">
             <CreditCard className="w-5 h-5" />
             Credit History
-          </CardTitle>
-          <CardDescription>
+          </EnhancedCardTitle>
+          <EnhancedCardDescription>
             View your AI credit usage and refill history
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </EnhancedCardDescription>
+        </EnhancedCardHeader>
+        <EnhancedCardContent>
           <div className="space-y-3">
             {creditTransactions.length > 0 ? (
               creditTransactions.slice(0, 10).map((transaction) => (
@@ -337,19 +343,19 @@ export default function BillingPage() {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </EnhancedCardContent>
+      </EnhancedCard>
 
       {/* Billing Notice */}
-      <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30">
-        <CardContent className="p-4">
+      <EnhancedCard className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950/30">
+        <EnhancedCardContent className="p-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
             <div>
               <div className="font-medium text-yellow-800 dark:text-yellow-200">
                 Billing Information
               </div>
-              <div className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+              <div className="text-sm text-yellow-700 dark:text-yellow-300 mt-1 break-words">
                 {currentSubscription.plan === 'free' ? (
                   'Upgrade to PRO or ELITE to get monthly AI credits and unlock advanced features.'
                 ) : (
@@ -360,8 +366,8 @@ export default function BillingPage() {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </EnhancedCardContent>
+      </EnhancedCard>
     </div>
   );
 }

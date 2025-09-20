@@ -19,7 +19,7 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 
 - `npm run dev` - Start development server (localhost:3000)
 - `npm run build` - Build for production
-- `npm run lint` - Run ESLint
+- `npm run lint` - Run ESLint (configured but may have unresolved issues)
 - `npm run start` - Start production server
 
 **Note**: No test framework is currently configured. The project uses TypeScript and ESLint errors ignored during builds (see `next.config.ts`).
@@ -139,13 +139,35 @@ Required for full functionality:
 - Supabase with Row Level Security (RLS) fully enabled
 - All 41 security warnings resolved (production-ready)
 - Functions use `SET search_path = ''` for security
+- Database migrations located in `supabase/migrations/`
+- Latest migration: `20250919_premium_features.sql` with subscription enhancements
+
+### MCP Integration (In Progress)
+The codebase is being migrated to use Model Context Protocol (MCP) for database operations:
+- **Current State**: Direct Supabase client queries in API routes
+- **Target State**: MCP queries for better security and performance
+- **Affected Areas**: 18 TODO items across all API routes (portfolio, alerts, chat, notifications)
+- **Migration Priority**: Replace direct queries in portfolio and holdings management first
+
+### Technical Debt
+Current TODOs requiring attention:
+- **MCP Migration**: 18 API routes need MCP query implementation for better security/performance
+- **OpenAI Integration**: Mock responses in AI chat need real OpenAI API integration
+- **Stripe Integration**: Payment processing needs API key configuration
 
 ### AI Chat Implementation
 - Mock responses in `src/app/dashboard/ai/page.tsx`
 - Ready for OpenAI API integration
 - Credit system with tier-based access controls
 
-### Recent Updates (September 19, 2025)
+### CoinGecko API Integration
+- Complete crypto data service in `src/lib/crypto-api.ts`
+- Real-time price data, market caps, and trading volumes
+- Portfolio value calculations and crypto search functionality
+- Mock data fallbacks for development when API rate-limited
+- Utility functions for price, percentage, and market cap formatting
+
+### Recent Updates (September 20, 2025)
 
 #### Frontend-Backend Configuration Fixes
 - **Portfolio Page Critical Fix**: Resolved undefined `enrichedHoldings` variable causing runtime errors

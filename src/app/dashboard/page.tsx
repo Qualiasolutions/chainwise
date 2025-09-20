@@ -25,35 +25,92 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Line, LineChart, Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
 import { usePortfolio } from "@/hooks/usePortfolio"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import { cryptoAPI } from "@/lib/crypto-api"
 import Link from "next/link"
 
-// Mock chart data for portfolio performance (will be replaced with real historical data)
-const portfolioData = [
-  { time: "00:00", value: 45000, volume: 2400 },
-  { time: "04:00", value: 47500, volume: 1398 },
-  { time: "08:00", value: 46800, volume: 9800 },
-  { time: "12:00", value: 49200, volume: 3908 },
-  { time: "16:00", value: 51500, volume: 4800 },
-  { time: "20:00", value: 53200, volume: 3800 },
-  { time: "24:00", value: 54750, volume: 4300 },
+// Color palette for different coins in charts
+const coinColors = [
+  "hsl(var(--chart-1))", // Blue
+  "hsl(var(--chart-2))", // Green
+  "hsl(var(--chart-3))", // Orange
+  "hsl(var(--chart-4))", // Purple
+  "hsl(var(--chart-5))", // Red
+  "#8884d8", "#82ca9d", "#ffc658", "#ff7c7c", "#8dd1e1"
 ]
 
+// Top cryptocurrencies with real images from CoinGecko
 const topCryptos = [
-  { symbol: "BTC", name: "Bitcoin", price: 54750, change: 5.2, volume: "2.1B" },
-  { symbol: "ETH", name: "Ethereum", price: 3420, change: 3.8, volume: "1.8B" },
-  { symbol: "BNB", name: "Binance Coin", price: 425, change: -1.2, volume: "654M" },
-  { symbol: "XRP", name: "Ripple", price: 0.87, change: 8.1, volume: "890M" },
-  { symbol: "ADA", name: "Cardano", price: 1.45, change: 4.3, volume: "432M" },
+  {
+    id: "bitcoin",
+    symbol: "BTC",
+    name: "Bitcoin",
+    price: 54750,
+    change: 5.2,
+    volume: "2.1B",
+    image: "https://assets.coingecko.com/coins/images/1/large/bitcoin.png"
+  },
+  {
+    id: "ethereum",
+    symbol: "ETH",
+    name: "Ethereum",
+    price: 3420,
+    change: 3.8,
+    volume: "1.8B",
+    image: "https://assets.coingecko.com/coins/images/279/large/ethereum.png"
+  },
+  {
+    id: "binancecoin",
+    symbol: "BNB",
+    name: "Binance Coin",
+    price: 425,
+    change: -1.2,
+    volume: "654M",
+    image: "https://assets.coingecko.com/coins/images/825/large/bnb-icon2_2x.png"
+  },
+  {
+    id: "ripple",
+    symbol: "XRP",
+    name: "Ripple",
+    price: 0.87,
+    change: 8.1,
+    volume: "890M",
+    image: "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png"
+  },
+  {
+    id: "cardano",
+    symbol: "ADA",
+    name: "Cardano",
+    price: 1.45,
+    change: 4.3,
+    volume: "432M",
+    image: "https://assets.coingecko.com/coins/images/975/large/cardano.png"
+  },
 ]
 
 const chartConfig = {
-  value: {
-    label: "Portfolio Value",
+  total: {
+    label: "Total Portfolio Value",
     color: "hsl(var(--chart-1))",
   },
-  volume: {
-    label: "Volume",
-    color: "hsl(var(--chart-2))",
+  BTC: {
+    label: "Bitcoin",
+    color: coinColors[0],
+  },
+  ETH: {
+    label: "Ethereum",
+    color: coinColors[1],
+  },
+  BNB: {
+    label: "BNB",
+    color: coinColors[2],
+  },
+  XRP: {
+    label: "XRP",
+    color: coinColors[3],
+  },
+  ADA: {
+    label: "Cardano",
+    color: coinColors[4],
   },
 }
 
@@ -61,11 +118,84 @@ export default function DashboardPage() {
   const { user } = useSupabaseAuth()
   const { portfolios, loading, error, getTotalPortfolioValue, getTotalPortfolioPnL, getTotalPortfolioPnLPercentage, getDefaultPortfolio } = usePortfolio()
 
+  // State for portfolio chart data
+  const [portfolioChartData, setPortfolioChartData] = useState<any[]>([])
+  const [chartLoading, setChartLoading] = useState(false)
+  const [topCryptosData, setTopCryptosData] = useState(topCryptos)
+
   // Get portfolio metrics
   const totalValue = getTotalPortfolioValue()
   const totalPnL = getTotalPortfolioPnL()
   const totalPnLPercentage = getTotalPortfolioPnLPercentage()
   const defaultPortfolio = getDefaultPortfolio()
+
+  // Fetch portfolio performance data
+  useEffect(() => {
+    const fetchPortfolioData = async () => {
+      if (!defaultPortfolio || !defaultPortfolio.portfolio_holdings || defaultPortfolio.portfolio_holdings.length === 0) {
+        // Use mock data for demonstration when no real portfolio exists
+        setPortfolioChartData(generateMockChartData())
+        return
+      }
+
+      setChartLoading(true)
+      try {
+        const holdings = defaultPortfolio.portfolio_holdings.map(holding => ({
+          id: holding.id,
+          symbol: holding.symbol.toUpperCase(),
+          amount: holding.amount
+        }))
+
+        const data = await cryptoAPI.getPortfolioPerformanceData(holdings, 7)
+        setPortfolioChartData(data)
+      } catch (error) {
+        console.error('Error fetching portfolio chart data:', error)
+        setPortfolioChartData(generateMockChartData())
+      } finally {
+        setChartLoading(false)
+      }
+    }
+
+    fetchPortfolioData()
+  }, [defaultPortfolio])
+
+  // Fetch updated crypto prices
+  useEffect(() => {
+    const fetchCryptoPrices = async () => {
+      try {
+        const ids = topCryptos.map(crypto => crypto.id)
+        const priceData = await cryptoAPI.getTopCryptos(5)
+
+        const updatedCryptos = topCryptos.map(crypto => {
+          const liveData = priceData.find(data => data.id === crypto.id)
+          return liveData ? {
+            ...crypto,
+            price: liveData.current_price,
+            change: liveData.price_change_percentage_24h
+          } : crypto
+        })
+
+        setTopCryptosData(updatedCryptos)
+      } catch (error) {
+        console.error('Error fetching crypto prices:', error)
+      }
+    }
+
+    fetchCryptoPrices()
+  }, [])
+
+  // Generate mock chart data for demonstration
+  const generateMockChartData = () => {
+    return [
+      { time: "00:00", total: 45000, BTC: 30000, ETH: 10000, BNB: 3000, XRP: 1500, ADA: 500 },
+      { time: "04:00", total: 47500, BTC: 31500, ETH: 10500, BNB: 3200, XRP: 1700, ADA: 600 },
+      { time: "08:00", total: 46800, BTC: 30800, ETH: 10200, BNB: 3100, XRP: 1900, ADA: 800 },
+      { time: "12:00", total: 49200, BTC: 32200, ETH: 11000, BNB: 3300, XRP: 1800, ADA: 900 },
+      { time: "16:00", total: 51500, BTC: 33500, ETH: 11500, BNB: 3500, XRP: 2000, ADA: 1000 },
+      { time: "20:00", total: 53200, BTC: 34200, ETH: 12000, BNB: 3700, XRP: 2100, ADA: 1200 },
+      { time: "24:00", total: 54750, BTC: 35000, ETH: 12500, BNB: 3800, XRP: 2200, ADA: 1250 },
+    ]
+  }
 
   if (loading) {
     return (
@@ -245,40 +375,112 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <ChartContainer config={chartConfig} className="h-[350px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={portfolioData}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis
-                    dataKey="time"
-                    className="text-xs fill-muted-foreground"
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    className="text-xs fill-muted-foreground"
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                  />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke="hsl(var(--chart-1))"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorValue)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            {chartLoading ? (
+              <div className="h-[350px] flex items-center justify-center">
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <span>Loading chart data...</span>
+                </div>
+              </div>
+            ) : (
+              <ChartContainer config={chartConfig} className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={portfolioChartData}>
+                    <defs>
+                      {Object.keys(chartConfig).map((key, index) => (
+                        <linearGradient key={key} id={`color${key}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0}/>
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="time"
+                      className="text-xs fill-muted-foreground"
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      className="text-xs fill-muted-foreground"
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                    />
+                    <ChartTooltip
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white dark:bg-gray-800 border rounded-lg p-3 shadow-lg">
+                              <p className="text-sm font-medium mb-2">{label}</p>
+                              {payload.map((entry, index) => (
+                                <div key={index} className="flex items-center space-x-2 text-sm">
+                                  <div
+                                    className="w-3 h-3 rounded-full"
+                                    style={{ backgroundColor: entry.color }}
+                                  />
+                                  <span className="font-medium">{entry.name}:</span>
+                                  <span>${entry.value?.toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )
+                        }
+                        return null
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="total"
+                      stroke={chartConfig.total.color}
+                      strokeWidth={3}
+                      dot={false}
+                      name="Total Portfolio"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="BTC"
+                      stroke={chartConfig.BTC.color}
+                      strokeWidth={2}
+                      dot={false}
+                      name="Bitcoin"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="ETH"
+                      stroke={chartConfig.ETH.color}
+                      strokeWidth={2}
+                      dot={false}
+                      name="Ethereum"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="BNB"
+                      stroke={chartConfig.BNB.color}
+                      strokeWidth={2}
+                      dot={false}
+                      name="BNB"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="XRP"
+                      stroke={chartConfig.XRP.color}
+                      strokeWidth={2}
+                      dot={false}
+                      name="XRP"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="ADA"
+                      stroke={chartConfig.ADA.color}
+                      strokeWidth={2}
+                      dot={false}
+                      name="Cardano"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -295,11 +497,22 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topCryptos.map((crypto, index) => (
-                <div key={crypto.symbol} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+              {topCryptosData.map((crypto, index) => (
+                <Link key={crypto.symbol} href={`/market/${crypto.id}`}>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
-                      {crypto.symbol[0]}
+                    <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-muted">
+                      <img
+                        src={crypto.image}
+                        alt={crypto.name}
+                        className="w-8 h-8 object-cover"
+                        onError={(e) => {
+                          // Fallback to initial letter if image fails to load
+                          const target = e.target as HTMLImageElement
+                          target.style.display = 'none'
+                          target.parentElement!.innerHTML = `<div class="w-8 h-8 rounded-full bg-gradient-to-r from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-bold">${crypto.symbol[0]}</div>`
+                        }}
+                      />
                     </div>
                     <div>
                       <p className="font-medium">{crypto.symbol}</p>
@@ -315,11 +528,12 @@ export default function DashboardPage() {
                         <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
                       )}
                       <span className={`text-xs ${crypto.change > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {crypto.change > 0 ? '+' : ''}{crypto.change}%
+                        {crypto.change > 0 ? '+' : ''}{crypto.change.toFixed(2)}%
                       </span>
                     </div>
                   </div>
                 </div>
+                </Link>
               ))}
             </div>
           </CardContent>
