@@ -594,6 +594,62 @@ export class MCPSupabaseClient {
       return false
     }
   }
+
+  // Alias for backward compatibility and cleaner API
+  async deductCredits(
+    userId: string,
+    creditsToDeduct: number,
+    description: string,
+    metadata?: any
+  ): Promise<boolean> {
+    return this.recordCreditUsage(userId, creditsToDeduct, description)
+  }
+
+  // Create a credit transaction log entry
+  async logCreditTransaction(
+    userId: string,
+    amount: number,
+    type: 'debit' | 'credit',
+    description: string,
+    metadata?: any
+  ): Promise<CreditTransaction | null> {
+    try {
+      const transactionData: CreditTransactionInsert = {
+        user_id: userId,
+        amount: type === 'debit' ? -Math.abs(amount) : Math.abs(amount),
+        type,
+        description,
+        metadata: metadata ? JSON.stringify(metadata) : null
+      }
+
+      return await this.createCreditTransaction(transactionData)
+    } catch (error: any) {
+      console.error('Error logging credit transaction:', error)
+      return null
+    }
+  }
+
+  // Get user by ID (alias for getUserByAuthId with different parameter)
+  async getUserById(userId: string): Promise<User | null> {
+    try {
+      // TODO: Replace with MCP call when available
+      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
+      const { cookies } = await import('next/headers')
+      const supabase = createServerComponentClient({ cookies })
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error: any) {
+      console.error('Error getting user by ID:', error)
+      return null
+    }
+  }
 }
 
 // Export singleton instance
