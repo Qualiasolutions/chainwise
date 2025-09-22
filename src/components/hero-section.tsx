@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Globe3D from "@/components/ui/globe-3d";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { FloatingParticles, GradientOrbs, Constellation } from "@/components/ui/floating-particles";
+import { CryptoIconsBackground } from "@/components/ui/crypto-icons-background";
 import { MicroInteraction } from "@/components/ui/micro-interaction";
 import { HeroGlassCard } from "@/components/ui/glassmorphism-card";
 
@@ -32,36 +32,11 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
       </div>
 
-      {/* Floating Particles Layer */}
-      <FloatingParticles
+      {/* Real Crypto Icons Background */}
+      <CryptoIconsBackground
         className="z-[5]"
-        variant="crypto"
         density="medium"
-        speed="slow"
-        size="md"
         interactive
-      />
-
-      {/* Gradient Orbs Background */}
-      <GradientOrbs
-        className="z-[3]"
-        count={3}
-        size="lg"
-        speed="slow"
-        colors={[
-          "from-purple-500/10",
-          "from-blue-500/10",
-          "from-cyan-500/10"
-        ]}
-      />
-
-      {/* Constellation Network */}
-      <Constellation
-        className="z-[4]"
-        connectionDistance={200}
-        maxConnections={2}
-        lineOpacity={0.1}
-        animated
       />
 
       {/* Gradient overlays for visual enhancement */}

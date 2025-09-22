@@ -45,20 +45,9 @@ import {
 } from "@/components/ui/sidebar"
 
 // Dynamic data for ChainWise AI advisory platform
-const getDynamicData = (user: any) => ({
-  user: {
-    name: user?.user_metadata?.full_name || user?.email || "User",
-    email: user?.email || "",
-    avatar: user?.user_metadata?.avatar_url || "",
-  },
-  teams: [
-    {
-      name: "ChainWise AI",
-      logo: Bot,
-      plan: "AI Advisory",
-    },
-  ],
-  navMain: [
+const getDynamicData = (user: any) => {
+  // Navigation for authenticated users
+  const authenticatedNavMain = [
     {
       title: "Dashboard",
       url: "/dashboard",
@@ -109,8 +98,48 @@ const getDynamicData = (user: any) => ({
         },
       ],
     },
-  ],
-})
+  ]
+
+  // Navigation for unauthenticated users - only public pages
+  const publicNavMain = [
+    {
+      title: "Home",
+      url: "/",
+      icon: Frame,
+    },
+    {
+      title: "Features",
+      url: "/#features",
+      icon: SquareTerminal,
+    },
+    {
+      title: "Pricing",
+      url: "/#pricing",
+      icon: CreditCard,
+    },
+    {
+      title: "Contact",
+      url: "/contact",
+      icon: Users,
+    },
+  ]
+
+  return {
+    user: {
+      name: user?.user_metadata?.full_name || user?.email || "User",
+      email: user?.email || "",
+      avatar: user?.user_metadata?.avatar_url || "",
+    },
+    teams: [
+      {
+        name: "ChainWise AI",
+        logo: Bot,
+        plan: user ? "AI Advisory" : "Get Started",
+      },
+    ],
+    navMain: user ? authenticatedNavMain : publicNavMain,
+  }
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useSupabaseAuth()
