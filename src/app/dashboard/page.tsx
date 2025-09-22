@@ -29,7 +29,7 @@ import { cryptoAPI } from "@/lib/crypto-api"
 import Link from "next/link"
 import { SmartSkeleton, SkeletonCard, SkeletonCryptoCard, SkeletonChart } from "@/components/ui/smart-skeleton"
 import { AnimatedLoader } from "@/components/ui/animated-loader"
-import { ProfessionalCard, MetricsCard, ChartCard } from "@/components/ui/professional-card"
+import { ProfessionalCard, MetricsCard, ChartCard, DataCard } from "@/components/ui/professional-card"
 import { MicroInteraction } from "@/components/ui/micro-interaction"
 
 // Color palette for different coins in charts
@@ -630,6 +630,7 @@ export default function DashboardPage() {
           </button>
         </div>
       </ProfessionalCard>
+      </div>
     </div>
   )
 }
