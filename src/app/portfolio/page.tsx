@@ -632,7 +632,7 @@ export default function PortfolioPage() {
                 columns={columns}
                 data={holdings}
                 title="Portfolio Holdings"
-                searchKey="name"
+                searchKey="symbol"
                 searchPlaceholder="Search holdings..."
               />
             ) : (
