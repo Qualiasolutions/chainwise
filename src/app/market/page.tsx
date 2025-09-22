@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DataTable } from "@/components/ui/data-table"
 import { PriceCard } from "@/components/ui/price-card"
 import { CryptoChart } from "@/components/ui/crypto-chart"
+import { Progress } from "@/components/ui/progress"
 import {
   LineChart,
   Line,
