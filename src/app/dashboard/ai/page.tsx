@@ -240,505 +240,497 @@ export default function AIPage() {
   // Mock response function removed - now using real API integration
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Modern Header - Reduced spacing and height */}
-      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 via-purple-50 to-cyan-50 dark:from-blue-950/30 dark:via-purple-950/30 dark:to-cyan-950/30 p-6 backdrop-blur-sm border border-white/20 flex-shrink-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10"></div>
-        <div className="relative flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
-              AI Chat Assistant
-            </h1>
-            <p className="text-muted-foreground max-w-2xl">
-              Get personalized crypto advice from our AI-powered advisors
-            </p>
-            <div className="flex items-center gap-4 mt-2">
-              <div className="flex items-center gap-2 text-sm text-green-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                AI Models Online
+    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      {/* Professional Header - Clean and minimal */}
+      <div className="relative border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex-shrink-0">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <Brain className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-slate-900">
+                    <div className="w-full h-full bg-green-400 rounded-full animate-ping"></div>
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                    AI Advisory Console
+                  </h1>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Professional cryptocurrency intelligence platform
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-blue-600">
-                <MessageCircle className="h-4 w-4" />
-                {messages.length - 1} messages today
+              <div className="hidden md:flex items-center gap-4 ml-8">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-950/30 rounded-full border border-green-200 dark:border-green-800">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-xs font-medium text-green-700 dark:text-green-400">Online</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                  <MessageCircle className="h-4 w-4" />
+                  <span>{messages.length - 1} conversations</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Card className="bg-white/60 backdrop-blur-sm border-white/40 shadow-lg rounded-lg">
-              <CardContent className="flex items-center gap-3 p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <CreditCard className="h-4 w-4 text-blue-600" />
-                    {(profile?.credits || 0) > 0 && (
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></div>
-                    )}
-                  </div>
+                  <CreditCard className="h-4 w-4 text-blue-600" />
                   <div className="flex flex-col">
-                    <span className="font-bold">{profile?.credits || 0}</span>
-                    <span className="text-xs text-muted-foreground">credits</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{profile?.credits || 0}</span>
+                    <span className="text-xs text-slate-500">credits</span>
                   </div>
                 </div>
                 <Separator orientation="vertical" className="h-6" />
                 <Badge
                   variant="outline"
                   className={cn(
-                    "font-semibold text-xs",
-                    profile?.tier === 'elite' ? "border-yellow-400 text-yellow-600 bg-yellow-50" :
-                    profile?.tier === 'pro' ? "border-purple-400 text-purple-600 bg-purple-50" :
-                    "border-gray-400 text-gray-600 bg-gray-50"
+                    "font-medium",
+                    profile?.tier === 'elite' ? "border-amber-300 text-amber-700 bg-amber-50 dark:bg-amber-950/30" :
+                    profile?.tier === 'pro' ? "border-purple-300 text-purple-700 bg-purple-50 dark:bg-purple-950/30" :
+                    "border-slate-300 text-slate-700 bg-slate-50 dark:bg-slate-800"
                   )}
                 >
                   {profile?.tier === 'elite' && <Crown className="h-3 w-3 mr-1" />}
                   {(profile?.tier || 'free').toUpperCase()}
                 </Badge>
-              </CardContent>
-            </Card>
-            {profile?.tier === 'free' && (
-              <UpgradeModal requiredTier="pro" personaName="Professor & Trader">
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg rounded-lg">
-                  <Crown className="h-4 w-4 mr-2" />
-                  Upgrade
-                </Button>
-              </UpgradeModal>
-            )}
+              </div>
+              {profile?.tier === 'free' && (
+                <UpgradeModal requiredTier="pro" personaName="Professor & Trader">
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                    <Crown className="h-4 w-4 mr-2" />
+                    Upgrade Plan
+                  </Button>
+                </UpgradeModal>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 grid gap-4 lg:grid-cols-4 overflow-hidden">
-        {/* Enhanced Persona Selection */}
-        <div className="lg:col-span-1">
-          <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-0 shadow-xl rounded-lg h-full flex flex-col">
-            <CardHeader className="pb-3 flex-shrink-0">
-              <CardTitle className="flex items-center gap-3 text-lg">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-md">
-                  <Brain className="h-4 w-4 text-white" />
+      <div className="flex-1 container mx-auto px-6 py-6">
+        <div className="grid gap-6 lg:grid-cols-4 h-full">
+          {/* Professional Persona Selection */}
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl h-full flex flex-col shadow-sm">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">AI Advisors</h2>
                 </div>
-                AI Advisors
-              </CardTitle>
-              <CardDescription>
-                Choose your preferred AI personality for personalized advice
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {Object.entries(AI_PERSONAS).map(([key, persona]) => {
-                const isSelected = selectedPersona === key
-                const canUse = canUsePersona(key as keyof typeof AI_PERSONAS)
-                const Icon = persona.icon
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Select your specialized cryptocurrency advisor
+                </p>
+              </div>
+              <div className="flex-1 p-6 space-y-4">
+                {Object.entries(AI_PERSONAS).map(([key, persona]) => {
+                  const isSelected = selectedPersona === key
+                  const canUse = canUsePersona(key as keyof typeof AI_PERSONAS)
+                  const Icon = persona.icon
 
-                return (
-                  <div
-                    key={key}
-                    className={cn(
-                      "relative p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 transform hover:scale-[1.02]",
-                      isSelected
-                        ? "ring-4 ring-blue-500/20 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/40 dark:to-purple-950/40 border-blue-400 shadow-lg"
-                        : "hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800 dark:hover:to-gray-700 border-gray-200 dark:border-gray-700",
-                      !canUse && "opacity-60"
-                    )}
-                    onClick={() => canUse && handlePersonaChange(key as keyof typeof AI_PERSONAS)}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={cn(
-                        "relative w-12 h-12 rounded-lg flex items-center justify-center text-white shadow-lg",
-                        `bg-gradient-to-r ${persona.gradient}`,
-                        isSelected && "ring-4 ring-white/30"
-                      )}>
-                        <Icon className="h-6 w-6" />
-                        {isSelected && (
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white">
-                            <div className="w-full h-full bg-green-400 rounded-full animate-ping"></div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className={cn(
-                            "font-bold text-lg",
-                            isSelected ? "text-blue-700 dark:text-blue-300" : "text-gray-900 dark:text-gray-100"
-                          )}>
-                            {persona.name}
-                          </h3>
-                          {persona.tier !== 'free' && (
-                            <Badge
-                              variant={isSelected ? "default" : "secondary"}
-                              className={cn(
-                                "text-xs font-semibold",
-                                persona.tier === 'elite' ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
-                                persona.tier === 'pro' ? "bg-purple-100 text-purple-700 border-purple-300" : ""
-                              )}
-                            >
-                              {persona.tier.toUpperCase()}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                          {persona.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Zap className="h-4 w-4 text-amber-500" />
-                            <span className="text-sm font-medium text-amber-600">
-                              {persona.creditCost} credit{persona.creditCost > 1 ? 's' : ''}
-                            </span>
-                          </div>
+                  return (
+                    <div
+                      key={key}
+                      className={cn(
+                        "relative p-4 rounded-xl border cursor-pointer transition-all duration-200",
+                        isSelected
+                          ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md"
+                          : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800",
+                        !canUse && "opacity-60"
+                      )}
+                      onClick={() => canUse && handlePersonaChange(key as keyof typeof AI_PERSONAS)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={cn(
+                          "relative w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm",
+                          `bg-gradient-to-br ${persona.gradient}`,
+                          isSelected && "ring-2 ring-blue-200 dark:ring-blue-800"
+                        )}>
+                          <Icon className="h-5 w-5" />
                           {isSelected && (
-                            <Badge variant="default" className="bg-green-100 text-green-700 border-green-300">
-                              Active
-                            </Badge>
+                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white dark:border-slate-900"></div>
                           )}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className={cn(
+                              "font-semibold text-sm",
+                              isSelected ? "text-blue-900 dark:text-blue-100" : "text-slate-900 dark:text-slate-100"
+                            )}>
+                              {persona.name}
+                            </h3>
+                            {persona.tier !== 'free' && (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  "text-xs font-medium h-5",
+                                  persona.tier === 'elite' ? "border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-950/30" :
+                                  persona.tier === 'pro' ? "border-purple-200 text-purple-700 bg-purple-50 dark:bg-purple-950/30" : ""
+                                )}
+                              >
+                                {persona.tier.toUpperCase()}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mb-2 leading-relaxed">
+                            {persona.description}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <Zap className="h-3 w-3 text-amber-500" />
+                              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                                {persona.creditCost} credit{persona.creditCost > 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            {isSelected && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 text-xs h-5">
+                                Active
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
+
+                      {!canUse && (
+                        <div className="absolute inset-0 bg-slate-50/80 dark:bg-slate-900/80 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                          <UpgradeModal requiredTier={persona.tier} personaName={persona.name}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="bg-white dark:bg-slate-800 shadow-sm text-xs"
+                            >
+                              <Crown className="h-3 w-3 mr-1" />
+                              Unlock
+                            </Button>
+                          </UpgradeModal>
+                        </div>
+                      )}
                     </div>
+                  )
+                })}
 
-                    {!canUse && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-black/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                        <UpgradeModal requiredTier={persona.tier} personaName={persona.name}>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className="bg-white/90 hover:bg-white shadow-lg"
-                          >
-                            <Crown className="h-4 w-4 mr-2" />
-                            Unlock
-                          </Button>
-                        </UpgradeModal>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-
-              {/* Quick Stats */}
-              <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg border border-blue-200/50">
-                <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">Today's Usage</div>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="flex items-center gap-1">
-                    <MessageCircle className="h-3 w-3 text-blue-500" />
-                    <span>{messages.filter(m => m.sender === 'user').length} chats</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Zap className="h-3 w-3 text-amber-500" />
-                    <span>{messages.reduce((acc, m) => acc + (m.credits || 0), 0)} credits</span>
+                {/* Professional Stats */}
+                <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700">
+                  <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-3">Session Overview</div>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="h-3 w-3 text-blue-500" />
+                      <span className="text-slate-600 dark:text-slate-400">{messages.filter(m => m.sender === 'user').length} messages</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-3 w-3 text-amber-500" />
+                      <span className="text-slate-600 dark:text-slate-400">{messages.reduce((acc, m) => acc + (m.credits || 0), 0)} used</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
 
-        {/* Enhanced Chat Interface */}
-        <div className="lg:col-span-3 flex flex-col h-full">
-          <Card className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 border-0 shadow-2xl rounded-lg flex-1 flex flex-col overflow-hidden" data-chat-card>
-            {/* Chat Header */}
-            <CardHeader className="flex-shrink-0 bg-gradient-to-r from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10 border-2 border-white shadow-lg">
-                    <AvatarFallback className={cn(
-                      "text-white font-bold",
-                      `bg-gradient-to-r ${AI_PERSONAS[selectedPersona].gradient}`
+          {/* Professional Chat Interface */}
+          <div className="lg:col-span-3 flex flex-col h-full">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm" data-chat-card>
+              {/* Clean Chat Header */}
+              <div className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm",
+                      `bg-gradient-to-br ${AI_PERSONAS[selectedPersona].gradient}`
                     )}>
                       {(() => {
                         const IconComponent = AI_PERSONAS[selectedPersona].icon
                         return <IconComponent className="h-5 w-5" />
                       })()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <CardTitle className="text-lg text-gray-900 dark:text-gray-100">
-                      Chat with {AI_PERSONAS[selectedPersona].name}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      {AI_PERSONAS[selectedPersona].description}
-                    </CardDescription>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        {AI_PERSONAS[selectedPersona].name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>{AI_PERSONAS[selectedPersona].description}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 h-8 w-8 p-0"
+                      onClick={() => {
+                        setMessages([{
+                          id: '1',
+                          content: getPersonaWelcomeMessage(selectedPersona),
+                          sender: 'ai',
+                          persona: selectedPersona,
+                          timestamp: new Date()
+                        }])
+                      }}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 h-8 w-8 p-0"
+                      onClick={() => {
+                        const chatCard = document.querySelector('[data-chat-card]') as HTMLElement
+                        if (chatCard) {
+                          if (chatCard.style.position === 'fixed') {
+                            chatCard.style.position = 'relative'
+                            chatCard.style.top = 'auto'
+                            chatCard.style.left = 'auto'
+                            chatCard.style.width = 'auto'
+                            chatCard.style.height = 'auto'
+                            chatCard.style.zIndex = 'auto'
+                          } else {
+                            chatCard.style.position = 'fixed'
+                            chatCard.style.top = '0'
+                            chatCard.style.left = '0'
+                            chatCard.style.width = '100vw'
+                            chatCard.style.height = '100vh'
+                            chatCard.style.zIndex = '50'
+                          }
+                        }
+                      }}
+                    >
+                      <Maximize2 className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 h-8 w-8 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-500 hover:text-gray-700 h-8 w-8 p-0"
-                    onClick={() => {
-                      // Clear chat messages
-                      setMessages([{
-                        id: '1',
-                        content: getPersonaWelcomeMessage(selectedPersona),
-                        sender: 'ai',
-                        persona: selectedPersona,
-                        timestamp: new Date()
-                      }])
-                    }}
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-500 hover:text-gray-700 h-8 w-8 p-0"
-                    onClick={() => {
-                      // Toggle fullscreen mode
-                      const chatCard = document.querySelector('[data-chat-card]') as HTMLElement
-                      if (chatCard) {
-                        if (chatCard.style.position === 'fixed') {
-                          chatCard.style.position = 'relative'
-                          chatCard.style.top = 'auto'
-                          chatCard.style.left = 'auto'
-                          chatCard.style.width = 'auto'
-                          chatCard.style.height = 'auto'
-                          chatCard.style.zIndex = 'auto'
-                        } else {
-                          chatCard.style.position = 'fixed'
-                          chatCard.style.top = '0'
-                          chatCard.style.left = '0'
-                          chatCard.style.width = '100vw'
-                          chatCard.style.height = '100vh'
-                          chatCard.style.zIndex = '50'
-                        }
-                      }
-                    }}
-                  >
-                    <Maximize2 className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 h-8 w-8 p-0">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </div>
               </div>
-            </CardHeader>
 
-            {/* Messages Container */}
-            <CardContent className="flex-1 flex flex-col p-0 bg-gradient-to-br from-gray-50/30 to-white/30 dark:from-gray-900/30 dark:to-gray-800/30">
-              <ScrollArea className="flex-1 px-6 py-4">
-                <div className="space-y-6">
-                  {messages.map((message, index) => (
-                    <div
-                      key={message.id}
-                      className={cn(
-                        "flex gap-4 group",
-                        message.sender === 'user' ? "justify-end" : "justify-start"
-                      )}
-                    >
-                      {message.sender === 'ai' && (
-                        <Avatar className="w-10 h-10 flex-shrink-0 border-2 border-white shadow-lg">
-                          <AvatarFallback className={cn(
-                            "text-white",
-                            `bg-gradient-to-r ${AI_PERSONAS[selectedPersona].gradient}`
+              {/* Professional Messages Container */}
+              <div className="flex-1 flex flex-col bg-slate-50/30 dark:bg-slate-800/20">
+                <ScrollArea className="flex-1 px-6 py-6">
+                  <div className="space-y-4">
+                    {messages.map((message, index) => (
+                      <div
+                        key={message.id}
+                        className={cn(
+                          "flex gap-3 group",
+                          message.sender === 'user' ? "justify-end" : "justify-start"
+                        )}
+                      >
+                        {message.sender === 'ai' && (
+                          <div className={cn(
+                            "w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-white shadow-sm",
+                            `bg-gradient-to-br ${AI_PERSONAS[selectedPersona].gradient}`
                           )}>
                             {(() => {
                               const IconComponent = AI_PERSONAS[selectedPersona].icon
-                              return <IconComponent className="h-5 w-5" />
+                              return <IconComponent className="h-4 w-4" />
                             })()}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
+                          </div>
+                        )}
 
-                      <div className={cn(
-                        "max-w-[75%] flex flex-col",
-                        message.sender === 'user' ? "items-end" : "items-start"
-                      )}>
                         <div className={cn(
-                          "relative px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm border",
-                          message.sender === 'user'
-                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-blue-500/20"
-                            : "bg-white/80 dark:bg-gray-800/80 text-gray-900 dark:text-gray-100 border-gray-200/50 dark:border-gray-700/50"
+                          "max-w-[70%] flex flex-col",
+                          message.sender === 'user' ? "items-end" : "items-start"
                         )}>
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                          <div className={cn(
+                            "relative px-4 py-3 rounded-2xl shadow-sm border",
+                            message.sender === 'user'
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700"
+                          )}>
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
 
-                          {/* Message actions */}
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-8 right-0 flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              onClick={() => {
-                                navigator.clipboard.writeText(message.content)
-                                // Could add a toast here
-                              }}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                            {message.sender === 'ai' && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                  onClick={async () => {
-                                    // Save feedback via MCP
-                                    try {
-                                      await fetch('/api/chat/feedback', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                          messageId: message.id,
-                                          feedback: 'positive',
-                                          persona: selectedPersona
+                            {/* Professional Message Actions */}
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-7 right-0 flex items-center gap-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm px-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(message.content)
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                              {message.sender === 'ai' && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                    onClick={async () => {
+                                      try {
+                                        await fetch('/api/chat/feedback', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({
+                                            messageId: message.id,
+                                            feedback: 'positive',
+                                            persona: selectedPersona
+                                          })
                                         })
-                                      })
-                                    } catch (error) {
-                                      console.error('Failed to save feedback:', error)
-                                    }
-                                  }}
-                                >
-                                  <ThumbsUp className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                  onClick={async () => {
-                                    // Save feedback via MCP
-                                    try {
-                                      await fetch('/api/chat/feedback', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                          messageId: message.id,
-                                          feedback: 'negative',
-                                          persona: selectedPersona
+                                      } catch (error) {
+                                        console.error('Failed to save feedback:', error)
+                                      }
+                                    }}
+                                  >
+                                    <ThumbsUp className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                    onClick={async () => {
+                                      try {
+                                        await fetch('/api/chat/feedback', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({
+                                            messageId: message.id,
+                                            feedback: 'negative',
+                                            persona: selectedPersona
+                                          })
                                         })
-                                      })
-                                    } catch (error) {
-                                      console.error('Failed to save feedback:', error)
-                                    }
-                                  }}
-                                >
-                                  <ThumbsDown className="h-3 w-3" />
-                                </Button>
-                              </>
+                                      } catch (error) {
+                                        console.error('Failed to save feedback:', error)
+                                      }
+                                    }}
+                                  >
+                                    <ThumbsDown className="h-3 w-3" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
+                            <span>
+                              {typeof window !== 'undefined' ? message.timestamp.toLocaleTimeString() : ''}
+                            </span>
+                            {message.credits && (
+                              <Badge variant="outline" className="text-xs border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-950/30">
+                                <Zap className="h-3 w-3 mr-1" />
+                                -{message.credits} credits
+                              </Badge>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                          <span>
-                            {typeof window !== 'undefined' ? message.timestamp.toLocaleTimeString() : ''}
-                          </span>
-                          {message.credits && (
-                            <Badge variant="outline" className="text-xs border-amber-300 text-amber-600 bg-amber-50">
-                              <Zap className="h-3 w-3 mr-1" />
-                              -{message.credits} credits
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      {message.sender === 'user' && (
-                        <Avatar className="w-10 h-10 flex-shrink-0 border-2 border-white shadow-lg">
-                          <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold">
+                        {message.sender === 'user' && (
+                          <div className="w-8 h-8 flex-shrink-0 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
                             {profile?.email?.[0]?.toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
+                          </div>
+                        )}
                     </div>
                   ))}
 
-                  {isLoading && (
-                    <div className="flex gap-4">
-                      <Avatar className="w-10 h-10 flex-shrink-0 border-2 border-white shadow-lg">
-                        <AvatarFallback className={cn(
-                          "text-white",
-                          `bg-gradient-to-r ${AI_PERSONAS[selectedPersona].gradient}`
+                    {isLoading && (
+                      <div className="flex gap-3">
+                        <div className={cn(
+                          "w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-white shadow-sm",
+                          `bg-gradient-to-br ${AI_PERSONAS[selectedPersona].gradient}`
                         )}>
                           {(() => {
                             const IconComponent = AI_PERSONAS[selectedPersona].icon
-                            return <IconComponent className="h-5 w-5" />
+                            return <IconComponent className="h-4 w-4" />
                           })()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg px-4 py-3 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-                        <div className="flex items-center gap-1">
-                          <div className="flex gap-1">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-100"></div>
-                            <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce delay-200"></div>
+                        </div>
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl px-4 py-3 shadow-sm border border-slate-200 dark:border-slate-700">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                              <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-100"></div>
+                              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></div>
+                            </div>
+                            <span className="text-sm text-slate-500">Analyzing...</span>
                           </div>
-                          <span className="text-sm text-gray-500 ml-2">Thinking...</span>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
                 <div ref={messagesEndRef} />
               </ScrollArea>
 
-              {/* Enhanced Input Area */}
-              <div className="border-t border-gray-200/50 dark:border-gray-700/50 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-3 flex-shrink-0">
-                <div className="flex items-end gap-3">
-                  <div className="flex-1 relative">
-                    <Textarea
-                      placeholder={`Ask ${AI_PERSONAS[selectedPersona].name} anything about crypto...`}
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          handleSendMessage()
-                        }
-                      }}
-                      disabled={isLoading}
-                      className="min-h-[50px] max-h-[100px] resize-none bg-white/80 dark:bg-gray-900/80 border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500/20"
-                      rows={1}
-                    />
-                    <div className="absolute bottom-2 right-2 flex items-center gap-1">
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600">
-                        <Paperclip className="h-3 w-3" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-gray-400 hover:text-gray-600">
-                        <Mic className="h-3 w-3" />
-                      </Button>
+                {/* Professional Input Area */}
+                <div className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-shrink-0">
+                  <div className="flex items-end gap-3">
+                    <div className="flex-1 relative">
+                      <Textarea
+                        placeholder={`Message ${AI_PERSONAS[selectedPersona].name}...`}
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            handleSendMessage()
+                          }
+                        }}
+                        disabled={isLoading}
+                        className="min-h-[48px] max-h-[120px] resize-none bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30"
+                        rows={1}
+                      />
+                      <div className="absolute bottom-3 right-3 flex items-center gap-1">
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                          <Paperclip className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                          <Mic className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={isLoading || !inputMessage.trim()}
+                      size="lg"
+                      className="h-[48px] w-[48px] rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50"
+                    >
+                      {isLoading ? (
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
                   </div>
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={isLoading || !inputMessage.trim()}
-                    size="lg"
-                    className="h-[50px] w-[50px] rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100"
-                  >
-                    {isLoading ? (
-                      <RefreshCw className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <Send className="h-5 w-5" />
-                    )}
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
-                  <span>
-                    Press Enter to send, Shift+Enter for new line
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Zap className="h-3 w-3 text-amber-500" />
+                  <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
                     <span>
-                      {AI_PERSONAS[selectedPersona].creditCost} credit{AI_PERSONAS[selectedPersona].creditCost > 1 ? 's' : ''} per message
+                      Press Enter to send • Shift+Enter for new line
                     </span>
+                    <div className="flex items-center gap-1">
+                      <Zap className="h-3 w-3 text-amber-500" />
+                      <span>
+                        {AI_PERSONAS[selectedPersona].creditCost} credit{AI_PERSONAS[selectedPersona].creditCost > 1 ? 's' : ''} per message
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Premium Tools Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Premium AI Tools</h2>
-            <p className="text-muted-foreground">
-              Advanced AI-powered tools for professional crypto analysis
-            </p>
+            </div>
           </div>
-          {(profile?.tier === 'free' || !profile) && (
-            <UpgradeModal requiredTier="pro" personaName="Premium Tools">
-              <Button variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
-                <Crown className="h-4 w-4 mr-2" />
-                Unlock Premium Tools
-              </Button>
-            </UpgradeModal>
-          )}
         </div>
+
+        {/* Professional Premium Tools Section */}
+        <div className="container mx-auto px-6 py-8 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Professional AI Tools</h2>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                Advanced cryptocurrency analysis and strategy tools
+              </p>
+            </div>
+            {(profile?.tier === 'free' || !profile) && (
+              <UpgradeModal requiredTier="pro" personaName="Premium Tools">
+                <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">
+                  <Crown className="h-4 w-4 mr-2" />
+                  Unlock Premium Tools
+                </Button>
+              </UpgradeModal>
+            )}
+          </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* DCA Planner */}
