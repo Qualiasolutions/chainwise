@@ -30,49 +30,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Get user profile using MCP helper
     let profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
-    // If profile doesn't exist, create it
+    // If profile doesn't exist, create it using MCP
     if (!profile) {
       try {
-        // Use service role to bypass RLS for user creation
-        const { createClient } = await import('@supabase/supabase-js')
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-        const adminSupabase = createClient(supabaseUrl, serviceKey, {
-          auth: { autoRefreshToken: false, persistSession: false }
+        profile = await mcpSupabase.createUser({
+          auth_id: session.user.id,
+          email: session.user.email || '',
+          full_name: session.user.user_metadata?.full_name || null,
+          tier: 'free',
+          credits: 3,
+          monthly_credits: 3
         })
-
-        // Try to find existing user first
-        const { data: existingUser } = await adminSupabase
-          .from('users')
-          .select('*')
-          .eq('auth_id', session.user.id)
-          .single()
-
-        if (existingUser) {
-          profile = existingUser
-        } else {
-          // Create new user
-          const { data: newUser, error: createError } = await adminSupabase
-            .from('users')
-            .insert({
-              auth_id: session.user.id,
-              email: session.user.email || '',
-              full_name: session.user.user_metadata?.full_name || null,
-              tier: 'free',
-              credits: 3,
-              monthly_credits: 3
-            })
-            .select()
-            .single()
-
-          if (createError) {
-            throw new Error(`Database error: ${createError.message}`)
-          }
-          profile = newUser
-        }
-      } catch (createError) {
-        console.error('Failed to create user profile:', createError)
+      } catch (createError: any) {
+        console.error('Failed to create user profile via MCP:', createError)
         return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
       }
     }
@@ -166,49 +136,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Get user profile using MCP helper
     let profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
-    // If profile doesn't exist, create it
+    // If profile doesn't exist, create it using MCP
     if (!profile) {
       try {
-        // Use service role to bypass RLS for user creation
-        const { createClient } = await import('@supabase/supabase-js')
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-        const adminSupabase = createClient(supabaseUrl, serviceKey, {
-          auth: { autoRefreshToken: false, persistSession: false }
+        profile = await mcpSupabase.createUser({
+          auth_id: session.user.id,
+          email: session.user.email || '',
+          full_name: session.user.user_metadata?.full_name || null,
+          tier: 'free',
+          credits: 3,
+          monthly_credits: 3
         })
-
-        // Try to find existing user first
-        const { data: existingUser } = await adminSupabase
-          .from('users')
-          .select('*')
-          .eq('auth_id', session.user.id)
-          .single()
-
-        if (existingUser) {
-          profile = existingUser
-        } else {
-          // Create new user
-          const { data: newUser, error: createError } = await adminSupabase
-            .from('users')
-            .insert({
-              auth_id: session.user.id,
-              email: session.user.email || '',
-              full_name: session.user.user_metadata?.full_name || null,
-              tier: 'free',
-              credits: 3,
-              monthly_credits: 3
-            })
-            .select()
-            .single()
-
-          if (createError) {
-            throw new Error(`Database error: ${createError.message}`)
-          }
-          profile = newUser
-        }
-      } catch (createError) {
-        console.error('Failed to create user profile:', createError)
+      } catch (createError: any) {
+        console.error('Failed to create user profile via MCP:', createError)
         return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
       }
     }
