@@ -112,6 +112,25 @@ export default function MarketPage() {
     )
   }
 
+  // Refresh news data
+  const refreshNews = async () => {
+    try {
+      setNewsLoading(true)
+      const news = await cryptoAPI.getCryptoNews(8)
+      setNewsData(news)
+    } catch (error) {
+      console.error('Error refreshing news:', error)
+    } finally {
+      setNewsLoading(false)
+    }
+  }
+
+  // Auto-refresh news every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(refreshNews, 300000) // 5 minutes
+    return () => clearInterval(interval)
+  }, [])
+
   // Table columns definition
   const columns: ColumnDef<CryptoTableRow>[] = [
     {
@@ -674,6 +693,119 @@ export default function MarketPage() {
             </CardContent>
           </Card>
         </div>
+      </motion.div>
+
+      {/* Crypto News Feed */}
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Latest Crypto News</h2>
+            <p className="text-muted-foreground">
+              Stay updated with the latest cryptocurrency news and market insights
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={refreshNews}
+            disabled={newsLoading}
+            className="flex items-center space-x-2"
+          >
+            <Newspaper className={cn("h-4 w-4", newsLoading && "animate-spin")} />
+            <span>{newsLoading ? "Updating..." : "Refresh News"}</span>
+          </Button>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {newsData.map((article, index) => (
+            <motion.div
+              key={article.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card className="ai-card border-2 border-muted/20 hover:border-primary/20 transition-all duration-300 h-full cursor-pointer group">
+                <div className="relative overflow-hidden rounded-t-xl">
+                  <img
+                    src={article.urlToImage}
+                    alt={article.title}
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute top-3 left-3">
+                    <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
+                      <Tag className="h-3 w-3 mr-1" />
+                      {article.category}
+                    </Badge>
+                  </div>
+                </div>
+
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                      {article.title}
+                    </h3>
+
+                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                      {article.description}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                        <span className="font-medium">{article.source.name}</span>
+                        <span>•</span>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-3 w-3" />
+                          <span>
+                            {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(article.url, '_blank', 'noopener,noreferrer')
+                        }}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Read More
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {newsData.length === 0 && !newsLoading && (
+          <Card className="ai-card">
+            <CardContent className="p-12 text-center">
+              <Newspaper className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No News Available</h3>
+              <p className="text-muted-foreground mb-6">
+                News feed is currently loading. Please check back in a moment.
+              </p>
+              <Button onClick={refreshNews} disabled={newsLoading}>
+                <Newspaper className="h-4 w-4 mr-2" />
+                Load News
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </motion.div>
     </motion.div>
   )
