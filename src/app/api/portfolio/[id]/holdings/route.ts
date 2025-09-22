@@ -7,7 +7,6 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { cryptoAPI } from '@/lib/crypto-api'
-import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 interface RouteParams {
   params: {
@@ -17,7 +16,8 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
     const portfolioId = (await params).id
 
     // Get current user
@@ -27,38 +27,37 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile using MCP helper
-    let profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    // Get user profile from profiles table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('auth_id', session.user.id)
+      .single()
 
-    // If profile doesn't exist, create it using MCP
     if (!profile) {
-      try {
-        profile = await mcpSupabase.createUser({
-          auth_id: session.user.id,
-          email: session.user.email || '',
-          full_name: session.user.user_metadata?.full_name || null,
-          tier: 'free',
-          credits: 3,
-          monthly_credits: 3
-        })
-      } catch (createError: any) {
-        console.error('Failed to create user profile via MCP:', createError)
-        return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
-      }
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // Verify portfolio ownership using MCP helper
-    const portfolio = await mcpSupabase.getPortfolioById(portfolioId)
+    // Verify portfolio ownership
+    const { data: portfolio, error: portfolioError } = await supabase
+      .from('portfolios')
+      .select('id, user_id')
+      .eq('id', portfolioId)
+      .eq('user_id', profile.id)
+      .single()
 
-    if (!portfolio || portfolio.user_id !== profile.id) {
+    if (portfolioError || !portfolio) {
       return NextResponse.json({ error: 'Portfolio not found' }, { status: 404 })
     }
 
-    // Get portfolio holdings using MCP helper
-    const holdings = await mcpSupabase.getPortfolioHoldings(portfolioId)
+    // Get portfolio holdings
+    const { data: holdings, error: holdingsError } = await supabase
+      .from('portfolio_holdings')
+      .select('*')
+      .eq('portfolio_id', portfolioId)
 
-    if (!holdings) {
-      console.error('Holdings fetch error: No holdings returned')
+    if (holdingsError) {
+      console.error('Holdings fetch error:', holdingsError)
       return NextResponse.json({ error: 'Failed to fetch holdings' }, { status: 500 })
     }
 
@@ -123,7 +122,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
     const portfolioId = (await params).id
 
     // Get current user
@@ -133,30 +133,26 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile using MCP helper
-    let profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    // Get user profile from profiles table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, tier')
+      .eq('auth_id', session.user.id)
+      .single()
 
-    // If profile doesn't exist, create it using MCP
     if (!profile) {
-      try {
-        profile = await mcpSupabase.createUser({
-          auth_id: session.user.id,
-          email: session.user.email || '',
-          full_name: session.user.user_metadata?.full_name || null,
-          tier: 'free',
-          credits: 3,
-          monthly_credits: 3
-        })
-      } catch (createError: any) {
-        console.error('Failed to create user profile via MCP:', createError)
-        return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
-      }
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // Verify portfolio ownership using MCP helper
-    const portfolio = await mcpSupabase.getPortfolioById(portfolioId)
+    // Verify portfolio ownership
+    const { data: portfolio, error: portfolioError } = await supabase
+      .from('portfolios')
+      .select('id, user_id')
+      .eq('id', portfolioId)
+      .eq('user_id', profile.id)
+      .single()
 
-    if (!portfolio || portfolio.user_id !== profile.id) {
+    if (portfolioError || !portfolio) {
       return NextResponse.json({ error: 'Portfolio not found' }, { status: 404 })
     }
 
@@ -177,7 +173,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check holdings limit based on tier
-    const existingHoldings = await mcpSupabase.getPortfolioHoldings(portfolioId)
+    const { data: existingHoldings } = await supabase
+      .from('portfolio_holdings')
+      .select('*')
+      .eq('portfolio_id', portfolioId)
 
     const holdingLimits = {
       free: 3,
@@ -217,19 +216,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       console.warn(`Failed to get current price for ${symbol}:`, error)
     }
 
-    // Add holding using MCP helper
-    const newHolding = await mcpSupabase.addPortfolioHolding({
-      portfolio_id: portfolioId,
-      symbol: symbol.toLowerCase(),
-      name: name.trim(),
-      amount: parseFloat(amount),
-      purchase_price: parseFloat(purchasePrice),
-      purchase_date: new Date(purchaseDate).toISOString(),
-      current_price: currentPrice
-    })
+    // Add holding to database
+    const { data: newHolding, error: createError } = await supabase
+      .from('portfolio_holdings')
+      .insert({
+        portfolio_id: portfolioId,
+        symbol: symbol.toLowerCase(),
+        name: name.trim(),
+        amount: parseFloat(amount),
+        purchase_price: parseFloat(purchasePrice),
+        purchase_date: new Date(purchaseDate).toISOString(),
+        current_price: currentPrice
+      })
+      .select()
+      .single()
 
-    if (!newHolding) {
-      console.error('Holding creation error: Failed to create holding')
+    if (createError || !newHolding) {
+      console.error('Holding creation error:', createError)
       return NextResponse.json({ error: 'Failed to add holding' }, { status: 500 })
     }
 

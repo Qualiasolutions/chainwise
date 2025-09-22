@@ -5,11 +5,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database, UserUpdate } from '@/lib/supabase/types'
-import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -18,10 +18,14 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile using MCP helper
-    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    // Get user profile from profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('auth_id', session.user.id)
+      .single()
 
-    if (!profile) {
+    if (profileError || !profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
@@ -53,8 +57,18 @@ export async function PUT(request: NextRequest) {
       website: website?.trim() || null,
     }
 
-    // Update user profile using MCP helper
-    const updatedProfile = await mcpSupabase.updateUser(profile.id, updateData)
+    // Update user profile using direct Supabase call
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('profiles')
+      .update(updateData)
+      .eq('id', profile.id)
+      .select()
+      .single()
+
+    if (updateError) {
+      console.error('Profile update error:', updateError)
+      return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
+    }
 
     return NextResponse.json({
       profile: updatedProfile,

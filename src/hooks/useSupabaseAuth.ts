@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import { User as SupabaseUser } from '@supabase/auth-helpers-nextjs'
 import { supabase } from '@/lib/supabase/client'
 import { User, UserInsert } from '@/lib/supabase/types'
-import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 interface AuthState {
   user: SupabaseUser | null
@@ -37,11 +36,15 @@ export const useSupabaseAuth = () => {
         }
       }
 
-      // Try to get existing profile using MCP helper
-      const profile = await mcpSupabase.getUserByAuthId(authUser.id)
+      // Try to get existing profile using direct Supabase call
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('auth_id', authUser.id)
+        .single()
 
       // Create profile if it doesn't exist
-      if (!profile) {
+      if (!profile && profileError?.code === 'PGRST116') {
         // Mark this auth_id as having profile creation in progress
         if (profileCreationInProgress.current === authUser.id) {
           console.log('Profile creation already marked as in progress, returning early')
@@ -51,7 +54,7 @@ export const useSupabaseAuth = () => {
         profileCreationInProgress.current = authUser.id
         console.log('Creating new user profile for auth_id:', authUser.id)
 
-        const newProfileData: UserInsert = {
+        const newProfileData = {
           auth_id: authUser.id,
           email: authUser.email || '',
           full_name: authUser.user_metadata?.full_name || null,
@@ -65,7 +68,16 @@ export const useSupabaseAuth = () => {
         }
 
         try {
-          const createdProfile = await mcpSupabase.createUser(newProfileData)
+          const { data: createdProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert(newProfileData)
+            .select()
+            .single()
+
+          if (createError) {
+            throw createError
+          }
+
           console.log('Successfully created user profile:', createdProfile.id)
 
           // Clear the in-progress flag
@@ -80,12 +92,17 @@ export const useSupabaseAuth = () => {
 
           // If user creation fails due to constraint, try to fetch again
           // This handles race conditions where user might have been created elsewhere
-          if (createError.message?.includes('duplicate') || createError.message?.includes('constraint')) {
+          if (createError.code === '23505' || createError.message?.includes('duplicate') || createError.message?.includes('constraint')) {
             console.log('Duplicate user detected, trying to fetch existing profile...')
 
             // Wait a bit and try to fetch the existing profile
             await new Promise(resolve => setTimeout(resolve, 1000))
-            const existingProfile = await mcpSupabase.getUserByAuthId(authUser.id)
+            const { data: existingProfile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('auth_id', authUser.id)
+              .single()
+
             if (existingProfile) {
               console.log('Found existing profile after constraint error:', existingProfile.id)
               return existingProfile
@@ -94,6 +111,10 @@ export const useSupabaseAuth = () => {
 
           throw createError
         }
+      } else if (profileError && profileError.code !== 'PGRST116') {
+        // Handle other database errors
+        console.error('Database error fetching profile:', profileError)
+        throw profileError
       }
 
       // console.log('Found existing user profile:', profile.id) // Reduce console noise

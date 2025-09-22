@@ -15,7 +15,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Use authenticated Supabase client instead of anon client
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // First verify we have a valid session
     const { data: { session }, error: authError } = await supabase.auth.getSession()
