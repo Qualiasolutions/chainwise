@@ -41,6 +41,10 @@ import { UpgradeModal } from "@/components/UpgradeModal"
 import { DCAPlanner } from "@/components/premium/dca-planner-modal"
 import { PortfolioAllocator } from "@/components/premium/portfolio-allocator-modal"
 import { ScamDetector } from "@/components/premium/scam-detector-modal"
+import { SmartSkeleton } from "@/components/ui/smart-skeleton"
+import { AnimatedLoader } from "@/components/ui/animated-loader"
+import { MicroInteraction } from "@/components/ui/micro-interaction"
+import { DashboardGlassCard, GlassmorphismCard } from "@/components/ui/glassmorphism-card"
 
 // AI Personas configuration matching OpenAI personas
 const AI_PERSONAS = {
@@ -242,7 +246,8 @@ export default function AIPage() {
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       {/* Professional Header - Clean and minimal */}
-      <div className="relative border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex-shrink-0">
+      <GlassmorphismCard variant="frost" className="relative border-b border-slate-200/60 dark:border-slate-800/60 flex-shrink-0 rounded-none"
+        border={false}>
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -309,13 +314,13 @@ export default function AIPage() {
             </div>
           </div>
         </div>
-      </div>
+      </GlassmorphismCard>
 
       <div className="flex-1 container mx-auto px-6 py-6">
         <div className="grid gap-6 lg:grid-cols-4 h-full">
           {/* Professional Persona Selection */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl h-full flex flex-col shadow-sm">
+            <DashboardGlassCard className="h-full flex flex-col">
               <div className="p-6 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
@@ -434,9 +439,9 @@ export default function AIPage() {
 
           {/* Professional Chat Interface */}
           <div className="lg:col-span-3 flex flex-col h-full">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex-1 flex flex-col overflow-hidden shadow-sm" data-chat-card>
+            <DashboardGlassCard className="flex-1 flex flex-col overflow-hidden" data-chat-card>
               {/* Clean Chat Header */}
-              <div className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4">
+              <div className="flex-shrink-0 border-b border-white/10 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={cn(

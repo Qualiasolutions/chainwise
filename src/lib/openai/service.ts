@@ -60,6 +60,16 @@ export class OpenAIService {
         return this.getMockResponse(persona, message);
       }
 
+      // Validate API key format (should start with 'sk-')
+      if (!process.env.OPENAI_API_KEY.startsWith('sk-')) {
+        console.warn('Invalid OpenAI API key format, using mock responses');
+        return this.getMockResponse(persona, message);
+      }
+
+      console.log(`Making OpenAI API call for persona: ${persona}, model: ${personaConfig.model}`);
+      console.log(`Message length: ${message.length}, max tokens: ${maxTokens}`);
+      console.log(`Conversation history length: ${conversationHistory.length}`);
+
       const completion = await openai.chat.completions.create({
         model: personaConfig.model,
         messages: messages.map(msg => ({
@@ -77,6 +87,9 @@ export class OpenAIService {
         console.warn('No response from OpenAI, falling back to mock response');
         return this.getMockResponse(persona, message);
       }
+
+      console.log(`OpenAI API response received, length: ${response.length}`);
+      console.log(`Tokens used: ${completion.usage?.total_tokens || 'unknown'}`);
 
       return response.trim();
     } catch (error: any) {

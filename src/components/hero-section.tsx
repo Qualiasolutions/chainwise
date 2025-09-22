@@ -4,6 +4,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Globe3D from "@/components/ui/globe-3d";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { FloatingParticles, GradientOrbs, Constellation } from "@/components/ui/floating-particles";
+import { MicroInteraction } from "@/components/ui/micro-interaction";
+import { HeroGlassCard } from "@/components/ui/glassmorphism-card";
 
 export default function HeroSection() {
   const { user } = useSupabaseAuth();
@@ -28,6 +31,38 @@ export default function HeroSection() {
         {/* Dark overlay for better text readability */}
         <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
       </div>
+
+      {/* Floating Particles Layer */}
+      <FloatingParticles
+        className="z-[5]"
+        variant="crypto"
+        density="medium"
+        speed="slow"
+        size="md"
+        interactive
+      />
+
+      {/* Gradient Orbs Background */}
+      <GradientOrbs
+        className="z-[3]"
+        count={3}
+        size="lg"
+        speed="slow"
+        colors={[
+          "from-purple-500/10",
+          "from-blue-500/10",
+          "from-cyan-500/10"
+        ]}
+      />
+
+      {/* Constellation Network */}
+      <Constellation
+        className="z-[4]"
+        connectionDistance={200}
+        maxConnections={2}
+        lineOpacity={0.1}
+        animated
+      />
 
       {/* Gradient overlays for visual enhancement */}
       <div
@@ -68,42 +103,48 @@ export default function HeroSection() {
 
           <div className="mb-16 flex flex-col items-center justify-center gap-4 sm:flex-row">
             {user ? (
-              <Link
-                href="/dashboard"
-                className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9b87f5] to-[#7c3aed] px-8 py-4 text-white shadow-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(155, 135, 245, 0.4)] sm:w-auto"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <span className="relative font-medium">Go to Dashboard</span>
-              </Link>
+              <MicroInteraction interaction="ripple" intensity="moderate">
+                <Link
+                  href="/dashboard"
+                  className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9b87f5] to-[#7c3aed] px-8 py-4 text-white shadow-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(155, 135, 245, 0.4)] sm:w-auto"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <span className="relative font-medium">Go to Dashboard</span>
+                </Link>
+              </MicroInteraction>
             ) : (
-              <Link
-                href="/auth/signup"
-                className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9b87f5] to-[#7c3aed] px-8 py-4 text-white shadow-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(155, 135, 245, 0.4)] sm:w-auto"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <span className="relative font-medium">Get Started Free</span>
-              </Link>
+              <MicroInteraction interaction="ripple" intensity="moderate">
+                <Link
+                  href="/auth/signup"
+                  className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9b87f5] to-[#7c3aed] px-8 py-4 text-white shadow-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(155, 135, 245, 0.4)] sm:w-auto"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <span className="relative font-medium">Get Started Free</span>
+                </Link>
+              </MicroInteraction>
             )}
-            <button
-              onClick={scrollToFeatures}
-              className="group flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white sm:w-auto"
-            >
-              <span className="font-medium">View Features</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="transition-transform duration-300 group-hover:translate-y-0.5"
+            <MicroInteraction interaction="hover" intensity="subtle">
+              <button
+                onClick={scrollToFeatures}
+                className="group flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white sm:w-auto"
               >
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </button>
+                <span className="font-medium">View Features</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="transition-transform duration-300 group-hover:translate-y-0.5"
+                >
+                  <path d="m6 9 6 6 6-6"></path>
+                </svg>
+              </button>
+            </MicroInteraction>
           </div>
         </motion.div>
       </div>

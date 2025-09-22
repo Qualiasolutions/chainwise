@@ -41,6 +41,10 @@ import { cryptoAPI, CryptoData, MarketData, NewsArticle, formatPrice, formatPerc
 import { ColumnDef } from "@tanstack/react-table"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import { SmartSkeleton } from "@/components/ui/smart-skeleton"
+import { AnimatedLoader } from "@/components/ui/animated-loader"
+import { MicroInteraction } from "@/components/ui/micro-interaction"
+import { DashboardGlassCard, GlassmorphismCard } from "@/components/ui/glassmorphism-card"
 
 interface CryptoTableRow extends CryptoData {
   watchlisted?: boolean
@@ -254,20 +258,20 @@ export default function MarketPage() {
 
         <div className="grid gap-4 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="ai-card animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
-                <div className="h-8 bg-muted rounded w-3/4"></div>
-              </CardContent>
-            </Card>
+            <DashboardGlassCard key={i}>
+              <SmartSkeleton variant="crypto-card" />
+            </DashboardGlassCard>
           ))}
         </div>
 
-        <Card className="ai-card animate-pulse">
-          <CardContent className="p-6">
-            <div className="h-96 bg-muted rounded"></div>
-          </CardContent>
-        </Card>
+        <DashboardGlassCard>
+          <div className="flex items-center justify-center h-96">
+            <div className="flex flex-col items-center space-y-4">
+              <AnimatedLoader variant="crypto" size="lg" />
+              <span className="text-sm text-muted-foreground">Loading market data...</span>
+            </div>
+          </div>
+        </DashboardGlassCard>
       </div>
     )
   }
@@ -346,41 +350,55 @@ export default function MarketPage() {
             price={globalData.total_volume?.usd || 0}
             subtitle="Trading Volume"
           />
-            <Card className="ai-card border-2 border-orange-500/20 hover:border-orange-500/40 transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Bitcoin Dominance</CardTitle>
-                <DollarSign className="h-5 w-5 text-orange-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                  {globalData.market_cap_percentage?.btc?.toFixed(1) || 0}%
+            <MicroInteraction interaction="hover" intensity="subtle">
+              <DashboardGlassCard className="relative overflow-hidden group border-orange-500/20 hover:border-orange-500/40">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <h3 className="text-sm font-medium text-foreground/80">Bitcoin Dominance</h3>
+                  <MicroInteraction interaction="hover" intensity="moderate">
+                    <div className="p-2 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                      <DollarSign className="h-5 w-5 text-orange-500 dark:text-orange-400" />
+                    </div>
+                  </MicroInteraction>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Of total market cap
-                </p>
-                <div className="mt-2">
-                  <Progress value={globalData.market_cap_percentage?.btc || 0} className="h-2" />
+                <div className="space-y-3">
+                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                    {globalData.market_cap_percentage?.btc?.toFixed(1) || 0}%
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Of total market cap
+                  </p>
+                  <div className="mt-2">
+                    <Progress value={globalData.market_cap_percentage?.btc || 0} className="h-2" />
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="ai-card border-2 border-blue-500/20 hover:border-blue-500/40 transition-colors">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Cryptocurrencies</CardTitle>
-                <Globe className="h-5 w-5 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                  {globalData.active_cryptocurrencies?.toLocaleString() || 0}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:from-orange-400/20 transition-all duration-300" />
+              </DashboardGlassCard>
+            </MicroInteraction>
+            <MicroInteraction interaction="hover" intensity="subtle">
+              <DashboardGlassCard className="relative overflow-hidden group border-blue-500/20 hover:border-blue-500/40">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <h3 className="text-sm font-medium text-foreground/80">Active Cryptocurrencies</h3>
+                  <MicroInteraction interaction="hover" intensity="moderate">
+                    <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                      <Globe className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+                    </div>
+                  </MicroInteraction>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Tracked by CoinGecko
-                </p>
-                <Badge variant="secondary" className="mt-2">
-                  <Activity className="w-3 h-3 mr-1" />
-                  Live tracking
-                </Badge>
-              </CardContent>
-            </Card>
+                <div className="space-y-3">
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    {globalData.active_cryptocurrencies?.toLocaleString() || 0}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Tracked by CoinGecko
+                  </p>
+                  <Badge variant="secondary" className="mt-2">
+                    <Activity className="w-3 h-3 mr-1" />
+                    Live tracking
+                  </Badge>
+                </div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:from-blue-400/20 transition-all duration-300" />
+              </DashboardGlassCard>
+            </MicroInteraction>
             </motion.div>
           )}
 

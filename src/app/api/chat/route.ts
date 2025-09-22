@@ -62,11 +62,22 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
+    // Generate AI response using OpenAI
+    console.log(`Generating AI response for persona: ${persona}, message length: ${message.length}`);
+    const aiResponse = await OpenAIService.generateChatResponse({
+      persona: persona as PersonaId,
+      message,
+      conversationHistory,
+      maxTokens: persona === 'trader' ? 250 : persona === 'professor' ? 300 : 400,
+      temperature: persona === 'trader' ? 0.5 : 0.7
+    });
+    console.log(`AI response generated successfully, length: ${aiResponse.length}`);
+
     // Deduct credits and record transaction using MCP helpers
     const creditSuccess = await mcpSupabase.recordCreditUsage(
       profile.id,
       personaConfig.creditCost,
-      `AI chat with ${personaConfig.name}`,
+      `AI chat with ${personaConfig.name} (${aiResponse.length} chars)`,
       persona,
       sessionId
     )
@@ -107,17 +118,6 @@ export async function POST(request: NextRequest) {
         }))
       }
     }
-
-    // Generate AI response using OpenAI
-    console.log(`Generating AI response for persona: ${persona}, message length: ${message.length}`);
-    const aiResponse = await OpenAIService.generateChatResponse({
-      persona: persona as PersonaId,
-      message,
-      conversationHistory,
-      maxTokens: persona === 'trader' ? 250 : persona === 'professor' ? 300 : 400,
-      temperature: persona === 'trader' ? 0.5 : 0.7
-    });
-    console.log(`AI response generated successfully, length: ${aiResponse.length}`);
 
     // Handle session management
     let chatSession

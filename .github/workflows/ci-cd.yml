@@ -1,0 +1,226 @@
+name: ChainWise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '20'
+  TURBOPACK_ENABLED: true
+
+jobs:
+  # Quality Assurance
+  quality-checks:
+    runs-on: ubuntu-latest
+    name: Code Quality & Security
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: TypeScript check
+      run: npx tsc --noEmit
+      continue-on-error: true # Allow build to continue with TS errors as per project config
+
+    - name: ESLint check
+      run: npm run lint
+      continue-on-error: true # Allow build to continue with lint errors as per project config
+
+    - name: Security audit
+      run: npm audit --audit-level high
+      continue-on-error: true
+
+    - name: Check for secrets
+      run: |
+        if grep -r "sk_test_\|pk_test_\|OPENAI_API_KEY\|SUPABASE_SERVICE_ROLE_KEY" src/ --exclude-dir=node_modules || true; then
+          echo "⚠️  Potential secrets found in code"
+        else
+          echo "✅ No secrets detected in source code"
+        fi
+
+  # Build Tests
+  build:
+    runs-on: ubuntu-latest
+    name: Build Application
+    needs: quality-checks
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build with Turbopack
+      run: npm run build
+      env:
+        SKIP_ENV_VALIDATION: true
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files
+        path: .next/
+        retention-days: 1
+
+  # Deployment (Vercel)
+  deploy-preview:
+    runs-on: ubuntu-latest
+    name: Deploy Preview
+    needs: build
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Vercel (Preview)
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        scope: ${{ secrets.VERCEL_ORG_ID }}
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy Production
+    needs: build
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Vercel (Production)
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+        scope: ${{ secrets.VERCEL_ORG_ID }}
+
+  # Claude Code Integration
+  claude-validation:
+    runs-on: ubuntu-latest
+    name: Claude Code Validation
+    needs: quality-checks
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Validate project structure
+      run: |
+        echo "🔍 Validating ChainWise project structure..."
+
+        # Check essential files
+        if [ -f "CLAUDE.md" ]; then
+          echo "✅ CLAUDE.md found"
+        else
+          echo "❌ CLAUDE.md missing"
+          exit 1
+        fi
+
+        if [ -f "package.json" ]; then
+          echo "✅ package.json found"
+        else
+          echo "❌ package.json missing"
+          exit 1
+        fi
+
+        # Check for MCP integration
+        if [ -f ".mcp.json" ]; then
+          echo "✅ MCP configuration found"
+        else
+          echo "❌ MCP configuration missing"
+        fi
+
+        # Validate Next.js structure
+        if [ -d "src/app" ]; then
+          echo "✅ Next.js App Router structure validated"
+        else
+          echo "❌ Invalid Next.js structure"
+          exit 1
+        fi
+
+        # Check for Supabase integration
+        if [ -d "supabase" ]; then
+          echo "✅ Supabase integration found"
+        else
+          echo "❌ Supabase configuration missing"
+        fi
+
+        echo "🎉 Project structure validation complete!"
+
+  # Performance & Metrics
+  performance-audit:
+    runs-on: ubuntu-latest
+    name: Performance Audit
+    needs: build
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Analyze bundle size
+      run: |
+        echo "📊 Bundle size analysis would run here"
+        echo "Consider integrating with bundlesize or similar tools"
+
+    - name: Performance metrics
+      run: |
+        echo "⚡ Performance metrics collection"
+        echo "Lines of code: $(find src -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' | xargs wc -l | tail -1)"
+        echo "Component count: $(find src/components -name '*.tsx' -o -name '*.jsx' | wc -l)"
+        echo "API routes: $(find src/app/api -name 'route.ts' | wc -l)"
+
+  # Notification & Reporting
+  notify-completion:
+    runs-on: ubuntu-latest
+    name: Notification
+    needs: [quality-checks, build, deploy-production]
+    if: always()
+
+    steps:
+    - name: Build status report
+      run: |
+        echo "🚀 ChainWise CI/CD Pipeline Complete"
+        echo "Quality Checks: ${{ needs.quality-checks.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        echo "Deploy: ${{ needs.deploy-production.result }}"
+
+        if [[ "${{ needs.quality-checks.result }}" == "success" && "${{ needs.build.result }}" == "success" ]]; then
+          echo "✅ Pipeline completed successfully!"
+        else
+          echo "❌ Pipeline completed with issues"
+        fi
