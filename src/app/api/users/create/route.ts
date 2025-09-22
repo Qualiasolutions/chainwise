@@ -43,37 +43,50 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Use PostgreSQL UPSERT functionality to handle duplicates gracefully
+      // First, try to find existing user
+      const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_id', userData.auth_id)
+        .single()
+
+      if (existingUser) {
+        console.log('User already exists:', existingUser.auth_id)
+        return NextResponse.json({ user: existingUser })
+      }
+
+      // If no existing user, create new one
       const { data, error } = await supabase
         .from('users')
-        .upsert(userData, {
-          onConflict: 'auth_id',
-          ignoreDuplicates: false
+        .insert({
+          ...userData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
         .select()
         .single()
 
       if (error) {
-        console.error('Database upsert error:', error)
+        console.error('Database insert error:', error)
 
-        // If upsert fails, try to get the existing user
+        // If still failing due to race condition, try to fetch again
         if (error.message?.includes('duplicate') || error.code === '23505') {
-          console.log('Duplicate key detected, fetching existing user...')
+          console.log('Race condition detected, fetching existing user...')
 
-          const { data: existingUser, error: fetchError } = await supabase
+          const { data: raceUser, error: raceError } = await supabase
             .from('users')
             .select('*')
             .eq('auth_id', userData.auth_id)
             .single()
 
-          if (!fetchError && existingUser) {
-            console.log('Found existing user:', existingUser.auth_id)
-            return NextResponse.json({ user: existingUser })
+          if (!raceError && raceUser) {
+            console.log('Found user after race condition:', raceUser.auth_id)
+            return NextResponse.json({ user: raceUser })
           }
         }
 
         return NextResponse.json(
-          { error: error.message },
+          { error: `Failed to create user: ${error.message}` },
           { status: 500 }
         )
       }
