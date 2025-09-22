@@ -191,6 +191,27 @@ export class MCPSupabaseClient {
     }
   }
 
+  async getPortfolioById(portfolioId: string): Promise<Portfolio | null> {
+    try {
+      // TODO: Replace with MCP call when available
+      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
+      const { cookies } = await import('next/headers')
+      const supabase = createServerComponentClient({ cookies })
+
+      const { data, error } = await supabase
+        .from('portfolios')
+        .select('*')
+        .eq('id', portfolioId)
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error: any) {
+      console.error('Error fetching portfolio by ID:', error)
+      return null
+    }
+  }
+
   async getPortfolioHoldings(portfolioId: string): Promise<PortfolioHolding[]> {
     try {
       // TODO: Replace with MCP call when available
