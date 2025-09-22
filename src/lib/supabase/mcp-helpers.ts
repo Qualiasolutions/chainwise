@@ -111,7 +111,7 @@ export class MCPSupabaseClient {
         const supabase = await this.getSupabaseClient()
 
         const { data, error } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*')
           .eq('auth_id', authId)
           .single()
@@ -150,7 +150,7 @@ export class MCPSupabaseClient {
       if (typeof window === 'undefined') {
         // Server-side: Use MCP call directly
         const query = `
-          INSERT INTO users (auth_id, email, full_name, bio, location, website, avatar_url, tier, credits, monthly_credits, created_at, updated_at)
+          INSERT INTO profiles (auth_id, email, full_name, bio, location, website, avatar_url, tier, credits, monthly_credits)
           VALUES (
             '${userData.auth_id}',
             '${userData.email}',
@@ -161,9 +161,7 @@ export class MCPSupabaseClient {
             ${userData.avatar_url ? `'${userData.avatar_url}'` : 'NULL'},
             '${userData.tier || 'free'}',
             ${userData.credits || 3},
-            ${userData.monthly_credits || 3},
-            NOW(),
-            NOW()
+            ${userData.monthly_credits || 3}
           )
           RETURNING *;
         `
@@ -204,7 +202,7 @@ export class MCPSupabaseClient {
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', userId)
         .select()
@@ -690,7 +688,7 @@ export class MCPSupabaseClient {
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()

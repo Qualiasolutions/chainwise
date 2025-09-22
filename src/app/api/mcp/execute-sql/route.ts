@@ -77,7 +77,7 @@ async function executeSelectQuery(supabase: any, query: string) {
         .eq('auth_id', authId)
         .limit(1)
 
-      if (error && error.code === 'PGRST116') {
+      if (error && (error.code === 'PGRST116' || error.code === 'PGRST301')) {
         return []
       } else if (error) {
         throw error
@@ -94,12 +94,12 @@ async function executeSelectQuery(supabase: any, query: string) {
 
 // Helper function to execute INSERT queries
 async function executeInsertQuery(supabase: any, query: string) {
-  // Parse INSERT INTO users (...) VALUES (...) RETURNING *
+  // Parse INSERT INTO table (...) VALUES (...) RETURNING *
   const tableMatch = query.match(/insert\s+into\s+(\w+)/i)
   const tableName = tableMatch ? tableMatch[1] : null
 
-  if (!tableName || tableName !== 'users') {
-    throw new Error('Only INSERT into users table is supported')
+  if (!tableName || (tableName !== 'users' && tableName !== 'profiles')) {
+    throw new Error('Only INSERT into users or profiles table is supported')
   }
 
   // Extract values - this is a simplified parser
@@ -121,23 +121,41 @@ async function executeInsertQuery(supabase: any, query: string) {
     return trimmed
   })
 
-  // Map to user object (assuming standard user fields order)
-  const userData = {
-    auth_id: values[0],
-    email: values[1],
-    full_name: values[2],
-    bio: values[3],
-    location: values[4],
-    website: values[5],
-    avatar_url: values[6],
-    tier: values[7] || 'free',
-    credits: values[8] || 3,
-    monthly_credits: values[9] || 3
+  // Map to object based on table name
+  let insertData: any
+
+  if (tableName === 'profiles') {
+    insertData = {
+      auth_id: values[0],
+      email: values[1],
+      full_name: values[2],
+      bio: values[3],
+      location: values[4],
+      website: values[5],
+      avatar_url: values[6],
+      tier: values[7] || 'free',
+      credits: values[8] || 3,
+      monthly_credits: values[9] || 3
+    }
+  } else {
+    // Legacy users table format
+    insertData = {
+      auth_id: values[0],
+      email: values[1],
+      full_name: values[2],
+      bio: values[3],
+      location: values[4],
+      website: values[5],
+      avatar_url: values[6],
+      tier: values[7] || 'free',
+      credits: values[8] || 3,
+      monthly_credits: values[9] || 3
+    }
   }
 
   const { data, error } = await supabase
-    .from('users')
-    .insert(userData)
+    .from(tableName)
+    .insert(insertData)
     .select()
     .single()
 

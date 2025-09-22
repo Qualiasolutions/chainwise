@@ -17,7 +17,7 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
-    const portfolioId = params.id
+    const portfolioId = (await params).id
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
-    const portfolioId = params.id
+    const portfolioId = (await params).id
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -185,7 +185,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()
@@ -234,7 +234,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
-    const portfolioId = params.id
+    const portfolioId = (await params).id
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -245,7 +245,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()

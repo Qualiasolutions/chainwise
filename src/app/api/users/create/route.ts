@@ -4,9 +4,9 @@ export async function POST(request: NextRequest) {
   try {
     const { userData } = await request.json()
 
-    if (!userData) {
+    if (!userData || !userData.auth_id) {
       return NextResponse.json(
-        { error: 'Missing userData' },
+        { error: 'Missing userData or auth_id' },
         { status: 400 }
       )
     }
@@ -17,32 +17,28 @@ export async function POST(request: NextRequest) {
       // Import MCP function for Supabase operations
       const { mcp__supabase__execute_sql } = await import('@/lib/mcp-tools')
 
-      // First, check if user already exists
-      const checkQuery = `
-        SELECT * FROM users WHERE auth_id = $1 LIMIT 1;
-      `
-
+      // First, check if profile already exists
       let existingResult
       try {
         existingResult = await mcp__supabase__execute_sql({
           project_id: projectId,
-          query: `SELECT * FROM users WHERE auth_id = '${userData.auth_id}' LIMIT 1`
+          query: `SELECT * FROM profiles WHERE auth_id = '${userData.auth_id}' LIMIT 1`
         })
 
         if (existingResult && Array.isArray(existingResult) && existingResult.length > 0) {
-          console.log('User already exists:', userData.auth_id)
+          console.log('Profile already exists:', userData.auth_id)
           return NextResponse.json({ user: existingResult[0] })
         }
       } catch (checkError) {
-        console.log('Check user error (proceeding with creation):', checkError)
+        console.log('Check profile error (proceeding with creation):', checkError)
       }
 
-      // Create new user using MCP execute_sql
+      // Create new profile using MCP execute_sql
       const insertQuery = `
-        INSERT INTO users (auth_id, email, full_name, bio, location, website, avatar_url, tier, credits, monthly_credits, created_at, updated_at)
+        INSERT INTO profiles (auth_id, email, full_name, bio, location, website, avatar_url, tier, credits, monthly_credits)
         VALUES (
           '${userData.auth_id}',
-          '${userData.email}',
+          '${userData.email || ''}',
           ${userData.full_name ? `'${userData.full_name.replace(/'/g, "''")}'` : 'NULL'},
           ${userData.bio ? `'${userData.bio.replace(/'/g, "''")}'` : 'NULL'},
           ${userData.location ? `'${userData.location.replace(/'/g, "''")}'` : 'NULL'},
@@ -50,9 +46,7 @@ export async function POST(request: NextRequest) {
           ${userData.avatar_url ? `'${userData.avatar_url}'` : 'NULL'},
           '${userData.tier || 'free'}',
           ${userData.credits || 3},
-          ${userData.monthly_credits || 3},
-          NOW(),
-          NOW()
+          ${userData.monthly_credits || 3}
         )
         RETURNING *;
       `
@@ -63,7 +57,7 @@ export async function POST(request: NextRequest) {
       })
 
       if (createResult && Array.isArray(createResult) && createResult.length > 0) {
-        console.log('User created successfully via MCP:', userData.auth_id)
+        console.log('Profile created successfully via MCP:', userData.auth_id)
         return NextResponse.json({ user: createResult[0] })
       }
 
@@ -71,11 +65,11 @@ export async function POST(request: NextRequest) {
       try {
         const raceResult = await mcp__supabase__execute_sql({
           project_id: projectId,
-          query: `SELECT * FROM users WHERE auth_id = '${userData.auth_id}' LIMIT 1`
+          query: `SELECT * FROM profiles WHERE auth_id = '${userData.auth_id}' LIMIT 1`
         })
 
         if (raceResult && Array.isArray(raceResult) && raceResult.length > 0) {
-          console.log('Found user after race condition:', userData.auth_id)
+          console.log('Found profile after race condition:', userData.auth_id)
           return NextResponse.json({ user: raceResult[0] })
         }
       } catch (raceError) {
@@ -83,7 +77,7 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { error: 'Failed to create user via MCP' },
+        { error: 'Failed to create profile via MCP' },
         { status: 500 }
       )
 
@@ -91,17 +85,17 @@ export async function POST(request: NextRequest) {
       console.error('MCP operation failed:', mcpError)
 
       // Check if it's a duplicate key error
-      if (mcpError.message && mcpError.message.includes('duplicate')) {
+      if (mcpError.message && (mcpError.message.includes('duplicate') || mcpError.message.includes('already exists'))) {
         try {
-          // Try to fetch the existing user
+          // Try to fetch the existing profile
           const { mcp__supabase__execute_sql } = await import('@/lib/mcp-tools')
           const existingResult = await mcp__supabase__execute_sql({
             project_id: projectId,
-            query: `SELECT * FROM users WHERE auth_id = '${userData.auth_id}' LIMIT 1`
+            query: `SELECT * FROM profiles WHERE auth_id = '${userData.auth_id}' LIMIT 1`
           })
 
           if (existingResult && Array.isArray(existingResult) && existingResult.length > 0) {
-            console.log('Found existing user after duplicate error:', userData.auth_id)
+            console.log('Found existing profile after duplicate error:', userData.auth_id)
             return NextResponse.json({ user: existingResult[0] })
           }
         } catch (fetchError) {
@@ -110,7 +104,7 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json(
-        { error: 'Failed to create user' },
+        { error: 'Failed to create profile' },
         { status: 500 }
       )
     }

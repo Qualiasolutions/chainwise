@@ -18,7 +18,7 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
-    const portfolioId = params.id
+    const portfolioId = (await params).id
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
-    const portfolioId = params.id
+    const portfolioId = (await params).id
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
