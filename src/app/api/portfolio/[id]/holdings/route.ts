@@ -65,8 +65,41 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const enrichedHoldings = await Promise.all(
       (holdings || []).map(async (holding) => {
         try {
+          // Map common symbols to CoinGecko IDs
+          const symbolToIdMap: Record<string, string> = {
+            'btc': 'bitcoin',
+            'eth': 'ethereum',
+            'bnb': 'binancecoin',
+            'ada': 'cardano',
+            'sol': 'solana',
+            'dot': 'polkadot',
+            'avax': 'avalanche-2',
+            'matic': 'matic-network',
+            'link': 'chainlink',
+            'uni': 'uniswap',
+            'ltc': 'litecoin',
+            'bch': 'bitcoin-cash',
+            'xlm': 'stellar',
+            'vet': 'vechain',
+            'trx': 'tron',
+            'etc': 'ethereum-classic',
+            'ftt': 'ftx-token',
+            'near': 'near',
+            'algo': 'algorand',
+            'mana': 'decentraland',
+            'sand': 'the-sandbox',
+            'axs': 'axie-infinity',
+            'cro': 'crypto-com-chain',
+            'lrc': 'loopring',
+            'grt': 'the-graph',
+            'chz': 'chiliz',
+            'bat': 'basic-attention-token'
+          }
+
+          const coinId = symbolToIdMap[holding.symbol.toLowerCase()] || holding.symbol.toLowerCase()
+
           // Get current price from CoinGecko API
-          const cryptoData = await cryptoAPI.getCrypto(holding.symbol.toLowerCase())
+          const cryptoData = await cryptoAPI.getCrypto(coinId)
           const currentPrice = cryptoData?.current_price || holding.purchase_price
 
           const currentValue = holding.amount * currentPrice
@@ -203,15 +236,49 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Get current price for the crypto using CoinGecko ID if available
     let currentPrice = purchasePrice
+    let cryptoImage = null
     try {
+      let cryptoData
       if (coinGeckoId) {
-        const cryptoData = await cryptoAPI.getCrypto(coinGeckoId)
-        currentPrice = cryptoData?.current_price || purchasePrice
+        cryptoData = await cryptoAPI.getCrypto(coinGeckoId)
       } else {
-        // Fallback to symbol-based lookup
-        const cryptoData = await cryptoAPI.getCrypto(symbol.toLowerCase())
-        currentPrice = cryptoData?.current_price || purchasePrice
+        // Map common symbols to CoinGecko IDs
+        const symbolToIdMap: Record<string, string> = {
+          'btc': 'bitcoin',
+          'eth': 'ethereum',
+          'bnb': 'binancecoin',
+          'ada': 'cardano',
+          'sol': 'solana',
+          'dot': 'polkadot',
+          'avax': 'avalanche-2',
+          'matic': 'matic-network',
+          'link': 'chainlink',
+          'uni': 'uniswap',
+          'ltc': 'litecoin',
+          'bch': 'bitcoin-cash',
+          'xlm': 'stellar',
+          'vet': 'vechain',
+          'trx': 'tron',
+          'etc': 'ethereum-classic',
+          'ftt': 'ftx-token',
+          'near': 'near',
+          'algo': 'algorand',
+          'mana': 'decentraland',
+          'sand': 'the-sandbox',
+          'axs': 'axie-infinity',
+          'cro': 'crypto-com-chain',
+          'lrc': 'loopring',
+          'grt': 'the-graph',
+          'chz': 'chiliz',
+          'bat': 'basic-attention-token'
+        }
+
+        const coinId = symbolToIdMap[symbol.toLowerCase()] || symbol.toLowerCase()
+        cryptoData = await cryptoAPI.getCrypto(coinId)
       }
+
+      currentPrice = cryptoData?.current_price || purchasePrice
+      cryptoImage = cryptoData?.image || null
     } catch (error) {
       console.warn(`Failed to get current price for ${symbol}:`, error)
     }
@@ -247,7 +314,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       ...newHolding,
       currentValue,
       totalPnL,
-      pnlPercentage
+      pnlPercentage,
+      image: cryptoImage
     }
 
     return NextResponse.json({

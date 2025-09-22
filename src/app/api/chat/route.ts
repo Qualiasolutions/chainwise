@@ -8,11 +8,11 @@ import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { OpenAIService } from '@/lib/openai/service'
 import { AI_PERSONAS, PersonaId } from '@/lib/openai/personas'
-import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -21,24 +21,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile using MCP helper
-    let profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    // Get user profile from profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('auth_id', session.user.id)
+      .single()
 
-    // If profile doesn't exist, create it using MCP
-    if (!profile) {
-      try {
-        profile = await mcpSupabase.createUser({
-          auth_id: session.user.id,
-          email: session.user.email || '',
-          full_name: session.user.user_metadata?.full_name || null,
-          tier: 'free',
-          credits: 3,
-          monthly_credits: 3
-        })
-      } catch (createError: any) {
-        console.error('Failed to create user profile via MCP:', createError)
-        return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
-      }
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
     const body = await request.json()
@@ -74,24 +65,36 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
-    // Use MCP for credit deduction and transaction recording
-    const creditUsageSuccess = await mcpSupabase.recordCreditUsage(
-      profile.id,
-      personaConfig.creditCost,
-      `AI chat with ${personaConfig.name}`,
-      persona,
-      sessionId
-    )
+    // Deduct credits from user profile
+    const { error: creditError } = await supabase
+      .from('profiles')
+      .update({ credits: profile.credits - personaConfig.creditCost })
+      .eq('id', profile.id)
 
-    if (!creditUsageSuccess) {
+    if (creditError) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
+    }
+
+    // Record credit transaction
+    const { error: transactionError } = await supabase
+      .from('credit_transactions')
+      .insert({
+        user_id: profile.id,
+        amount: -personaConfig.creditCost,
+        description: `AI chat with ${personaConfig.name}`,
+        transaction_type: 'deduction',
+        reference_id: sessionId
+      })
+
+    if (transactionError) {
+      console.error('Credit transaction record error:', transactionError)
+      // Don't fail the request if transaction logging fails
     }
 
     // Get conversation history for context
     let conversationHistory: any[] = []
     let existingSession: any = null
     if (sessionId) {
-      // TODO: Replace with MCP helper when available
       const { data: session } = await supabase
         .from('ai_chat_sessions')
         .select('messages')
@@ -143,16 +146,23 @@ export async function POST(request: NextRequest) {
         }
       ]
 
-      try {
-        chatSession = await mcpSupabase.updateChatSession(
-          sessionId,
-          updatedMessages,
-          (existingSession.credits_used || 0) + personaConfig.creditCost
-        )
-      } catch (error) {
-        console.error('Session update error:', error)
+      const { data: updatedSession, error: updateError } = await supabase
+        .from('ai_chat_sessions')
+        .update({
+          messages: updatedMessages,
+          credits_used: (existingSession.credits_used || 0) + personaConfig.creditCost,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', sessionId)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.error('Session update error:', updateError)
         return NextResponse.json({ error: 'Failed to update chat session' }, { status: 500 })
       }
+
+      chatSession = updatedSession
     }
 
     if (!chatSession) {
@@ -173,20 +183,24 @@ export async function POST(request: NextRequest) {
         }
       ]
 
-      try {
-        chatSession = await mcpSupabase.createChatSession({
+      const { data: newSession, error: createError } = await supabase
+        .from('ai_chat_sessions')
+        .insert({
           user_id: profile.id,
           persona: persona as any,
           messages: updatedMessages as any,
           credits_used: personaConfig.creditCost
         })
-      } catch (error) {
-        console.error('Session creation error:', error)
+        .select()
+        .single()
+
+      if (createError) {
+        console.error('Session creation error:', createError)
         return NextResponse.json({ error: 'Failed to create chat session' }, { status: 500 })
       }
-    }
 
-    // Credit transaction is already recorded by mcpSupabase.recordCreditUsage above
+      chatSession = newSession
+    }
 
     return NextResponse.json({
       response: aiResponse,
@@ -207,7 +221,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -216,28 +231,17 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile using MCP helper
-    let profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    // Get user profile from profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('auth_id', session.user.id)
+      .single()
 
-    // If profile doesn't exist, create it using MCP
-    if (!profile) {
-      try {
-        profile = await mcpSupabase.createUser({
-          auth_id: session.user.id,
-          email: session.user.email || '',
-          full_name: session.user.user_metadata?.full_name || null,
-          tier: 'free',
-          credits: 3,
-          monthly_credits: 3
-        })
-      } catch (createError: any) {
-        console.error('Failed to create user profile via MCP:', createError)
-        return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
-      }
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // TODO: Add getChatSessions method to MCP helper
-    // For now, use direct query
     const { data: sessions, error } = await supabase
       .from('ai_chat_sessions')
       .select('*')
