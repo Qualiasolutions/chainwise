@@ -33,7 +33,7 @@ interface CryptoSearchResult {
 
 interface AddAssetModalProps {
   portfolioId: string
-  onAssetAdded?: () => void
+  onAssetAdded?: (holdingData?: any) => void
   children?: React.ReactNode
 }
 
@@ -126,20 +126,35 @@ export function AddAssetModal({ portfolioId, onAssetAdded, children }: AddAssetM
 
     setAddingAsset(true)
 
+    const holdingData = {
+      symbol: selectedCrypto!.symbol,
+      name: selectedCrypto!.name,
+      amount: parseFloat(amount),
+      purchasePrice: parseFloat(purchasePrice),
+      purchaseDate: new Date(purchaseDate).toISOString(),
+      coinGeckoId: selectedCrypto!.id
+    }
+
     try {
+      // Trigger optimistic update immediately
+      if (onAssetAdded) {
+        onAssetAdded(holdingData)
+      }
+
+      // Reset form and close modal immediately for better UX
+      setSelectedCrypto(null)
+      setAmount("")
+      setPurchasePrice("")
+      setPurchaseDate(new Date().toISOString().split('T')[0])
+      setOpen(false)
+
+      // Make API call in background
       const response = await fetch(`/api/portfolio/${portfolioId}/holdings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          symbol: selectedCrypto!.symbol,
-          name: selectedCrypto!.name,
-          amount: parseFloat(amount),
-          purchasePrice: parseFloat(purchasePrice),
-          purchaseDate: new Date(purchaseDate).toISOString(),
-          coinGeckoId: selectedCrypto!.id  // Add the ID for price fetching
-        })
+        body: JSON.stringify(holdingData)
       })
 
       const data = await response.json()
@@ -148,23 +163,12 @@ export function AddAssetModal({ portfolioId, onAssetAdded, children }: AddAssetM
         throw new Error(data.error || 'Failed to add asset')
       }
 
-      toast.success(`${selectedCrypto!.symbol} added to your portfolio!`)
-
-      // Reset form
-      setSelectedCrypto(null)
-      setAmount("")
-      setPurchasePrice("")
-      setPurchaseDate(new Date().toISOString().split('T')[0])
-      setOpen(false)
-
-      // Trigger refresh
-      if (onAssetAdded) {
-        onAssetAdded()
-      }
+      // Success is already shown by the optimistic update
 
     } catch (error: any) {
       console.error('Add asset error:', error)
       toast.error(error.message)
+      // The portfolio page will handle reverting the optimistic update
     } finally {
       setAddingAsset(false)
     }

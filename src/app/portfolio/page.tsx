@@ -236,7 +236,69 @@ export default function PortfolioPage() {
     fetchPortfolioData()
   }, [fetchPortfolioData])
 
-  // Delete holding function
+  // Add holding function with optimistic updates
+  const handleAddHolding = useCallback(async (newHoldingData?: any) => {
+    if (!portfolioId) return
+
+    // If no data provided, just refresh (legacy support)
+    if (!newHoldingData) {
+      fetchPortfolioData()
+      return
+    }
+
+    try {
+      // Create optimistic holding for immediate UI update
+      const optimisticHolding: PortfolioHolding = {
+        id: `temp-${Date.now()}`,
+        symbol: newHoldingData.symbol.toUpperCase(),
+        name: newHoldingData.name,
+        amount: newHoldingData.amount,
+        purchase_price: newHoldingData.purchasePrice,
+        current_price: newHoldingData.purchasePrice, // Use purchase price as placeholder
+        purchase_date: newHoldingData.purchaseDate,
+        value: newHoldingData.amount * newHoldingData.purchasePrice,
+        pnl: 0, // Initially no P&L
+        pnlPercentage: 0,
+        allocation: 0 // Will be recalculated
+      }
+
+      // Optimistically update the UI
+      const updatedHoldings = [...holdings, optimisticHolding]
+
+      // Recalculate allocations for all holdings
+      const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.value, 0)
+      updatedHoldings.forEach(holding => {
+        holding.allocation = totalValue > 0 ? (holding.value / totalValue) * 100 : 0
+      })
+
+      setHoldings(updatedHoldings)
+
+      // Update metrics optimistically
+      if (metrics) {
+        const newTotalValue = metrics.totalValue + optimisticHolding.value
+        setMetrics({
+          ...metrics,
+          totalValue: newTotalValue
+        })
+      }
+
+      // Show immediate success feedback
+      toast.success(`${optimisticHolding.symbol} added to your portfolio!`)
+
+      // Fetch fresh data in the background to get real current prices
+      setTimeout(() => {
+        fetchPortfolioData()
+      }, 1000)
+
+    } catch (error: any) {
+      console.error('Error adding holding:', error)
+      toast.error('Failed to add holding')
+      // Revert optimistic update on error
+      fetchPortfolioData()
+    }
+  }, [portfolioId, holdings, metrics, fetchPortfolioData])
+
+  // Delete holding function with optimistic updates
   const handleDeleteHolding = async (holdingId: string, symbol: string) => {
     if (!portfolioId) return
 
@@ -244,6 +306,29 @@ export default function PortfolioPage() {
     if (!confirmDelete) return
 
     try {
+      // Optimistically remove from UI
+      const updatedHoldings = holdings.filter(h => h.id !== holdingId)
+      setHoldings(updatedHoldings)
+
+      // Recalculate metrics optimistically
+      if (metrics) {
+        const removedHolding = holdings.find(h => h.id === holdingId)
+        if (removedHolding) {
+          const newTotalValue = metrics.totalValue - removedHolding.value
+          const newTotalPnL = metrics.totalPnL - removedHolding.pnl
+          setMetrics({
+            ...metrics,
+            totalValue: newTotalValue,
+            totalPnL: newTotalPnL,
+            totalPnLPercentage: newTotalValue > 0 ? (newTotalPnL / (newTotalValue - newTotalPnL)) * 100 : 0
+          })
+        }
+      }
+
+      // Show immediate feedback
+      toast.success(`${symbol} removed from portfolio`)
+
+      // Make API call in background
       const response = await fetch(`/api/portfolio/${portfolioId}/holdings/${holdingId}`, {
         method: 'DELETE'
       })
@@ -254,11 +339,16 @@ export default function PortfolioPage() {
         throw new Error(data.error || 'Failed to delete holding')
       }
 
-      toast.success(data.message || `${symbol} removed from portfolio`)
-      fetchPortfolioData() // Refresh the portfolio
+      // Refresh data to ensure consistency
+      setTimeout(() => {
+        fetchPortfolioData()
+      }, 500)
+
     } catch (error: any) {
       console.error('Delete holding error:', error)
       toast.error(error.message)
+      // Revert optimistic update on error
+      fetchPortfolioData()
     }
   }
 
@@ -440,7 +530,7 @@ export default function PortfolioPage() {
           </p>
         </div>
         {portfolioId && (
-          <AddAssetModal portfolioId={portfolioId} onAssetAdded={fetchPortfolioData} />
+          <AddAssetModal portfolioId={portfolioId} onAssetAdded={handleAddHolding} />
         )}
       </div>
 
@@ -534,7 +624,7 @@ export default function PortfolioPage() {
                     Start building your portfolio by adding your first cryptocurrency holding.
                   </p>
                   {portfolioId && (
-                    <AddAssetModal portfolioId={portfolioId} onAssetAdded={fetchPortfolioData}>
+                    <AddAssetModal portfolioId={portfolioId} onAssetAdded={handleAddHolding}>
                       <Button className="purple-gradient">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Your First Asset
