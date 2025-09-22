@@ -45,6 +45,25 @@ export class MCPSupabaseClient {
     this.projectId = projectId
   }
 
+  // Utility method to get the appropriate Supabase client based on context
+  private async getSupabaseClient() {
+    try {
+      // Try to determine context by checking if we have access to headers
+      const { cookies } = await import('next/headers')
+      const { createRouteHandlerClient, createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
+
+      // In Route Handlers, use createRouteHandlerClient
+      // In Server Components, use createServerComponentClient
+      // We'll default to createRouteHandlerClient for now since most MCP calls are from API routes
+      return createRouteHandlerClient({ cookies })
+    } catch (error) {
+      // Fallback to server component client if route handler fails
+      const { cookies } = await import('next/headers')
+      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
+      return createServerComponentClient({ cookies })
+    }
+  }
+
   // Utility method to execute MCP SQL queries
   private async executeMCPQuery<T>(query: string, params: any[] = []): Promise<MCPResponse<T>> {
     try {
@@ -128,9 +147,7 @@ export class MCPSupabaseClient {
   async updateUser(userId: string, updates: UserUpdate): Promise<User> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('users')
@@ -151,9 +168,7 @@ export class MCPSupabaseClient {
   async getUserPortfolios(userId: string): Promise<Portfolio[]> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('portfolios')
@@ -173,9 +188,7 @@ export class MCPSupabaseClient {
   async createPortfolio(portfolioData: PortfolioInsert): Promise<Portfolio> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('portfolios')
@@ -194,9 +207,7 @@ export class MCPSupabaseClient {
   async getPortfolioById(portfolioId: string): Promise<Portfolio | null> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('portfolios')
@@ -215,9 +226,7 @@ export class MCPSupabaseClient {
   async getPortfolioHoldings(portfolioId: string): Promise<PortfolioHolding[]> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('portfolio_holdings')
@@ -236,9 +245,7 @@ export class MCPSupabaseClient {
   async addPortfolioHolding(holdingData: PortfolioHoldingInsert): Promise<PortfolioHolding> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('portfolio_holdings')
@@ -257,9 +264,7 @@ export class MCPSupabaseClient {
   async updatePortfolioHolding(holdingId: string, updates: PortfolioHoldingUpdate): Promise<PortfolioHolding> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('portfolio_holdings')
@@ -279,9 +284,7 @@ export class MCPSupabaseClient {
   async deletePortfolioHolding(holdingId: string): Promise<boolean> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { error } = await supabase
         .from('portfolio_holdings')
@@ -301,9 +304,7 @@ export class MCPSupabaseClient {
   async createChatSession(sessionData: AiChatSessionInsert): Promise<AiChatSession> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('ai_chat_sessions')
@@ -322,9 +323,7 @@ export class MCPSupabaseClient {
   async updateChatSession(sessionId: string, messages: unknown[], creditsUsed: number): Promise<AiChatSession> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('ai_chat_sessions')
@@ -375,9 +374,7 @@ export class MCPSupabaseClient {
   async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       let query = supabase
         .from('notifications')
@@ -404,9 +401,7 @@ export class MCPSupabaseClient {
   async markNotificationAsRead(notificationId: string): Promise<boolean> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { error } = await supabase
         .from('notifications')
@@ -425,9 +420,7 @@ export class MCPSupabaseClient {
   async getCreditTransactions(userId: string, limit: number = 50): Promise<CreditTransaction[]> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('credit_transactions')
@@ -447,9 +440,7 @@ export class MCPSupabaseClient {
   async createCreditTransaction(transactionData: CreditTransactionInsert): Promise<CreditTransaction> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('credit_transactions')
@@ -469,9 +460,7 @@ export class MCPSupabaseClient {
   async getUserPaymentMethods(userId: string): Promise<PaymentMethod[]> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('payment_methods')
@@ -491,9 +480,7 @@ export class MCPSupabaseClient {
   async createPaymentMethod(paymentMethodData: PaymentMethodInsert): Promise<PaymentMethod> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('payment_methods')
@@ -513,9 +500,7 @@ export class MCPSupabaseClient {
   async getPortfolioMetrics(portfolioId: string): Promise<PortfolioMetrics> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .rpc('get_portfolio_metrics', { portfolio_uuid: portfolioId })
@@ -537,9 +522,7 @@ export class MCPSupabaseClient {
   async getUserPortfolioSummary(userId: string): Promise<UserPortfolioSummary> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .rpc('get_user_portfolio_summary', { user_uuid: userId })
@@ -569,9 +552,7 @@ export class MCPSupabaseClient {
   ): Promise<boolean> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .rpc('record_credit_usage', {
@@ -597,9 +578,7 @@ export class MCPSupabaseClient {
   ): Promise<boolean> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .rpc('refill_user_credits', {
@@ -654,9 +633,7 @@ export class MCPSupabaseClient {
   async getUserById(userId: string): Promise<User | null> {
     try {
       // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
         .from('users')
