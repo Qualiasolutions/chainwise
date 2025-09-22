@@ -297,10 +297,10 @@ export default function MarketPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
-      <div className="flex gap-6 max-w-[1600px] mx-auto">
+      <div className="flex gap-6 w-full">
         {/* Main Content */}
         <motion.div
-          className="flex-1 space-y-6 max-w-4xl"
+          className="flex-1 space-y-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}

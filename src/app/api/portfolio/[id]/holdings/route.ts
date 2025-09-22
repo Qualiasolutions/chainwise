@@ -80,7 +80,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             current_price: currentPrice,
             currentValue,
             totalPnL,
-            pnlPercentage
+            pnlPercentage,
+            image: cryptoData?.image || null
           }
         } catch (error) {
           // If API fails, use stored price or purchase price
@@ -97,7 +98,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             current_price: currentPrice,
             currentValue,
             totalPnL,
-            pnlPercentage
+            pnlPercentage,
+            image: null
           }
         }
       })

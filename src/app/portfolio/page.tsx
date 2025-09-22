@@ -63,6 +63,7 @@ interface PortfolioHolding {
   pnl: number
   pnlPercentage: number
   allocation: number
+  image?: string | null
 }
 
 interface PortfolioMetrics {
@@ -160,7 +161,8 @@ export default function PortfolioPage() {
         value: holding.currentValue,
         pnl: holding.totalPnL,
         pnlPercentage: holding.pnlPercentage,
-        allocation: 0 // Will be calculated below
+        allocation: 0, // Will be calculated below
+        image: holding.image
       }))
 
       // Calculate allocations
@@ -259,7 +261,8 @@ export default function PortfolioPage() {
         value: newHoldingData.amount * newHoldingData.purchasePrice,
         pnl: 0, // Initially no P&L
         pnlPercentage: 0,
-        allocation: 0 // Will be recalculated
+        allocation: 0, // Will be recalculated
+        image: null // Will be fetched in background
       }
 
       // Optimistically update the UI
@@ -359,7 +362,24 @@ export default function PortfolioPage() {
       header: "Asset",
       cell: ({ row }) => (
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+          {row.original.image ? (
+            <img
+              src={row.original.image}
+              alt={row.original.name}
+              className="w-8 h-8 rounded-full"
+              onError={(e) => {
+                // Fallback to gradient circle if image fails to load
+                const target = e.target as HTMLElement
+                target.style.display = 'none'
+                const fallback = target.nextElementSibling as HTMLElement
+                if (fallback) fallback.style.display = 'flex'
+              }}
+            />
+          ) : null}
+          <div
+            className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium"
+            style={{ display: row.original.image ? 'none' : 'flex' }}
+          >
             {row.original.symbol.slice(0, 2)}
           </div>
           <div>
@@ -702,7 +722,24 @@ export default function PortfolioPage() {
                     <div className="space-y-4">
                       {holdings.map((holding) => (
                         <div key={holding.id} className="flex items-center space-x-4">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+                          {holding.image ? (
+                            <img
+                              src={holding.image}
+                              alt={holding.name}
+                              className="w-8 h-8 rounded-full"
+                              onError={(e) => {
+                                // Fallback to gradient circle if image fails to load
+                                const target = e.target as HTMLElement
+                                target.style.display = 'none'
+                                const fallback = target.nextElementSibling as HTMLElement
+                                if (fallback) fallback.style.display = 'flex'
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium"
+                            style={{ display: holding.image ? 'none' : 'flex' }}
+                          >
                             {holding.symbol.slice(0, 2)}
                           </div>
                           <div className="flex-1">
