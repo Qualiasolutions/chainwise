@@ -26,19 +26,7 @@ export async function GET(request: NextRequest) {
       auth: { autoRefreshToken: false, persistSession: false }
     })
 
-    // Check if email exists in auth.users table
-    const { data: authUsers, error: authError } = await supabase
-      .from('auth.users')
-      .select('email')
-      .eq('email', email.toLowerCase())
-      .limit(1)
-
-    if (authError) {
-      console.error('Error checking auth.users:', authError)
-      return NextResponse.json({ error: 'Failed to check email' }, { status: 500 })
-    }
-
-    // Check if email exists in custom users table as backup
+    // Check custom users table - this is the most reliable approach
     const { data: customUsers, error: customError } = await supabase
       .from('users')
       .select('email')
@@ -47,10 +35,10 @@ export async function GET(request: NextRequest) {
 
     if (customError) {
       console.error('Error checking users table:', customError)
-      // Don't fail on custom users check, auth.users is the source of truth
+      return NextResponse.json({ error: 'Failed to check email' }, { status: 500 })
     }
 
-    const emailExists = (authUsers && authUsers.length > 0) || (customUsers && customUsers.length > 0)
+    const emailExists = customUsers && customUsers.length > 0
 
     return NextResponse.json({
       exists: emailExists,
