@@ -297,11 +297,11 @@ export default function MarketPage() {
   )
 
   return (
-    <div className="h-full">
+    <div className="h-full w-full">
       <div className="flex h-full w-full">
-        {/* Main Content Area - Expanded */}
+        {/* Main Content Area - Full Width */}
         <motion.div
-          className="flex-1 p-6 space-y-6 overflow-auto"
+          className="flex-1 px-3 py-4 space-y-4 overflow-auto max-w-full"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
@@ -327,10 +327,10 @@ export default function MarketPage() {
             </div>
           </div>
 
-          {/* Enhanced Global Market Stats */}
+          {/* Enhanced Global Market Stats - More Columns */}
           {globalData && (
             <motion.div
-              className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-8"
+              className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}

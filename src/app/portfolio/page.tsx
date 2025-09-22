@@ -496,7 +496,7 @@ export default function PortfolioPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 space-y-6">
+      <div className="flex-1 space-y-4 px-3 py-4 max-w-full">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight purple-gradient bg-clip-text text-transparent">
             Portfolio
@@ -534,7 +534,7 @@ export default function PortfolioPage() {
 
   return (
     <motion.div
-      className="flex-1 space-y-6"
+      className="flex-1 space-y-4 px-3 py-4 max-w-full"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}

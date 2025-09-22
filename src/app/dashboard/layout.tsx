@@ -45,7 +45,7 @@ export default function DashboardLayout({
 
   // Return children directly since sidebar is handled globally
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-2 p-2 pt-0 max-w-full">
       {children}
     </div>
   )

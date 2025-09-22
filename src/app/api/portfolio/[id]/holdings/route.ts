@@ -28,10 +28,23 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     // Get user profile using MCP helper
-    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    let profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
+    // If profile doesn't exist, create it
     if (!profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+      try {
+        profile = await mcpSupabase.createUser({
+          auth_id: session.user.id,
+          email: session.user.email || '',
+          full_name: session.user.user_metadata?.full_name || null,
+          tier: 'free',
+          credits: 3,
+          monthly_credits: 3
+        })
+      } catch (createError) {
+        console.error('Failed to create user profile:', createError)
+        return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
+      }
     }
 
     // Verify portfolio ownership using MCP helper
@@ -121,10 +134,23 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Get user profile using MCP helper
-    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    let profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
+    // If profile doesn't exist, create it
     if (!profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+      try {
+        profile = await mcpSupabase.createUser({
+          auth_id: session.user.id,
+          email: session.user.email || '',
+          full_name: session.user.user_metadata?.full_name || null,
+          tier: 'free',
+          credits: 3,
+          monthly_credits: 3
+        })
+      } catch (createError) {
+        console.error('Failed to create user profile:', createError)
+        return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
+      }
     }
 
     // Verify portfolio ownership using MCP helper
