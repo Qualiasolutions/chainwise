@@ -32,6 +32,8 @@ export default function BillingPage() {
           const subData = await subResponse.json();
           setSubscriptionHistory(subData.subscriptions || []);
           setSubscriptionData(subData.current || null);
+        } else {
+          console.error('Failed to fetch subscription data:', await subResponse.text());
         }
 
         // Fetch credit transactions (recent)
@@ -39,6 +41,8 @@ export default function BillingPage() {
         if (creditResponse.ok) {
           const creditData = await creditResponse.json();
           setCreditTransactions(creditData.transactions || []);
+        } else {
+          console.error('Failed to fetch credit transactions:', await creditResponse.text());
         }
 
       } catch (error) {
@@ -87,25 +91,54 @@ export default function BillingPage() {
   ];
 
   const handleCancelSubscription = async () => {
+    if (!profile) return;
+
+    const confirmed = confirm(
+      'Are you sure you want to cancel your subscription? You will be downgraded to the free tier immediately.'
+    );
+    if (!confirmed) return;
+
     setLoading(true);
     try {
-      // TODO: Integrate with Stripe API to cancel subscription
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Subscription cancellation requested");
-    } catch (error) {
+      const response = await fetch('/api/settings/subscription/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cancellation_reason: 'User requested',
+          feedback: null
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to cancel subscription');
+      }
+
+      const result = await response.json();
+      toast.success(result.message);
+
+      // Refresh billing data to reflect changes
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error: any) {
       console.error("Error canceling subscription:", error);
-      toast.error("Failed to cancel subscription");
+      toast.error(error.message || "Failed to cancel subscription");
     } finally {
       setLoading(false);
     }
   };
 
   const handleUpdatePayment = async () => {
+    toast.info("Payment method update will open Stripe checkout");
+    // TODO: Integrate with Stripe checkout for payment method updates
+    // This would typically open a Stripe Elements form or redirect to Stripe checkout
     setLoading(true);
     try {
-      // TODO: Open Stripe payment method update flow
+      // In a real implementation, this would integrate with Stripe
+      // For now, we'll show a placeholder message
       await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Payment method updated");
+      toast.info("Stripe payment method update will be implemented soon");
     } catch (error) {
       console.error("Error updating payment:", error);
       toast.error("Failed to update payment method");

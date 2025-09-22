@@ -48,19 +48,22 @@ export class MCPSupabaseClient {
   // Utility method to get the appropriate Supabase client based on context
   private async getSupabaseClient() {
     try {
-      // Try to determine context by checking if we have access to headers
-      const { cookies } = await import('next/headers')
-      const { createRouteHandlerClient, createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-
-      // In Route Handlers, use createRouteHandlerClient
-      // In Server Components, use createServerComponentClient
-      // We'll default to createRouteHandlerClient for now since most MCP calls are from API routes
-      return createRouteHandlerClient({ cookies })
+      // Check if we're in a server environment
+      if (typeof window === 'undefined') {
+        // Server-side: use route handler client for API routes
+        const { cookies } = await import('next/headers')
+        const { createRouteHandlerClient } = await import('@supabase/auth-helpers-nextjs')
+        return createRouteHandlerClient({ cookies })
+      } else {
+        // Client-side: use browser client
+        const { createClientComponentClient } = await import('@supabase/auth-helpers-nextjs')
+        return createClientComponentClient()
+      }
     } catch (error) {
-      // Fallback to server component client if route handler fails
-      const { cookies } = await import('next/headers')
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      return createServerComponentClient({ cookies })
+      console.error('Error creating Supabase client:', error)
+      // Fallback to direct client import
+      const { supabase } = await import('./client')
+      return supabase
     }
   }
 

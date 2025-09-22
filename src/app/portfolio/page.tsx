@@ -232,7 +232,7 @@ export default function PortfolioPage() {
     } finally {
       setLoading(false)
     }
-  }, [user, profile])
+  }, [user?.id, profile?.id]) // Only depend on stable IDs, not whole objects
 
   useEffect(() => {
     fetchPortfolioData()
@@ -299,7 +299,7 @@ export default function PortfolioPage() {
       // Revert optimistic update on error
       fetchPortfolioData()
     }
-  }, [portfolioId, holdings, metrics, fetchPortfolioData])
+  }, [portfolioId, holdings, metrics]) // Remove fetchPortfolioData from deps to prevent infinite loop
 
   // Delete holding function with optimistic updates
   const handleDeleteHolding = async (holdingId: string, symbol: string) => {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { Database } from '@/lib/supabase/types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,17 +14,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    // Use authenticated Supabase client instead of anon client
+    const supabase = createRouteHandlerClient<Database>({ cookies })
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    // First verify we have a valid session
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      console.error('No valid session for user lookup:', authError)
       return NextResponse.json(
-        { error: 'Supabase environment variables not configured' },
-        { status: 500 }
+        { error: 'Authentication required' },
+        { status: 401 }
       )
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    // Only allow users to look up their own profile
+    if (session.user.id !== authId) {
+      return NextResponse.json(
+        { error: 'Unauthorized access' },
+        { status: 403 }
+      )
+    }
 
     const { data, error } = await supabase
       .from('users')
