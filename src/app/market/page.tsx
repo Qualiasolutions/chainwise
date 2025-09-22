@@ -296,12 +296,15 @@ export default function MarketPage() {
   )
 
   return (
-    <motion.div
-      className="flex-1 space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+      <div className="flex gap-6 max-w-[1600px] mx-auto">
+        {/* Main Content */}
+        <motion.div
+          className="flex-1 space-y-6 max-w-4xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -693,120 +696,164 @@ export default function MarketPage() {
             </CardContent>
           </Card>
         </div>
-      </motion.div>
 
-      {/* Crypto News Feed */}
-      <motion.div
-        className="space-y-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.4 }}
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Latest Crypto News</h2>
-            <p className="text-muted-foreground">
-              Stay updated with the latest cryptocurrency news and market insights
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refreshNews}
-            disabled={newsLoading}
-            className="flex items-center space-x-2"
-          >
-            <Newspaper className={cn("h-4 w-4", newsLoading && "animate-spin")} />
-            <span>{newsLoading ? "Updating..." : "Refresh News"}</span>
-          </Button>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {newsData.map((article, index) => (
-            <motion.div
-              key={article.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
+        {/* Mobile News Section (visible on smaller screens) */}
+        <motion.div
+          className="lg:hidden space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Newspaper className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Latest News</h2>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshNews}
+              disabled={newsLoading}
+              className="flex items-center space-x-2"
             >
-              <Card className="ai-card border-2 border-muted/20 hover:border-primary/20 transition-all duration-300 h-full cursor-pointer group">
-                <div className="relative overflow-hidden rounded-t-xl">
-                  <img
-                    src={article.urlToImage}
-                    alt={article.title}
-                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
-                      <Tag className="h-3 w-3 mr-1" />
-                      {article.category}
-                    </Badge>
-                  </div>
-                </div>
+              <Newspaper className={cn("h-4 w-4", newsLoading && "animate-spin")} />
+              <span className="hidden sm:inline">{newsLoading ? "Updating..." : "Refresh"}</span>
+            </Button>
+          </div>
 
-                <CardContent className="p-6">
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-lg leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {newsData.slice(0, 4).map((article, index) => (
+              <motion.div
+                key={article.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.1 }}
+              >
+                <Card
+                  className="ai-card border border-muted/20 hover:border-primary/30 transition-all duration-200 cursor-pointer group"
+                  onClick={() => window.open(article.url, '_blank', 'noopener,noreferrer')}
+                >
+                  <div className="relative overflow-hidden rounded-t-lg">
+                    <img
+                      src={article.urlToImage}
+                      alt={article.title}
+                      className="w-full h-32 sm:h-24 object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute top-2 left-2">
+                      <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm text-xs">
+                        {article.category}
+                      </Badge>
+                    </div>
+                  </div>
+                  <CardContent className="p-3">
+                    <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors mb-2">
                       {article.title}
                     </h3>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span className="font-medium">{article.source.name}</span>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-3 w-3" />
+                        <span>
+                          {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </motion.div>
 
-                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
-                      {article.description}
-                    </p>
+        {/* News Sidebar */}
+        <motion.div
+          className="w-80 space-y-4 hidden lg:block"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <div className="sticky top-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <Newspaper className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold">Crypto News</h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refreshNews}
+                disabled={newsLoading}
+                className="h-8 w-8 p-0"
+              >
+                <Newspaper className={cn("h-4 w-4", newsLoading && "animate-spin")} />
+              </Button>
+            </div>
 
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <span className="font-medium">{article.source.name}</span>
-                        <span>•</span>
+            <div className="space-y-3">
+              {newsData.slice(0, 6).map((article, index) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: index * 0.05 }}
+                >
+                  <Card
+                    className="ai-card border border-muted/20 hover:border-primary/30 transition-all duration-200 cursor-pointer group p-3"
+                    onClick={() => window.open(article.url, '_blank', 'noopener,noreferrer')}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-start space-x-3">
+                        <img
+                          src={article.urlToImage}
+                          alt={article.title}
+                          className="w-16 h-12 object-cover rounded-md flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                            {article.title}
+                          </h3>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-auto">
+                          {article.category}
+                        </Badge>
                         <div className="flex items-center space-x-1">
                           <Clock className="h-3 w-3" />
                           <span>
                             {new Date(article.publishedAt).toLocaleDateString('en-US', {
                               month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit'
+                              day: 'numeric'
                             })}
                           </span>
                         </div>
                       </div>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          window.open(article.url, '_blank', 'noopener,noreferrer')
-                        }}
-                      >
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        Read More
-                      </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
 
-        {newsData.length === 0 && !newsLoading && (
-          <Card className="ai-card">
-            <CardContent className="p-12 text-center">
-              <Newspaper className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No News Available</h3>
-              <p className="text-muted-foreground mb-6">
-                News feed is currently loading. Please check back in a moment.
-              </p>
-              <Button onClick={refreshNews} disabled={newsLoading}>
-                <Newspaper className="h-4 w-4 mr-2" />
-                Load News
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </motion.div>
-    </motion.div>
+            {newsData.length === 0 && !newsLoading && (
+              <Card className="ai-card border border-muted/20 p-4">
+                <div className="text-center">
+                  <Newspaper className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground mb-3">No news available</p>
+                  <Button onClick={refreshNews} size="sm" disabled={newsLoading}>
+                    <Newspaper className="h-3 w-3 mr-1" />
+                    Load News
+                  </Button>
+                </div>
+              </Card>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    </div>
   )
 }
