@@ -14,11 +14,13 @@ export default function PageWrapper({ children }: PageWrapperProps) {
   const isHomePage = pathname === '/';
   const isAuthPage = pathname.startsWith('/auth');
   const isDashboard = pathname.startsWith('/dashboard');
+  const isCheckout = pathname.startsWith('/checkout');
 
   // Calculate padding based on page type
   const getPadding = () => {
     if (isHomePage) return "";
     if (isAuthPage) return "pt-0";
+    if (isCheckout) return "pt-20";
     if (isDashboard) return "pt-20";
     return "pt-20 pb-8";
   };
@@ -41,7 +43,7 @@ export default function PageWrapper({ children }: PageWrapperProps) {
       )}
 
       {/* Content */}
-      <div className={!isHomePage && !isAuthPage && !isDashboard ? "container mx-auto px-4 max-w-7xl" : ""}>
+      <div className={!isHomePage && !isAuthPage && !isDashboard && !isCheckout ? "container mx-auto px-4 max-w-7xl" : ""}>
         {children}
       </div>
     </motion.div>

@@ -145,13 +145,13 @@ export const useSupabaseAuth = () => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (userEmail: string, userPassword: string) => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
+        email: userEmail,
+        password: userPassword
       })
 
       if (error) {
@@ -167,13 +167,13 @@ export const useSupabaseAuth = () => {
     }
   }
 
-  const signUp = async (email: string, password: string, fullName?: string) => {
+  const signUp = async (userEmail: string, userPassword: string, fullName?: string) => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
       // First check if email already exists
       try {
-        const emailCheckResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`)
+        const emailCheckResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(userEmail)}`)
 
         if (emailCheckResponse.ok) {
           const emailCheckData = await emailCheckResponse.json()
@@ -198,8 +198,8 @@ export const useSupabaseAuth = () => {
       }
 
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: userEmail,
+        password: userPassword,
         options: {
           data: {
             full_name: fullName

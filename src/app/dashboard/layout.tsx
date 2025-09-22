@@ -43,24 +43,10 @@ export default function DashboardLayout({
     return <AuthRequired />
   }
 
-  // Render authenticated dashboard (preserve existing layout)
+  // Return children directly since sidebar is handled globally
   return (
-    <div className="pt-16"> {/* Add padding top to account for fixed header */}
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
-              <DashboardBreadcrumb />
-            </div>
-          </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            {children}
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      {children}
     </div>
   )
 }

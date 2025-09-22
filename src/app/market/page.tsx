@@ -296,7 +296,7 @@ export default function MarketPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+    <div className="p-6">
       <div className="flex gap-6 w-full max-w-[1800px] mx-auto">
         {/* Main Content */}
         <motion.div

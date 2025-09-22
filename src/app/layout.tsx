@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { ModernNavigation } from "@/components/modern-navigation";
 import PageWrapper from "@/components/page-wrapper";
+import { GlobalSidebarLayout } from "@/components/global-sidebar-layout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -90,9 +91,11 @@ export default function RootLayout({
         <ThemeProvider>
           <ModernNavigation />
           <main className="min-h-screen">
-            <PageWrapper>
-              {children}
-            </PageWrapper>
+            <GlobalSidebarLayout>
+              <PageWrapper>
+                {children}
+              </PageWrapper>
+            </GlobalSidebarLayout>
           </main>
         </ThemeProvider>
       </body>
