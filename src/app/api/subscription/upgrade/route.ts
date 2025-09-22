@@ -22,7 +22,8 @@ const PLAN_CONFIGS = {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -31,9 +32,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile
+    // Get user profile from profiles table
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, tier, credits, monthly_credits')
       .eq('auth_id', session.user.id)
       .single()
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Update user profile with new tier and credits
     const { data: updatedProfile, error: updateError } = await supabase
-      .from('users')
+      .from('profiles')
       .update({
         tier: planConfig.tier,
         credits: newCredits,
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
         .from('credit_transactions')
         .insert({
           user_id: profile.id,
-          transaction_type: 'subscription',
+          transaction_type: 'addition',
           amount: planConfig.monthly_credits,
           description: `${planConfig.tier.toUpperCase()} subscription upgrade - monthly credits`
         })
