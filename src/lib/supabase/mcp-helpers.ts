@@ -46,21 +46,20 @@ export class MCPSupabaseClient {
   }
 
   // Utility method to execute MCP SQL queries
-  // In production, this would use the actual MCP tools
   private async executeMCPQuery<T>(query: string, params: any[] = []): Promise<MCPResponse<T>> {
     try {
-      // TODO: Replace with actual MCP tool call
-      // For now, we'll use a direct Supabase client as a placeholder
-      // This structure allows easy replacement with MCP when available
+      // Import MCP tools dynamically to avoid bundling issues
+      const { mcp__supabase__execute_sql } = await import('@/lib/mcp-tools')
 
-      // Placeholder implementation that would be replaced with:
-      // const result = await mcp__supabase__execute_sql({
-      //   project_id: this.projectId,
-      //   query: query,
-      //   params: params
-      // })
+      const result = await mcp__supabase__execute_sql({
+        project_id: this.projectId,
+        query: query
+      })
 
-      throw new Error('MCP integration not yet implemented - use direct Supabase client for now')
+      return {
+        data: result as T,
+        error: null
+      }
     } catch (error: any) {
       return {
         data: null,
@@ -84,22 +83,20 @@ export class MCPSupabaseClient {
   // User Operations
   async getUserByAuthId(authId: string): Promise<User | null> {
     try {
-      // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      // Use direct client-side call via API route
+      const response = await fetch('/api/users/by-auth-id', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authId })
+      })
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('auth_id', authId)
-        .single()
-
-      if (error && error.code !== 'PGRST116') {
-        throw error
+      if (!response.ok) {
+        console.error('API Error fetching user:', await response.text())
+        return null
       }
 
-      return data
+      const data = await response.json()
+      return data.user || null
     } catch (error: any) {
       console.error('Error fetching user by auth ID:', error)
       return null
@@ -108,19 +105,20 @@ export class MCPSupabaseClient {
 
   async createUser(userData: UserInsert): Promise<User> {
     try {
-      // TODO: Replace with MCP call when available
-      const { createServerComponentClient } = await import('@supabase/auth-helpers-nextjs')
-      const { cookies } = await import('next/headers')
-      const supabase = createServerComponentClient({ cookies })
+      // Use API route for creating users
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userData })
+      })
 
-      const { data, error } = await supabase
-        .from('users')
-        .insert(userData)
-        .select()
-        .single()
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create user')
+      }
 
-      if (error) throw error
-      return data
+      const data = await response.json()
+      return data.user
     } catch (error: any) {
       console.error('Error creating user:', error)
       throw new Error(`Failed to create user: ${error.message}`)
