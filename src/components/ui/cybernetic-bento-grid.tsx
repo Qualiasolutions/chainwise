@@ -36,11 +36,36 @@ const BentoItem: React.FC<BentoItemProps> = ({ className = '', children, delay =
   return (
     <motion.div
       ref={itemRef}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, delay, ease: "easeOut" }}
-      whileHover={{ y: -4 }}
+      initial={{
+        opacity: 0,
+        y: 60,
+        scale: 0.8,
+        rotateX: 15
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotateX: 0
+      }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{
+        duration: 0.8,
+        delay: delay * 0.15,
+        ease: [0.25, 0.46, 0.45, 0.94],
+        opacity: { duration: 0.6 },
+        scale: { duration: 0.8, ease: [0.34, 1.56, 0.64, 1] },
+        rotateX: { duration: 0.7 }
+      }}
+      whileHover={{
+        y: -8,
+        scale: 1.02,
+        transition: { duration: 0.3, ease: "easeOut" }
+      }}
+      style={{
+        transformStyle: "preserve-3d",
+        perspective: "1000px"
+      }}
       className={`enhanced-bento-item group ${className}`}
     >
       {children}
@@ -96,7 +121,7 @@ export const CyberneticBentoGrid: React.FC = () => {
         </motion.div>
 
         <div className="enhanced-bento-grid">
-          <BentoItem delay={0.1} className="col-span-2 row-span-2 flex flex-col justify-between">
+          <BentoItem delay={1} className="col-span-2 row-span-2 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-4 mb-6">
                 <div className="p-3 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl border border-blue-500/30">
@@ -121,7 +146,7 @@ export const CyberneticBentoGrid: React.FC = () => {
             </div>
           </BentoItem>
 
-          <BentoItem delay={0.2}>
+          <BentoItem delay={2}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-xl border border-purple-500/30">
                 <Bot className="w-6 h-6 text-purple-400" />
@@ -133,7 +158,7 @@ export const CyberneticBentoGrid: React.FC = () => {
             </p>
           </BentoItem>
 
-          <BentoItem delay={0.3}>
+          <BentoItem delay={3}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-xl border border-green-500/30">
                 <Shield className="w-6 h-6 text-green-400" />
@@ -145,7 +170,7 @@ export const CyberneticBentoGrid: React.FC = () => {
             </p>
           </BentoItem>
 
-          <BentoItem delay={0.4} className="row-span-2 flex flex-col">
+          <BentoItem delay={4} className="row-span-2 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-gradient-to-br from-orange-500/20 to-orange-600/20 rounded-xl border border-orange-500/30">
                 <Database className="w-6 h-6 text-orange-400" />
@@ -169,7 +194,7 @@ export const CyberneticBentoGrid: React.FC = () => {
             </div>
           </BentoItem>
 
-          <BentoItem delay={0.5} className="col-span-2">
+          <BentoItem delay={5} className="col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 rounded-xl border border-cyan-500/30">
                 <Zap className="w-6 h-6 text-cyan-400" />
@@ -181,7 +206,7 @@ export const CyberneticBentoGrid: React.FC = () => {
             </p>
           </BentoItem>
 
-          <BentoItem delay={0.6}>
+          <BentoItem delay={6}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-3 bg-gradient-to-br from-pink-500/20 to-pink-600/20 rounded-xl border border-pink-500/30">
                 <BarChart3 className="w-6 h-6 text-pink-400" />
