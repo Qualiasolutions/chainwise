@@ -187,11 +187,14 @@ export const useSupabaseAuth = () => {
             return { error: 'An account with this email already exists. Please sign in instead.' }
           }
         } else {
-          console.warn('Email check API failed, proceeding with signup')
+          console.warn('Email check API failed with status:', emailCheckResponse.status)
+          // For production robustness, we continue with signup even if check fails
+          // Supabase Auth will still prevent actual duplicates at the auth level
         }
       } catch (emailCheckError) {
-        console.warn('Email check failed:', emailCheckError)
-        // Continue with signup if email check fails
+        console.warn('Email check network/parsing failed:', emailCheckError)
+        // Continue with signup - if there's a real duplicate, Supabase Auth will catch it
+        // This ensures the signup flow doesn't break due to temporary API issues
       }
 
       const { data, error } = await supabase.auth.signUp({

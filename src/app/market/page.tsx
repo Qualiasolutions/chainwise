@@ -29,10 +29,14 @@ import {
   Globe,
   DollarSign,
   BarChart3,
-  Activity
+  Activity,
+  Newspaper,
+  ExternalLink,
+  Clock,
+  Tag
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { cryptoAPI, CryptoData, MarketData, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
+import { cryptoAPI, CryptoData, MarketData, NewsArticle, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
 import { ColumnDef } from "@tanstack/react-table"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -46,7 +50,9 @@ export default function MarketPage() {
   const [globalData, setGlobalData] = useState<MarketData | null>(null)
   const [trendingData, setTrendingData] = useState<any[]>([])
   const [marketChartData, setMarketChartData] = useState<any[]>([])
+  const [newsData, setNewsData] = useState<NewsArticle[]>([])
   const [loading, setLoading] = useState(true)
+  const [newsLoading, setNewsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [watchlist, setWatchlist] = useState<string[]>([])
@@ -60,15 +66,17 @@ export default function MarketPage() {
         setError(null)
 
         // Fetch all data in parallel
-        const [cryptos, global, trending] = await Promise.all([
+        const [cryptos, global, trending, news] = await Promise.all([
           cryptoAPI.getTopCryptos(100),
           cryptoAPI.getGlobalData(),
-          cryptoAPI.getTrendingCryptos()
+          cryptoAPI.getTrendingCryptos(),
+          cryptoAPI.getCryptoNews(8)
         ])
 
         setCryptoData(cryptos)
         setGlobalData(global)
         setTrendingData(trending)
+        setNewsData(news)
 
         // Generate market chart data from top cryptocurrencies
         const chartData = cryptos.slice(0, 10).map((crypto, index) => ({

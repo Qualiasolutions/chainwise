@@ -73,8 +73,14 @@ export default function SignUpPage() {
     setError(null)
 
     try {
-      await signUp(formData.email, formData.password, formData.fullName)
-      setSuccess(true)
+      const result = await signUp(formData.email, formData.password, formData.fullName)
+
+      // Check if signUp returned an error (e.g., duplicate email)
+      if (result && result.error) {
+        setError(result.error)
+      } else {
+        setSuccess(true)
+      }
     } catch (err: any) {
       setError(err.message || "Failed to create account. Please try again.")
     } finally {
