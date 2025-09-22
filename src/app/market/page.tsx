@@ -769,91 +769,91 @@ export default function MarketPage() {
         </motion.div>
       </motion.div>
 
-        {/* News Sidebar */}
-        <motion.div
-          className="w-80 space-y-4 hidden lg:block"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <div className="sticky top-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-2">
-                <Newspaper className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold">Crypto News</h2>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={refreshNews}
-                disabled={newsLoading}
-                className="h-8 w-8 p-0"
-              >
-                <Newspaper className={cn("h-4 w-4", newsLoading && "animate-spin")} />
-              </Button>
+      {/* News Sidebar */}
+      <motion.div
+        className="w-80 space-y-4 hidden lg:block"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+        <div className="sticky top-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <Newspaper className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Crypto News</h2>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={refreshNews}
+              disabled={newsLoading}
+              className="h-8 w-8 p-0"
+            >
+              <Newspaper className={cn("h-4 w-4", newsLoading && "animate-spin")} />
+            </Button>
+          </div>
 
-            <div className="space-y-3">
-              {newsData.slice(0, 6).map((article, index) => (
-                <motion.div
-                  key={article.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2, delay: index * 0.05 }}
+          <div className="space-y-3">
+            {newsData.slice(0, 6).map((article, index) => (
+              <motion.div
+                key={article.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.05 }}
+              >
+                <Card
+                  className="ai-card border border-muted/20 hover:border-primary/30 transition-all duration-200 cursor-pointer group p-3"
+                  onClick={() => window.open(article.url, '_blank', 'noopener,noreferrer')}
                 >
-                  <Card
-                    className="ai-card border border-muted/20 hover:border-primary/30 transition-all duration-200 cursor-pointer group p-3"
-                    onClick={() => window.open(article.url, '_blank', 'noopener,noreferrer')}
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-start space-x-3">
-                        <img
-                          src={article.urlToImage}
-                          alt={article.title}
-                          className="w-16 h-12 object-cover rounded-md flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                            {article.title}
-                          </h3>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-auto">
-                          {article.category}
-                        </Badge>
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>
-                            {new Date(article.publishedAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </span>
-                        </div>
+                  <div className="space-y-2">
+                    <div className="flex items-start space-x-3">
+                      <img
+                        src={article.urlToImage}
+                        alt={article.title}
+                        className="w-16 h-12 object-cover rounded-md flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                          {article.title}
+                        </h3>
                       </div>
                     </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
 
-            {newsData.length === 0 && !newsLoading && (
-              <Card className="ai-card border border-muted/20 p-4">
-                <div className="text-center">
-                  <Newspaper className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">No news available</p>
-                  <Button onClick={refreshNews} size="sm" disabled={newsLoading}>
-                    <Newspaper className="h-3 w-3 mr-1" />
-                    Load News
-                  </Button>
-                </div>
-              </Card>
-            )}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-auto">
+                        {article.category}
+                      </Badge>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-3 w-3" />
+                        <span>
+                          {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
           </div>
-        </motion.div>
-      </div>
+
+          {newsData.length === 0 && !newsLoading && (
+            <Card className="ai-card border border-muted/20 p-4">
+              <div className="text-center">
+                <Newspaper className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground mb-3">No news available</p>
+                <Button onClick={refreshNews} size="sm" disabled={newsLoading}>
+                  <Newspaper className="h-3 w-3 mr-1" />
+                  Load News
+                </Button>
+              </div>
+            </Card>
+          )}
+        </div>
+      </motion.div>
     </div>
+  </div>
   )
 }
