@@ -96,7 +96,7 @@ export const useSupabaseAuth = () => {
         }
       }
 
-      console.log('Found existing user profile:', profile.id)
+      // console.log('Found existing user profile:', profile.id) // Reduce console noise
       return profile
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -108,10 +108,14 @@ export const useSupabaseAuth = () => {
   }
 
   useEffect(() => {
+    let isMounted = true
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
+
+        if (!isMounted) return
 
         if (error) {
           console.error('Error getting session:', error)
@@ -121,28 +125,34 @@ export const useSupabaseAuth = () => {
 
         if (session?.user) {
           const profile = await fetchUserProfile(session.user)
-          setAuthState({
-            user: session.user,
-            profile,
-            loading: false,
-            error: null
-          })
+          if (isMounted) {
+            setAuthState({
+              user: session.user,
+              profile,
+              loading: false,
+              error: null
+            })
+          }
         } else {
+          if (isMounted) {
+            setAuthState({
+              user: null,
+              profile: null,
+              loading: false,
+              error: null
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error in getInitialSession:', error)
+        if (isMounted) {
           setAuthState({
             user: null,
             profile: null,
             loading: false,
-            error: null
+            error: 'Failed to initialize authentication'
           })
         }
-      } catch (error) {
-        console.error('Error in getInitialSession:', error)
-        setAuthState({
-          user: null,
-          profile: null,
-          loading: false,
-          error: 'Failed to initialize authentication'
-        })
       }
     }
 
@@ -151,31 +161,42 @@ export const useSupabaseAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isMounted) return
+
         try {
           if (session?.user) {
             const profile = await fetchUserProfile(session.user)
-            setAuthState({
-              user: session.user,
-              profile,
-              loading: false,
-              error: null
-            })
+            if (isMounted) {
+              setAuthState({
+                user: session.user,
+                profile,
+                loading: false,
+                error: null
+              })
+            }
           } else {
-            setAuthState({
-              user: null,
-              profile: null,
-              loading: false,
-              error: null
-            })
+            if (isMounted) {
+              setAuthState({
+                user: null,
+                profile: null,
+                loading: false,
+                error: null
+              })
+            }
           }
         } catch (error) {
           console.error('Error in auth state change:', error)
-          setAuthState(prev => ({ ...prev, error: 'Authentication error', loading: false }))
+          if (isMounted) {
+            setAuthState(prev => ({ ...prev, error: 'Authentication error', loading: false }))
+          }
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const signIn = async (userEmail: string, userPassword: string) => {
