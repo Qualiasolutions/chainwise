@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,24 +16,61 @@ import {
   Trash2,
   AlertTriangle,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+
+interface SecuritySettings {
+  two_factor_enabled: boolean;
+  security_notifications: boolean;
+  login_notifications: boolean;
+  password_changed_at: string;
+  last_security_audit: string;
+  has_backup_codes: boolean;
+}
+
+interface ConnectedAccount {
+  id: string;
+  provider: string;
+  email: string;
+  display_name: string;
+  is_primary: boolean;
+  connected_at: string;
+  last_used: string;
+}
+
+interface UserSession {
+  id: string;
+  device: string;
+  location: string;
+  ip_address: string;
+  last_active: string;
+  is_current: boolean;
+  created_at: string;
+}
+
+interface AccountData {
+  security: SecuritySettings;
+  connected_accounts: ConnectedAccount[];
+  recent_security_activities: Array<{
+    id: string;
+    type: string;
+    description: string;
+    created_at: string;
+    ip_address: string;
+  }>;
+}
 
 export default function AccountPage() {
-  const [loading, setLoading] = useState(false);
+  const { user: authUser, profile } = useSupabaseAuth();
+  const [loading, setLoading] = useState(true);
+  const [accountData, setAccountData] = useState<AccountData | null>(null);
+  const [sessions, setSessions] = useState<UserSession[]>([]);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-
-  // Mock account data
-  const [accountData, setAccountData] = useState({
-    email: "user@example.com",
-    two_factor_enabled: true,
-    email_verified: true,
-    last_login: "2024-09-19T14:30:00Z",
-    created_at: "2024-01-15T10:30:00Z",
-    login_count: 127
-  });
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const [passwordData, setPasswordData] = useState({
     current_password: "",
@@ -41,43 +78,76 @@ export default function AccountPage() {
     confirm_password: ""
   });
 
-  const connectedAccounts = [
-    {
-      provider: "Google",
-      email: "user@gmail.com",
-      connected_at: "2024-01-15",
-      status: "active"
-    }
-  ];
+  const [emailData, setEmailData] = useState({
+    new_email: ""
+  });
 
-  const loginSessions = [
-    {
-      id: "session_1",
-      device: "Chrome on MacOS",
-      location: "New York, USA",
-      last_active: "2024-09-19T14:30:00Z",
-      is_current: true
-    },
-    {
-      id: "session_2",
-      device: "Safari on iPhone",
-      location: "New York, USA",
-      last_active: "2024-09-18T09:15:00Z",
-      is_current: false
+  useEffect(() => {
+    if (authUser && profile) {
+      fetchAccountData();
+      fetchSessions();
     }
-  ];
+  }, [authUser, profile]);
 
-  const handleUpdateEmail = async () => {
-    setLoading(true);
+  const fetchAccountData = async () => {
     try {
-      // TODO: Integrate with Supabase Auth to update email
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Verification email sent to new address");
-    } catch (error) {
-      console.error("Error updating email:", error);
-      toast.error("Failed to update email");
+      setLoading(true);
+      const response = await fetch('/api/settings/security');
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch account data');
+      }
+
+      const data = await response.json();
+      setAccountData(data);
+    } catch (error: any) {
+      console.error('Error fetching account data:', error);
+      toast.error('Failed to load account information');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSessions = async () => {
+    try {
+      const response = await fetch('/api/settings/sessions');
+
+      if (response.ok) {
+        const data = await response.json();
+        setSessions(data.sessions || []);
+      }
+    } catch (error: any) {
+      console.error('Error fetching sessions:', error);
+    }
+  };
+
+  const handleUpdateEmail = async () => {
+    if (!emailData.new_email) {
+      toast.error('Please enter a new email address');
+      return;
+    }
+
+    setActionLoading('email');
+    try {
+      const response = await fetch('/api/settings/email', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_email: emailData.new_email })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update email');
+      }
+
+      const result = await response.json();
+      toast.success(result.message);
+      setEmailData({ new_email: "" });
+    } catch (error: any) {
+      console.error("Error updating email:", error);
+      toast.error(error.message || "Failed to update email");
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -87,66 +157,160 @@ export default function AccountPage() {
       return;
     }
 
-    setLoading(true);
+    if (passwordData.new_password.length < 8) {
+      toast.error("Password must be at least 8 characters long");
+      return;
+    }
+
+    setActionLoading('password');
     try {
-      // TODO: Integrate with Supabase Auth to update password
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/settings/security', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: passwordData.current_password,
+          new_password: passwordData.new_password
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update password');
+      }
+
       toast.success("Password updated successfully");
       setPasswordData({ current_password: "", new_password: "", confirm_password: "" });
-    } catch (error) {
+
+      // Refresh account data to update password changed timestamp
+      await fetchAccountData();
+    } catch (error: any) {
       console.error("Error updating password:", error);
-      toast.error("Failed to update password");
+      toast.error(error.message || "Failed to update password");
     } finally {
-      setLoading(false);
+      setActionLoading(null);
     }
   };
 
   const handleToggle2FA = async () => {
-    setLoading(true);
+    if (!accountData) return;
+
+    setActionLoading('2fa');
     try {
-      // TODO: Integrate with Supabase Auth for 2FA
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setAccountData(prev => ({ ...prev, two_factor_enabled: !prev.two_factor_enabled }));
-      toast.success(`Two-factor authentication ${!accountData.two_factor_enabled ? 'enabled' : 'disabled'}`);
-    } catch (error) {
+      const response = await fetch('/api/settings/security', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: accountData.security.two_factor_enabled ? 'disable_2fa' : 'enable_2fa'
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update 2FA');
+      }
+
+      const result = await response.json();
+      toast.success(result.message);
+
+      // Refresh account data
+      await fetchAccountData();
+    } catch (error: any) {
       console.error("Error toggling 2FA:", error);
-      toast.error("Failed to update two-factor authentication");
+      toast.error(error.message || "Failed to update two-factor authentication");
     } finally {
-      setLoading(false);
+      setActionLoading(null);
     }
   };
 
   const handleRevokeSession = async (sessionId: string) => {
-    setLoading(true);
+    setActionLoading(`session-${sessionId}`);
     try {
-      // TODO: Revoke session via Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/settings/sessions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to revoke session');
+      }
+
       toast.success("Session revoked successfully");
-    } catch (error) {
+
+      // Refresh sessions
+      await fetchSessions();
+    } catch (error: any) {
       console.error("Error revoking session:", error);
-      toast.error("Failed to revoke session");
+      toast.error(error.message || "Failed to revoke session");
     } finally {
-      setLoading(false);
+      setActionLoading(null);
     }
   };
 
   const handleDeleteAccount = async () => {
-    // This should show a confirmation dialog first
-    const confirmed = confirm("Are you sure you want to delete your account? This action cannot be undone.");
-    if (!confirmed) return;
+    const confirmationText = prompt(
+      'To confirm account deletion, please type "DELETE MY ACCOUNT" (case sensitive):'
+    );
 
-    setLoading(true);
+    if (confirmationText !== 'DELETE MY ACCOUNT') {
+      toast.error('Account deletion cancelled');
+      return;
+    }
+
+    setActionLoading('delete');
     try {
-      // TODO: Implement account deletion with Supabase
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await fetch('/api/settings/account', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmation_text: confirmationText })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete account');
+      }
+
       toast.success("Account deletion initiated");
-    } catch (error) {
+
+      // Redirect to homepage after successful deletion
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    } catch (error: any) {
       console.error("Error deleting account:", error);
-      toast.error("Failed to delete account");
+      toast.error(error.message || "Failed to delete account");
     } finally {
-      setLoading(false);
+      setActionLoading(null);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex items-center space-x-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading account settings...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!accountData || !authUser || !profile) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="text-lg font-medium">Failed to load account settings</div>
+          <div className="text-sm text-muted-foreground mt-1">
+            Please refresh the page to try again
+          </div>
+          <Button onClick={fetchAccountData} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -167,37 +331,35 @@ export default function AccountPage() {
               <div>
                 <Label className="text-sm font-medium">Email Address</Label>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm">{accountData.email}</span>
-                  {accountData.email_verified ? (
-                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
-                      Verified
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-xs">Unverified</Badge>
-                  )}
+                  <span className="text-sm">{authUser.email}</span>
+                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">
+                    Verified
+                  </Badge>
                 </div>
               </div>
 
               <div>
                 <Label className="text-sm font-medium">Member Since</Label>
                 <div className="text-sm text-muted-foreground mt-1">
-                  {new Date(accountData.created_at).toLocaleDateString()}
+                  {new Date(profile.created_at).toLocaleDateString()}
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
               <div>
-                <Label className="text-sm font-medium">Last Login</Label>
+                <Label className="text-sm font-medium">Last Password Change</Label>
                 <div className="text-sm text-muted-foreground mt-1">
-                  {new Date(accountData.last_login).toLocaleString()}
+                  {new Date(accountData.security.password_changed_at).toLocaleDateString()}
                 </div>
               </div>
 
               <div>
-                <Label className="text-sm font-medium">Total Logins</Label>
-                <div className="text-sm text-muted-foreground mt-1">
-                  {accountData.login_count} times
+                <Label className="text-sm font-medium">Security Status</Label>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant={accountData.security.two_factor_enabled ? "default" : "secondary"} className="text-xs">
+                    {accountData.security.two_factor_enabled ? "2FA Enabled" : "2FA Disabled"}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -222,11 +384,23 @@ export default function AccountPage() {
             <Input
               id="new-email"
               type="email"
+              value={emailData.new_email}
+              onChange={(e) => setEmailData({ new_email: e.target.value })}
               placeholder="Enter your new email address"
             />
           </div>
-          <Button onClick={handleUpdateEmail} disabled={loading}>
-            Update Email Address
+          <Button
+            onClick={handleUpdateEmail}
+            disabled={actionLoading === 'email' || !emailData.new_email}
+          >
+            {actionLoading === 'email' ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Updating...
+              </div>
+            ) : (
+              'Update Email Address'
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -300,8 +474,18 @@ export default function AccountPage() {
             </div>
           </div>
 
-          <Button onClick={handleUpdatePassword} disabled={loading}>
-            Update Password
+          <Button
+            onClick={handleUpdatePassword}
+            disabled={actionLoading === 'password' || !passwordData.current_password || !passwordData.new_password}
+          >
+            {actionLoading === 'password' ? (
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Updating...
+              </div>
+            ) : (
+              'Update Password'
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -322,16 +506,16 @@ export default function AccountPage() {
             <div>
               <div className="font-medium">Two-Factor Authentication</div>
               <div className="text-sm text-muted-foreground">
-                {accountData.two_factor_enabled
+                {accountData.security.two_factor_enabled
                   ? "Your account is protected with 2FA"
                   : "Secure your account with an authenticator app"
                 }
               </div>
             </div>
             <Switch
-              checked={accountData.two_factor_enabled}
+              checked={accountData.security.two_factor_enabled}
               onCheckedChange={handleToggle2FA}
-              disabled={loading}
+              disabled={actionLoading === '2fa'}
             />
           </div>
         </CardContent>
@@ -347,22 +531,31 @@ export default function AccountPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {connectedAccounts.map((account, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold text-red-600 dark:text-red-400">G</span>
+            {accountData.connected_accounts.length > 0 ? (
+              accountData.connected_accounts.map((account) => (
+                <div key={account.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-bold text-red-600 dark:text-red-400">
+                        {account.provider[0].toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">{account.provider}</div>
+                      <div className="text-xs text-muted-foreground">{account.email}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-medium text-sm">{account.provider}</div>
-                    <div className="text-xs text-muted-foreground">{account.email}</div>
-                  </div>
+                  <Button variant="outline" size="sm">
+                    Disconnect
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm">
-                  Disconnect
-                </Button>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-8">
+                <div className="text-sm">No connected accounts</div>
+                <div className="text-xs mt-1">Connect social accounts for easier login</div>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -380,36 +573,47 @@ export default function AccountPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {loginSessions.map((session) => (
-              <div key={session.id} className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <Smartphone className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            {sessions.length > 0 ? (
+              sessions.map((session) => (
+                <div key={session.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                      <Smartphone className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{session.device}</span>
+                        {session.is_current && (
+                          <Badge variant="secondary" className="text-xs">Current</Badge>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {session.location} • {new Date(session.last_active).toLocaleString()}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{session.device}</span>
-                      {session.is_current && (
-                        <Badge variant="secondary" className="text-xs">Current</Badge>
+                  {!session.is_current && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRevokeSession(session.id)}
+                      disabled={actionLoading === `session-${session.id}`}
+                    >
+                      {actionLoading === `session-${session.id}` ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        'Revoke'
                       )}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {session.location} • {new Date(session.last_active).toLocaleString()}
-                    </div>
-                  </div>
+                    </Button>
+                  )}
                 </div>
-                {!session.is_current && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRevokeSession(session.id)}
-                    disabled={loading}
-                  >
-                    Revoke
-                  </Button>
-                )}
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground py-8">
+                <div className="text-sm">No active sessions found</div>
+                <div className="text-xs mt-1">Your login sessions will appear here</div>
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -436,10 +640,19 @@ export default function AccountPage() {
             <Button
               variant="destructive"
               onClick={handleDeleteAccount}
-              disabled={loading}
+              disabled={actionLoading === 'delete'}
             >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete Account
+              {actionLoading === 'delete' ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Deleting...
+                </div>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Account
+                </>
+              )}
             </Button>
           </div>
         </CardContent>
