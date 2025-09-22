@@ -40,7 +40,11 @@ import {
   Wallet,
   ArrowUpDown,
   Trash2,
-  MoreHorizontal
+  MoreHorizontal,
+  ShoppingCart,
+  Minus,
+  Equal,
+  Info
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
@@ -64,6 +68,9 @@ interface PortfolioHolding {
   pnlPercentage: number
   allocation: number
   image?: string | null
+  action_recommendation?: 'buy' | 'sell' | 'hold' | null
+  recommendation_reason?: string | null
+  recommendation_confidence?: number | null
 }
 
 interface PortfolioMetrics {
@@ -162,7 +169,10 @@ export default function PortfolioPage() {
         pnl: holding.totalPnL,
         pnlPercentage: holding.pnlPercentage,
         allocation: 0, // Will be calculated below
-        image: holding.image
+        image: holding.image,
+        action_recommendation: holding.action_recommendation,
+        recommendation_reason: holding.recommendation_reason,
+        recommendation_confidence: holding.recommendation_confidence
       }))
 
       // Calculate allocations
@@ -460,6 +470,63 @@ export default function PortfolioPage() {
           <Progress value={row.original.allocation} className="h-2" />
         </div>
       )
+    },
+    {
+      id: "recommendation",
+      header: "Action",
+      cell: ({ row }) => {
+        const action = row.original.action_recommendation
+        const reason = row.original.recommendation_reason
+        const confidence = row.original.recommendation_confidence
+
+        if (!action) {
+          return (
+            <div className="text-muted-foreground text-sm">
+              No recommendation
+            </div>
+          )
+        }
+
+        const getActionIcon = (action: string) => {
+          switch (action) {
+            case 'buy': return <ShoppingCart className="h-4 w-4" />
+            case 'sell': return <Minus className="h-4 w-4" />
+            case 'hold': return <Equal className="h-4 w-4" />
+            default: return <Info className="h-4 w-4" />
+          }
+        }
+
+        const getActionColor = (action: string) => {
+          switch (action) {
+            case 'buy': return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950'
+            case 'sell': return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950'
+            case 'hold': return 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950'
+            default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-950'
+          }
+        }
+
+        return (
+          <div className="space-y-1">
+            <div className={cn(
+              "inline-flex items-center space-x-1 px-2 py-1 rounded-sm text-xs font-medium",
+              getActionColor(action)
+            )}>
+              {getActionIcon(action)}
+              <span className="uppercase">{action}</span>
+            </div>
+            {confidence && (
+              <div className="text-xs text-muted-foreground">
+                {Math.round(confidence * 100)}% confidence
+              </div>
+            )}
+            {reason && (
+              <div className="text-xs text-muted-foreground max-w-[200px] truncate" title={reason}>
+                {reason}
+              </div>
+            )}
+          </div>
+        )
+      }
     },
     {
       id: "actions",
