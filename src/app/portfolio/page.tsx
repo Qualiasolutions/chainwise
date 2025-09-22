@@ -632,8 +632,6 @@ export default function PortfolioPage() {
                 columns={columns}
                 data={holdings}
                 title="Portfolio Holdings"
-                searchKey="symbol"
-                searchPlaceholder="Search holdings..."
               />
             ) : (
               <Card className="ai-card">
