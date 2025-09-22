@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Globe3D from "@/components/ui/globe-3d";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export default function HeroSection() {
+  const { user } = useSupabaseAuth();
+
   const scrollToFeatures = () => {
     const element = document.querySelector('.main-container');
     if (element) {
@@ -64,13 +67,23 @@ export default function HeroSection() {
           </p>
 
           <div className="mb-16 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/auth/signup"
-              className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9b87f5] to-[#7c3aed] px-8 py-4 text-white shadow-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(155, 135, 245, 0.4)] sm:w-auto"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <span className="relative font-medium">Get Started Free</span>
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9b87f5] to-[#7c3aed] px-8 py-4 text-white shadow-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(155, 135, 245, 0.4)] sm:w-auto"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <span className="relative font-medium">Go to Dashboard</span>
+              </Link>
+            ) : (
+              <Link
+                href="/auth/signup"
+                className="group relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9b87f5] to-[#7c3aed] px-8 py-4 text-white shadow-lg transition-all duration-300 hover:shadow-[0_8px_30px_rgba(155, 135, 245, 0.4)] sm:w-auto"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                <span className="relative font-medium">Get Started Free</span>
+              </Link>
+            )}
             <button
               onClick={scrollToFeatures}
               className="group flex w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 text-white/80 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:text-white sm:w-auto"

@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 export function Footer() {
   const { theme } = useTheme();
+  const { user, signOut } = useSupabaseAuth();
 
   const footerLinks = {
     product: [
@@ -159,24 +161,45 @@ export function Footer() {
               </p>
             </div>
             <div className="flex items-center space-x-6">
-              <Link
-                href="/settings"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Settings
-              </Link>
-              <Link
-                href="/auth/signin"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md hover:opacity-90 transition-opacity"
-              >
-                Get Started
-              </Link>
+              {user ? (
+                // Authenticated user menu
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    onClick={signOut}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                // Guest user menu
+                <>
+                  <Link
+                    href="/auth/signin"
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="text-sm bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-md hover:opacity-90 transition-opacity"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

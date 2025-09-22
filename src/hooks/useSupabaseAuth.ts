@@ -173,26 +173,34 @@ export const useSupabaseAuth = () => {
     try {
       // First check if email already exists
       try {
+        console.log('🔍 Checking email existence for:', email)
         const emailCheckResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`)
+        console.log('📡 Email check response status:', emailCheckResponse.status)
 
         if (emailCheckResponse.ok) {
           const emailCheckData = await emailCheckResponse.json()
+          console.log('📧 Email check data:', emailCheckData)
 
           if (emailCheckData.exists) {
+            console.log('❌ Email already exists - blocking signup')
             setAuthState(prev => ({
               ...prev,
               error: 'An account with this email already exists. Please sign in instead.',
               loading: false
             }))
             return { error: 'An account with this email already exists. Please sign in instead.' }
+          } else {
+            console.log('✅ Email available - proceeding with signup')
           }
         } else {
-          console.warn('Email check API failed with status:', emailCheckResponse.status)
+          console.warn('⚠️ Email check API failed with status:', emailCheckResponse.status)
+          const responseText = await emailCheckResponse.text()
+          console.warn('Response text:', responseText)
           // For production robustness, we continue with signup even if check fails
           // Supabase Auth will still prevent actual duplicates at the auth level
         }
       } catch (emailCheckError) {
-        console.warn('Email check network/parsing failed:', emailCheckError)
+        console.warn('💥 Email check network/parsing failed:', emailCheckError)
         // Continue with signup - if there's a real duplicate, Supabase Auth will catch it
         // This ensures the signup flow doesn't break due to temporary API issues
       }
