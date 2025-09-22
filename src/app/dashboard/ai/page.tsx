@@ -835,6 +835,7 @@ export default function AIPage() {
             </CardContent>
           </Card>
         </div>
+        </div>
       </div>
     </div>
   )
