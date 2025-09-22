@@ -47,13 +47,13 @@ export const usePortfolio = () => {
   })
 
   const fetchPortfolios = async () => {
-    if (!user) {
+    if (!user?.auth_id) {
       setPortfolioState(prev => ({ ...prev, loading: false, portfolios: [] }))
       return
     }
 
     try {
-      const response = await fetch('/api/portfolio')
+      const response = await fetch(`/api/portfolio?auth_id=${encodeURIComponent(user.auth_id)}`)
 
       if (!response.ok) {
         throw new Error('Failed to fetch portfolios')
@@ -77,13 +77,17 @@ export const usePortfolio = () => {
   }
 
   const createPortfolio = async (name: string, description?: string) => {
+    if (!user?.auth_id) {
+      throw new Error('User not authenticated')
+    }
+
     try {
       const response = await fetch('/api/portfolio', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, description })
+        body: JSON.stringify({ name, description, authId: user.auth_id })
       })
 
       if (!response.ok) {
