@@ -2,6 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  MetricsCard,
+  ChartCard,
+  DataCard,
+  TableCard
+} from "@/components/ui/professional-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -563,21 +569,21 @@ export default function PortfolioPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 space-y-4 px-3 py-4 max-w-full">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight purple-gradient bg-clip-text text-transparent">
-            Portfolio
-          </h1>
-        </div>
-        <div className="grid gap-4 md:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="ai-card animate-pulse">
-              <CardContent className="p-6">
+      <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
+        <div className="space-y-4 p-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+              Portfolio
+            </h1>
+          </div>
+          <div className="grid gap-4 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <MetricsCard key={i} className="animate-pulse">
                 <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
                 <div className="h-8 bg-muted rounded w-3/4"></div>
-              </CardContent>
-            </Card>
-          ))}
+              </MetricsCard>
+            ))}
+          </div>
         </div>
       </div>
     )
@@ -585,41 +591,42 @@ export default function PortfolioPage() {
 
   if (error) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <Card className="ai-card max-w-md">
-          <CardContent className="p-6 text-center">
+      <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50 flex items-center justify-center">
+        <DataCard className="max-w-md">
+          <div className="p-6 text-center">
             <h3 className="text-lg font-medium mb-2">Error Loading Portfolio</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={() => window.location.reload()}>
               Try Again
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </DataCard>
       </div>
     )
   }
 
   return (
-    <motion.div
-      className="flex-1 space-y-4 px-3 py-4 max-w-full"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight purple-gradient bg-clip-text text-transparent">
-            My Portfolio
-          </h1>
-          <p className="text-muted-foreground">
-            Track your cryptocurrency investments and performance
-          </p>
+    <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
+      <motion.div
+        className="space-y-4 p-4"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+              My Portfolio
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Track your cryptocurrency investments and performance
+            </p>
+          </div>
+          {portfolioId && (
+            <AddAssetModal portfolioId={portfolioId} onAssetAdded={handleAddHolding} />
+          )}
         </div>
-        {portfolioId && (
-          <AddAssetModal portfolioId={portfolioId} onAssetAdded={handleAddHolding} />
-        )}
-      </div>
 
       {/* Portfolio Metrics */}
       {metrics && (
@@ -640,52 +647,48 @@ export default function PortfolioPage() {
             change={metrics.totalPnLPercentage}
             subtitle={metrics.totalPnL >= 0 ? "Profit" : "Loss"}
           />
-          <Card className="ai-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Best Performer</CardTitle>
+          <MetricsCard>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-muted-foreground">Best Performer</span>
               <TrendingUp className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              {metrics.topGainer ? (
-                <>
-                  <div className="text-2xl font-bold">{metrics.topGainer.symbol}</div>
-                  <p className="text-xs text-green-600 dark:text-green-400">
-                    {formatPercentage(metrics.topGainer.pnlPercentage)}
-                  </p>
-                </>
-              ) : (
-                <div className="text-muted-foreground">No data</div>
-              )}
-            </CardContent>
-          </Card>
-          <Card className="ai-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Worst Performer</CardTitle>
+            </div>
+            {metrics.topGainer ? (
+              <>
+                <div className="text-xl font-semibold">{metrics.topGainer.symbol}</div>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  {formatPercentage(metrics.topGainer.pnlPercentage)}
+                </p>
+              </>
+            ) : (
+              <div className="text-muted-foreground">No data</div>
+            )}
+          </MetricsCard>
+          <MetricsCard>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-muted-foreground">Worst Performer</span>
               <TrendingDown className="h-4 w-4 text-red-500" />
-            </CardHeader>
-            <CardContent>
-              {metrics.topLoser ? (
-                <>
-                  <div className="text-2xl font-bold">{metrics.topLoser.symbol}</div>
-                  <p className="text-xs text-red-600 dark:text-red-400">
-                    {formatPercentage(metrics.topLoser.pnlPercentage)}
-                  </p>
-                </>
-              ) : (
-                <div className="text-muted-foreground">No data</div>
-              )}
-            </CardContent>
-          </Card>
+            </div>
+            {metrics.topLoser ? (
+              <>
+                <div className="text-xl font-semibold">{metrics.topLoser.symbol}</div>
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  {formatPercentage(metrics.topLoser.pnlPercentage)}
+                </p>
+              </>
+            ) : (
+              <div className="text-muted-foreground">No data</div>
+            )}
+          </MetricsCard>
         </motion.div>
       )}
 
-      {/* Portfolio Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-      >
-        <Tabs defaultValue="holdings" className="space-y-4">
+        {/* Portfolio Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <Tabs defaultValue="holdings" className="space-y-4">
           <TabsList>
             <TabsTrigger value="holdings">Holdings</TabsTrigger>
             <TabsTrigger value="allocation">Allocation</TabsTrigger>
@@ -695,14 +698,16 @@ export default function PortfolioPage() {
 
           <TabsContent value="holdings">
             {holdings.length > 0 ? (
-              <DataTable
-                columns={columns}
-                data={holdings}
-                title="Portfolio Holdings"
-              />
+              <TableCard>
+                <DataTable
+                  columns={columns}
+                  data={holdings}
+                  title="Portfolio Holdings"
+                />
+              </TableCard>
             ) : (
-              <Card className="ai-card">
-                <CardContent className="p-12 text-center">
+              <DataCard>
+                <div className="p-12 text-center">
                   <Wallet className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">No Holdings Yet</h3>
                   <p className="text-muted-foreground mb-6">
@@ -710,25 +715,21 @@ export default function PortfolioPage() {
                   </p>
                   {portfolioId && (
                     <AddAssetModal portfolioId={portfolioId} onAssetAdded={handleAddHolding}>
-                      <Button className="purple-gradient">
+                      <Button className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Your First Asset
                       </Button>
                     </AddAssetModal>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </DataCard>
             )}
           </TabsContent>
 
           <TabsContent value="allocation">
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Allocation Pie Chart */}
-              <Card className="ai-card">
-                <CardHeader>
-                  <CardTitle>Portfolio Allocation</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <ChartCard title="Portfolio Allocation">
                   {allocationData.length > 0 ? (
                     <>
                       <ResponsiveContainer width="100%" height={300}>
@@ -774,15 +775,10 @@ export default function PortfolioPage() {
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+              </ChartCard>
 
               {/* Allocation List */}
-              <Card className="ai-card">
-                <CardHeader>
-                  <CardTitle>Detailed Allocation</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <DataCard title="Detailed Allocation">
                   {holdings.length > 0 ? (
                     <div className="space-y-4">
                       {holdings.map((holding) => (
@@ -826,19 +822,14 @@ export default function PortfolioPage() {
                       No holdings to display allocation
                     </div>
                   )}
-                </CardContent>
-              </Card>
+              </DataCard>
             </div>
           </TabsContent>
 
           <TabsContent value="performance">
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Portfolio Value Chart */}
-              <Card className="ai-card">
-                <CardHeader>
-                  <CardTitle>Portfolio Value Over Time</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <ChartCard title="Portfolio Value Over Time">
                   {performanceData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                       <AreaChart data={performanceData}>
@@ -917,15 +908,10 @@ export default function PortfolioPage() {
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+              </ChartCard>
 
               {/* P&L Chart */}
-              <Card className="ai-card">
-                <CardHeader>
-                  <CardTitle>Profit & Loss Over Time</CardTitle>
-                </CardHeader>
-                <CardContent>
+              <ChartCard title="Profit & Loss Over Time">
                   {performanceData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={performanceData}>
@@ -992,25 +978,20 @@ export default function PortfolioPage() {
                       </div>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+              </ChartCard>
             </div>
           </TabsContent>
 
           <TabsContent value="history">
-            <Card className="ai-card">
-              <CardHeader>
-                <CardTitle>Transaction History</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <DataCard title="Transaction History">
                 <div className="text-center text-muted-foreground py-8">
                   Transaction history coming soon...
                 </div>
-              </CardContent>
-            </Card>
+            </DataCard>
           </TabsContent>
         </Tabs>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </div>
   )
 }
