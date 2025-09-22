@@ -2,6 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Keyframe Animations for Enhanced Bento Grid */
+@keyframes gridFloat {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  25% {
+    transform: translateY(-8px) scale(1.01);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.005);
+  }
+  75% {
+    transform: translateY(-12px) scale(1.015);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: translateY(-3px) rotateX(1deg) rotateY(-0.5deg);
+  }
+  50% {
+    transform: translateY(-6px) rotateX(-0.5deg) rotateY(1deg);
+  }
+  75% {
+    transform: translateY(-2px) rotateX(0.5deg) rotateY(-1deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.15),
+      0 0 20px rgba(139, 92, 246, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.25),
+      0 0 40px rgba(139, 92, 246, 0.2),
+      0 0 80px rgba(139, 92, 246, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  }
+}
+
 @layer base {
   :root {
     /* ChainWise Design System - Light Theme (OKLCH) */
@@ -398,6 +447,7 @@
   .enhanced-bento-grid {
     @apply grid grid-cols-3 gap-6 w-full max-w-7xl mx-auto relative;
     grid-template-rows: repeat(3, minmax(220px, 1fr));
+    animation: gridFloat 20s ease-in-out infinite;
   }
 
   .enhanced-bento-item {
@@ -413,6 +463,8 @@
       inset 0 -1px 0 rgba(255, 255, 255, 0.05);
     transform-style: preserve-3d;
     will-change: transform, opacity;
+    animation: subtleFloat 8s ease-in-out infinite, pulseGlow 12s ease-in-out infinite;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
   .enhanced-bento-item::before {
@@ -423,13 +475,15 @@
     right: 0;
     bottom: 0;
     background: radial-gradient(
-      900px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-      rgba(139, 92, 246, 0.15) 0%,
-      rgba(59, 130, 246, 0.1) 30%,
-      transparent 50%
+      1200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(139, 92, 246, 0.25) 0%,
+      rgba(59, 130, 246, 0.18) 25%,
+      rgba(236, 72, 153, 0.12) 50%,
+      rgba(34, 197, 94, 0.08) 75%,
+      transparent 100%
     );
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     pointer-events: none;
     border-radius: inherit;
   }
@@ -439,13 +493,16 @@
   }
 
   .enhanced-bento-item:hover {
-    border-color: rgba(139, 92, 246, 0.4);
+    border-color: rgba(139, 92, 246, 0.6);
     box-shadow:
-      0 25px 80px rgba(0, 0, 0, 0.3),
-      0 0 50px rgba(139, 92, 246, 0.2),
-      0 0 100px rgba(139, 92, 246, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+      0 35px 100px rgba(0, 0, 0, 0.4),
+      0 0 60px rgba(139, 92, 246, 0.3),
+      0 0 120px rgba(139, 92, 246, 0.15),
+      0 0 200px rgba(139, 92, 246, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+    transform: translateY(-20px) scale(1.08) rotateX(8deg) rotateY(-4deg);
+    animation-play-state: paused;
   }
 
   .enhanced-bento-item::after {
@@ -467,6 +524,57 @@
 
   .enhanced-bento-item:hover::after {
     opacity: 1;
+  }
+
+  /* Staggered animation delays for each bento item */
+  .enhanced-bento-item:nth-child(1) {
+    animation-delay: -0.5s, -1s;
+  }
+
+  .enhanced-bento-item:nth-child(2) {
+    animation-delay: -1.5s, -2s;
+  }
+
+  .enhanced-bento-item:nth-child(3) {
+    animation-delay: -2.5s, -3s;
+  }
+
+  .enhanced-bento-item:nth-child(4) {
+    animation-delay: -3.5s, -4s;
+  }
+
+  .enhanced-bento-item:nth-child(5) {
+    animation-delay: -4.5s, -5s;
+  }
+
+  .enhanced-bento-item:nth-child(6) {
+    animation-delay: -5.5s, -6s;
+  }
+
+  /* Focus states for accessibility */
+  .enhanced-bento-item:focus-visible {
+    outline: 3px solid rgba(139, 92, 246, 0.6);
+    outline-offset: 4px;
+    box-shadow:
+      0 30px 90px rgba(0, 0, 0, 0.35),
+      0 0 50px rgba(139, 92, 246, 0.25),
+      0 0 100px rgba(139, 92, 246, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+
+  /* Enhanced rotation effects for large items */
+  .enhanced-bento-item.col-span-2:hover {
+    transform: translateY(-25px) scale(1.06) rotateX(6deg) rotateY(-2deg);
+  }
+
+  .enhanced-bento-item.row-span-2:hover {
+    transform: translateY(-22px) scale(1.07) rotateX(4deg) rotateY(-3deg);
+  }
+
+  /* Active state animations */
+  .enhanced-bento-item:active {
+    transform: translateY(-5px) scale(1.02) !important;
+    transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
   /* Line clamping utilities for news cards */

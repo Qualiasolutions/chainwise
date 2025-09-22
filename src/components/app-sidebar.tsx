@@ -26,7 +26,10 @@ import {
   Coins,
   Target,
   Activity,
-  Brain
+  Brain,
+  Calculator,
+  Shield,
+  TrendingDown
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -77,44 +80,33 @@ const getDynamicData = (user: any) => ({
       title: "Portfolio",
       url: "/portfolio",
       icon: PieChart,
-      items: [
-        {
-          title: "View Portfolio",
-          url: "/portfolio",
-        },
-        {
-          title: "Analytics",
-          url: "/portfolio/analytics",
-        },
-      ],
     },
     {
       title: "Market",
       url: "/market",
       icon: Bitcoin,
-      items: [
-        {
-          title: "Live Prices",
-          url: "/market",
-        },
-        {
-          title: "Market Overview",
-          url: "/market/overview",
-        },
-      ],
     },
     {
       title: "AI Assistant",
       url: "/dashboard/ai",
       icon: Bot,
+    },
+    {
+      title: "AI Tools",
+      url: "#",
+      icon: Brain,
       items: [
         {
-          title: "Chat",
-          url: "/dashboard/ai",
+          title: "DCA Planner",
+          url: "/tools/dca-planner",
         },
         {
-          title: "AI Insights",
-          url: "/dashboard/ai/insights",
+          title: "Portfolio Allocator",
+          url: "/tools/portfolio-allocator",
+        },
+        {
+          title: "Scam Detector",
+          url: "/tools/scam-detector",
         },
       ],
     },

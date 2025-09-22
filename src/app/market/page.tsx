@@ -855,5 +855,5 @@ export default function MarketPage() {
       </motion.div>
     </div>
   </div>
-  )
+  );
 }
