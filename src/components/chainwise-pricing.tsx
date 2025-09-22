@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, Brain, Crown } from "lucide-react";
 import { AnimatedGlassyPricing } from "@/components/ui/animated-glassy-pricing";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 const chainwisePricingTiers = [
   {
@@ -71,12 +72,18 @@ const chainwisePricingTiers = [
 
 export function ChainWisePricing() {
   const router = useRouter();
+  const { user } = useSupabaseAuth();
 
   const handleSelectTier = (tierId: string) => {
-    // Route to appropriate page based on tier selection
-    if (tierId === "free") {
+    // Route to appropriate page based on tier selection and authentication status
+    if (!user) {
+      // User not authenticated - send to signup
       router.push("/auth/signup");
+    } else if (tierId === "free") {
+      // User is authenticated and selecting free tier - go to dashboard
+      router.push("/dashboard");
     } else {
+      // User is authenticated and selecting paid tier - go to checkout
       router.push(`/checkout?plan=${tierId}`);
     }
   };
