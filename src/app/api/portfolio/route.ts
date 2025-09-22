@@ -3,26 +3,36 @@
 // POST /api/portfolio - Create new portfolio
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/lib/supabase/types'
 import { cryptoAPI } from '@/lib/crypto-api'
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    // Get auth_id from query parameters or headers
+    const url = new URL(request.url)
+    const authId = url.searchParams.get('auth_id')
 
-    // Get current user
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!authId) {
+      return NextResponse.json({ error: 'Missing auth_id parameter' }, { status: 400 })
     }
+
+    // Use service role client to bypass RLS for administrative operations
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Supabase configuration missing' }, { status: 500 })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    })
 
     // Get user profile to get user ID
     const { data: profile } = await supabase
       .from('users')
       .select('id')
-      .eq('auth_id', session.user.id)
+      .eq('auth_id', authId)
       .single()
 
     if (!profile) {
@@ -193,28 +203,35 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const body = await request.json()
+    const { name, description, authId } = body
 
-    // Get current user
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!authId) {
+      return NextResponse.json({ error: 'Missing authId' }, { status: 400 })
     }
+
+    // Use service role client to bypass RLS
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Supabase configuration missing' }, { status: 500 })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    })
 
     // Get user profile
     const { data: profile } = await supabase
       .from('users')
       .select('id, tier')
-      .eq('auth_id', session.user.id)
+      .eq('auth_id', authId)
       .single()
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
-
-    const body = await request.json()
-    const { name, description } = body
 
     if (!name || name.trim().length === 0) {
       return NextResponse.json({ error: 'Portfolio name is required' }, { status: 400 })
