@@ -17,26 +17,26 @@ ChainWise is a production-ready AI-powered cryptocurrency advisory platform with
 
 ## Development Commands
 
-- `npm run dev` - Start development server (localhost:3000)
-- `npm run build` - Build for production
+- `npm run dev` - Start development server with Turbopack (localhost:3000)
+- `npm run build` - Build for production with Turbopack
 - `npm run lint` - Run ESLint (configured but may have unresolved issues)
 - `npm run start` - Start production server
 
-**Note**: No test framework is currently configured. The project uses TypeScript and ESLint errors ignored during builds (see `next.config.ts`).
+**Note**: No test framework is currently configured. The project uses TypeScript and ESLint errors ignored during builds (see `next.config.ts`). Turbopack is enabled for both dev and build commands for faster performance.
 
 ## Tech Stack
 
-- **Framework**: Next.js 15.5.3 with App Router + TypeScript 5 + React 19
-- **Database**: Supabase (PostgreSQL with RLS)
+- **Framework**: Next.js 15.5.3 with App Router + TypeScript 5.9.2 + React 19.1.0
+- **Database**: Supabase (PostgreSQL with RLS) + MCP (Model Context Protocol) integration
 - **Authentication**: Supabase Auth with Google OAuth
-- **APIs**: CoinGecko for crypto data, Supabase for user data
+- **APIs**: CoinGecko for crypto data, OpenAI for AI chat features
 - **UI**: Tailwind CSS + shadcn/ui + Framer Motion + next-themes
 - **3D Graphics**: react-globe.gl for interactive 3D globe visualization
 - **WebGL**: Three.js for DottedSurface and interactive backgrounds
 - **Charts**: Recharts for crypto visualizations
 - **Tables**: TanStack React Table
 - **Forms**: React Hook Form + Zod validation
-- **Build**: Turbopack for development
+- **Build**: Turbopack for development and production builds
 
 ## Project Architecture
 
@@ -120,18 +120,35 @@ Required for full functionality:
 ### Portfolio Management
 - `GET/POST /api/portfolio` - List/create portfolios
 - `GET/PUT/DELETE /api/portfolio/[id]` - Manage specific portfolio
-- `GET/POST /api/portfolio/[id]/holdings` - Manage holdings
+- `GET/POST /api/portfolio/[id]/holdings` - Manage portfolio holdings
+- `GET/PUT/DELETE /api/portfolio/[id]/holdings/[holdingId]` - Individual holding operations
 
 ### AI Chat & Notifications
 - `POST /api/chat` - AI conversations with credit tracking
 - `GET/POST /api/alerts` - Price alerts management
+- `GET/DELETE /api/alerts/[id]` - Individual alert operations
 - `GET/PUT /api/notifications` - Notification system
+
+### User & Authentication
+- `POST /api/users/by-auth-id` - Get user by auth ID
+- `POST /api/users/create` - Create new user
+- `GET/PUT /api/profile` - User profile management
+- `POST /api/auth/check-email` - Email verification
 
 ### Subscription & Credits
 - `GET/POST /api/subscription/upgrade` - Handle tier upgrades
 - `GET /api/subscription/history` - Subscription history
 - `GET /api/credits/transactions` - Credit transaction history
+- `POST /api/credits/refill` - Credit refill operations
+
+### AI Tools & Crypto
+- `POST /api/tools/dca-planner` - DCA planning tool
+- `POST /api/tools/portfolio-allocator` - Portfolio allocation tool
+- `POST /api/tools/scam-detector` - Scam detection tool
 - `GET /api/crypto/search` - Cryptocurrency search for portfolio
+
+### MCP Integration
+- `POST /api/mcp/execute-sql` - Execute SQL queries via MCP (for server-side operations)
 
 ## Development Notes
 
@@ -142,12 +159,13 @@ Required for full functionality:
 - Database migrations located in `supabase/migrations/`
 - Latest migration: `20250919_premium_features.sql` with subscription enhancements
 
-### MCP Integration (In Progress)
-The codebase is being migrated to use Model Context Protocol (MCP) for database operations:
-- **Current State**: Direct Supabase client queries in API routes
-- **Target State**: MCP queries for better security and performance
-- **Affected Areas**: 18 TODO items across all API routes (portfolio, alerts, chat, notifications)
-- **Migration Priority**: Replace direct queries in portfolio and holdings management first
+### MCP Integration
+The codebase includes Model Context Protocol (MCP) integration for database operations:
+- **Implementation**: `MCPSupabaseClient` class in `src/lib/supabase/mcp-helpers.ts`
+- **API Integration**: Direct API route calls for user and credit operations
+- **MCP Tools**: Wrapper functions in `src/lib/mcp-tools.ts` for client-side MCP operations
+- **Migration Status**: Most operations still use direct Supabase client calls with TODO comments for MCP migration
+- **Active Features**: User creation, credit transactions, and profile management use API routes
 
 ### Technical Debt
 Current TODOs requiring attention:
@@ -168,7 +186,7 @@ Current TODOs requiring attention:
 - Mock data fallbacks for development when API rate-limited
 - Utility functions for price, percentage, and market cap formatting
 
-### Recent Updates (September 20, 2025)
+### Recent Updates (September 22, 2025)
 
 #### Complete Backend Integration with MCP Helpers
 - **MCPSupabaseClient Implementation**: Fully functional MCP client replacing all direct Supabase calls
