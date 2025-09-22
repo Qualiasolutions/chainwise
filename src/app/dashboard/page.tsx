@@ -29,7 +29,7 @@ import { cryptoAPI } from "@/lib/crypto-api"
 import Link from "next/link"
 import { SmartSkeleton, SkeletonCard, SkeletonCryptoCard, SkeletonChart } from "@/components/ui/smart-skeleton"
 import { AnimatedLoader } from "@/components/ui/animated-loader"
-import { DashboardGlassCard } from "@/components/ui/glassmorphism-card"
+import { ProfessionalCard, MetricsCard, ChartCard } from "@/components/ui/professional-card"
 import { MicroInteraction } from "@/components/ui/micro-interaction"
 
 // Color palette for different coins in charts
@@ -238,200 +238,190 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 px-3 py-4 max-w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <p className="text-muted-foreground">
-            {user ? `Welcome back, ${user.user_metadata?.full_name || user.email}! Here's your portfolio overview.` : "Welcome! Here's your portfolio overview."}
-          </p>
+    <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
+      <div className="container mx-auto px-4 py-6 space-y-6 max-w-none">
+        {/* Professional Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
+              Dashboard
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              {user ? `${user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'} • Portfolio Overview` : "Portfolio Overview"}
+            </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" size="sm" className="text-xs h-8" asChild>
+              <Link href="/dashboard/analytics">
+                <BarChart3 className="h-3 w-3 mr-1.5" />
+                Analytics
+              </Link>
+            </Button>
+            <Button size="sm" className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-900 text-xs h-8" asChild>
+              <Link href="/dashboard/ai">
+                <Zap className="h-3 w-3 mr-1.5" />
+                Ask AI
+              </Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/dashboard/analytics">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Analytics
-            </Link>
-          </Button>
-          <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" asChild>
-            <Link href="/dashboard/ai">
-              <Zap className="h-4 w-4 mr-2" />
-              Ask AI
-            </Link>
-          </Button>
-        </div>
-      </div>
 
-      {/* Error State */}
-      {error && (
-        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
-          <CardContent className="p-4">
+        {/* Error State */}
+        {error && (
+          <ProfessionalCard className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
             <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
               <AlertCircle className="h-4 w-4" />
-              <span>Error loading portfolio data: {error}</span>
+              <span className="text-sm">Error loading portfolio data: {error}</span>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </ProfessionalCard>
+        )}
 
-      {/* Empty State */}
-      {portfolios.length === 0 && !error && (
-        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
-          <CardContent className="p-6 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <DollarSign className="h-12 w-12 text-blue-600" />
-              <div>
-                <h3 className="text-lg font-semibold">No portfolios yet</h3>
-                <p className="text-sm text-muted-foreground">Create your first portfolio to start tracking your investments</p>
+        {/* Empty State */}
+        {portfolios.length === 0 && !error && (
+          <ProfessionalCard className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30" padding="lg">
+            <div className="text-center">
+              <div className="w-10 h-10 mx-auto mb-3 rounded-sm bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <Button asChild>
+              <h3 className="text-base font-medium text-blue-900 dark:text-blue-100 mb-2">
+                No portfolios yet
+              </h3>
+              <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
+                Create your first portfolio to start tracking your investments
+              </p>
+              <Button size="sm" className="text-xs h-8" asChild>
                 <Link href="/portfolio">Create Portfolio</Link>
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </ProfessionalCard>
+        )}
 
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <MicroInteraction interaction="hover" intensity="subtle">
-          <DashboardGlassCard className="relative overflow-hidden group">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <h3 className="text-sm font-medium text-foreground/80">Total Portfolio</h3>
-              <MicroInteraction interaction="hover" intensity="moderate">
-                <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                  <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        {/* Professional Stats Grid */}
+        <div className="grid gap-4 lg:grid-cols-4 md:grid-cols-2">
+          <MetricsCard>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 rounded-sm bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <DollarSign className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                 </div>
-              </MicroInteraction>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Total Portfolio</span>
+              </div>
             </div>
-            <div className="space-y-3">
-              <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+            <div className="space-y-1">
+              <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
-              <div className="flex items-center text-xs text-blue-600 dark:text-blue-400">
+              <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
                 {totalPnLPercentage >= 0 ? (
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                  <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
                 ) : (
-                  <TrendingDown className="h-3 w-3 mr-1" />
+                  <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
                 )}
-                {totalPnLPercentage >= 0 ? '+' : ''}{totalPnLPercentage.toFixed(2)}% total return
+                <span className={totalPnLPercentage >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                  {totalPnLPercentage >= 0 ? '+' : ''}{totalPnLPercentage.toFixed(2)}% total return
+                </span>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:from-blue-400/20 transition-all duration-300" />
-          </DashboardGlassCard>
-        </MicroInteraction>
+          </MetricsCard>
 
-        <MicroInteraction interaction="hover" intensity="subtle">
-          <DashboardGlassCard className="relative overflow-hidden group">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <h3 className="text-sm font-medium text-foreground/80">Total P&L</h3>
-              <MicroInteraction interaction="hover" intensity="moderate">
-                <div className={`p-2 rounded-lg transition-colors ${totalPnL >= 0
-                  ? 'bg-green-500/10 group-hover:bg-green-500/20'
-                  : 'bg-red-500/10 group-hover:bg-red-500/20'
+          <MetricsCard>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className={`w-6 h-6 rounded-sm flex items-center justify-center ${totalPnL >= 0
+                  ? 'bg-green-100 dark:bg-green-900/30'
+                  : 'bg-red-100 dark:bg-red-900/30'
                 }`}>
                   {totalPnL >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                    <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                    <TrendingDown className="h-3 w-3 text-red-600 dark:text-red-400" />
                   )}
                 </div>
-              </MicroInteraction>
-            </div>
-            <div className="space-y-3">
-              <div className={`text-2xl font-bold ${totalPnL >= 0
-                ? 'text-green-700 dark:text-green-300'
-                : 'text-red-700 dark:text-red-300'
-              }`}>
-                {totalPnL >= 0 ? '+' : ''}${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Total P&L</span>
               </div>
-              <div className={`flex items-center text-xs ${totalPnL >= 0
+            </div>
+            <div className="space-y-1">
+              <div className={`text-xl font-bold ${totalPnL >= 0
                 ? 'text-green-600 dark:text-green-400'
                 : 'text-red-600 dark:text-red-400'
               }`}>
+                {totalPnL >= 0 ? '+' : ''}${totalPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
                 {totalPnL >= 0 ? (
-                  <ArrowUpRight className="h-3 w-3 mr-1" />
+                  <ArrowUpRight className="h-3 w-3 mr-1 text-green-500" />
                 ) : (
-                  <ArrowDownRight className="h-3 w-3 mr-1" />
+                  <ArrowDownRight className="h-3 w-3 mr-1 text-red-500" />
                 )}
-                {totalPnL >= 0 ? '+' : ''}{totalPnLPercentage.toFixed(2)}% change
+                <span className={totalPnL >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                  {totalPnL >= 0 ? '+' : ''}{totalPnLPercentage.toFixed(2)}% change
+                </span>
               </div>
             </div>
-            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 transition-all duration-300 ${totalPnL >= 0
-              ? 'bg-gradient-to-br from-green-400/10 to-transparent group-hover:from-green-400/20'
-              : 'bg-gradient-to-br from-red-400/10 to-transparent group-hover:from-red-400/20'
-            }`} />
-          </DashboardGlassCard>
-        </MicroInteraction>
+          </MetricsCard>
 
-        <MicroInteraction interaction="hover" intensity="subtle">
-          <DashboardGlassCard className="relative overflow-hidden group">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <h3 className="text-sm font-medium text-foreground/80">Active Portfolios</h3>
-              <MicroInteraction interaction="hover" intensity="moderate">
-                <div className="p-2 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 transition-colors">
-                  <Activity className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          <MetricsCard>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 rounded-sm bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <Activity className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                 </div>
-              </MicroInteraction>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Active Portfolios</span>
+              </div>
             </div>
-            <div className="space-y-3">
-              <div className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+            <div className="space-y-1">
+              <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {portfolios.length}
               </div>
-              <div className="flex items-center text-xs text-purple-600 dark:text-purple-400">
-                <Target className="h-3 w-3 mr-1" />
-                Total portfolios
+              <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                <Target className="h-3 w-3 mr-1 text-purple-500" />
+                <span className="text-purple-600 dark:text-purple-400">
+                  Total portfolios
+                </span>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:from-purple-400/20 transition-all duration-300" />
-          </DashboardGlassCard>
-        </MicroInteraction>
+          </MetricsCard>
 
-        <MicroInteraction interaction="hover" intensity="subtle">
-          <DashboardGlassCard className="relative overflow-hidden group">
-            <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <h3 className="text-sm font-medium text-foreground/80">Total Holdings</h3>
-              <MicroInteraction interaction="hover" intensity="moderate">
-                <div className="p-2 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
-                  <Coins className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <MetricsCard>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 rounded-sm bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <Coins className="h-3 w-3 text-orange-600 dark:text-orange-400" />
                 </div>
-              </MicroInteraction>
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Total Holdings</span>
+              </div>
             </div>
-            <div className="space-y-3">
-              <div className="text-2xl font-bold text-orange-700 dark:text-orange-300">
+            <div className="space-y-1">
+              <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {portfolios.reduce((total, portfolio) => total + (portfolio.metrics?.holdingsCount || 0), 0)}
               </div>
-              <div className="flex items-center text-xs text-orange-600 dark:text-orange-400">
-                <BarChart3 className="h-3 w-3 mr-1" />
-                Across all portfolios
+              <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                <BarChart3 className="h-3 w-3 mr-1 text-orange-500" />
+                <span className="text-orange-600 dark:text-orange-400">
+                  Across all portfolios
+                </span>
               </div>
             </div>
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:from-orange-400/20 transition-all duration-300" />
-          </DashboardGlassCard>
-        </MicroInteraction>
+          </MetricsCard>
       </div>
 
       {/* Charts Section */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Portfolio Performance Chart */}
-        <MicroInteraction interaction="hover" intensity="subtle">
-          <DashboardGlassCard className="col-span-4 group">
-            <div className="mb-6">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                <MicroInteraction interaction="hover" intensity="moderate">
-                  <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                    <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                </MicroInteraction>
+        <ChartCard className="col-span-4">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-sm bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <TrendingUp className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 Portfolio Performance
               </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Your portfolio value over the last 24 hours
-              </p>
             </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Your portfolio value over the last 24 hours
+            </p>
+          </div>
             <div className="pl-2">
             {chartLoading ? (
               <div className="h-[350px] flex items-center justify-center">
@@ -553,31 +543,27 @@ export default function DashboardPage() {
               </ChartContainer>
             )}
             </div>
-          </DashboardGlassCard>
-        </MicroInteraction>
+        </ChartCard>
 
         {/* Top Cryptocurrencies */}
-        <MicroInteraction interaction="hover" intensity="subtle">
-          <DashboardGlassCard className="col-span-3 group">
-            <div className="mb-6">
-              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-                <MicroInteraction interaction="hover" intensity="moderate">
-                  <div className="p-2 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
-                    <Bitcoin className="h-5 w-5 text-orange-500 dark:text-orange-400" />
-                  </div>
-                </MicroInteraction>
+        <DataCard className="col-span-3">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-sm bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                <Bitcoin className="h-3 w-3 text-orange-500 dark:text-orange-400" />
+              </div>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 Top Cryptocurrencies
               </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Most active coins in your watchlist
-              </p>
             </div>
-            <div>
-            <div className="space-y-4">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Most active coins in your watchlist
+            </p>
+          </div>
+          <div className="space-y-3">
               {topCryptosData.map((crypto, index) => (
                 <Link key={crypto.symbol} href={`/market/${crypto.id}`}>
-                  <MicroInteraction interaction="hover" intensity="subtle">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5 hover:bg-white/10 dark:hover:bg-white/10 transition-all duration-200 cursor-pointer border border-white/10 hover:border-white/20">
+                    <div className="flex items-center justify-between p-3 rounded-sm bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-muted">
                       <img
@@ -611,52 +597,39 @@ export default function DashboardPage() {
                     </div>
                   </div>
                     </div>
-                  </MicroInteraction>
                 </Link>
               ))}
-            </div>
-            </div>
-          </DashboardGlassCard>
-        </MicroInteraction>
+          </div>
+        </DataCard>
       </div>
 
       {/* Quick Actions */}
-      <MicroInteraction interaction="hover" intensity="subtle">
-        <DashboardGlassCard className="group">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              AI-powered crypto advisory tools
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <MicroInteraction interaction="hover" intensity="moderate">
-              <button className="h-20 flex flex-col items-center justify-center space-y-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group text-foreground">
-                <DollarSign className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                <span className="text-sm font-medium">Portfolio Analysis</span>
-              </button>
-            </MicroInteraction>
-            <MicroInteraction interaction="hover" intensity="moderate">
-              <button className="h-20 flex flex-col items-center justify-center space-y-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group text-foreground">
-                <TrendingDown className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                <span className="text-sm font-medium">Market Insights</span>
-              </button>
-            </MicroInteraction>
-            <MicroInteraction interaction="hover" intensity="moderate">
-              <button className="h-20 flex flex-col items-center justify-center space-y-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group text-foreground">
-                <BarChart3 className="h-6 w-6 text-green-600 dark:text-green-400" />
-                <span className="text-sm font-medium">View Analytics</span>
-              </button>
-            </MicroInteraction>
-            <MicroInteraction interaction="hover" intensity="moderate">
-              <button className="h-20 flex flex-col items-center justify-center space-y-2 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 group text-foreground">
-                <Users className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                <span className="text-sm font-medium">AI Assistant</span>
-              </button>
-            </MicroInteraction>
-          </div>
-        </DashboardGlassCard>
-      </MicroInteraction>
+      <ProfessionalCard>
+        <div className="mb-4">
+          <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">Quick Actions</h3>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            AI-powered crypto advisory tools
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-xs font-medium">Portfolio Analysis</span>
+          </button>
+          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <TrendingDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-xs font-medium">Market Insights</span>
+          </button>
+          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <span className="text-xs font-medium">View Analytics</span>
+          </button>
+          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Users className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            <span className="text-xs font-medium">AI Assistant</span>
+          </button>
+        </div>
+      </ProfessionalCard>
     </div>
   )
 }

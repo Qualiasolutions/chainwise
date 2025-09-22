@@ -45,6 +45,7 @@ import { SmartSkeleton } from "@/components/ui/smart-skeleton"
 import { AnimatedLoader } from "@/components/ui/animated-loader"
 import { MicroInteraction } from "@/components/ui/micro-interaction"
 import { DashboardGlassCard, GlassmorphismCard } from "@/components/ui/glassmorphism-card"
+import { ProfessionalCard, MetricsCard, ChartCard, DataCard, TableCard } from "@/components/ui/professional-card"
 
 interface CryptoTableRow extends CryptoData {
   watchlisted?: boolean
@@ -301,113 +302,126 @@ export default function MarketPage() {
   )
 
   return (
-    <div className="h-full w-full">
-      <div className="flex h-full w-full">
-        {/* Main Content Area - Full Width */}
-        <motion.div
-          className="flex-1 px-3 py-4 space-y-4 overflow-auto max-w-full"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          {/* Enhanced Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="space-y-1">
-              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Market Overview
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Real-time cryptocurrency market data powered by CoinGecko
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-green-600 dark:text-green-400">Live Data</span>
-              </div>
-              <Badge variant="outline" className="px-3 py-1">
-                Last updated: {new Date().toLocaleTimeString()}
-              </Badge>
-            </div>
+    <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
+      <div className="container mx-auto px-4 py-6 space-y-6 max-w-none">
+        {/* Professional Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
+              Market Overview
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+              Real-time cryptocurrency market data powered by CoinGecko
+            </p>
           </div>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 px-2 py-1 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-sm">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-green-600 dark:text-green-400">Live Data</span>
+            </div>
+            <Badge variant="outline" className="text-xs px-2 py-1 rounded-sm">
+              {new Date().toLocaleTimeString()}
+            </Badge>
+          </div>
+        </div>
 
-          {/* Enhanced Global Market Stats - More Columns */}
-          {globalData && (
-            <motion.div
-              className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-          <PriceCard
-            title="Total Market Cap"
-            price={globalData.total_market_cap?.usd || 0}
-            change={globalData.market_cap_change_percentage_24h_usd}
-            subtitle="All Cryptocurrencies"
-          />
-          <PriceCard
-            title="24h Volume"
-            price={globalData.total_volume?.usd || 0}
-            subtitle="Trading Volume"
-          />
-            <MicroInteraction interaction="hover" intensity="subtle">
-              <DashboardGlassCard className="relative overflow-hidden group border-orange-500/20 hover:border-orange-500/40">
-                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <h3 className="text-sm font-medium text-foreground/80">Bitcoin Dominance</h3>
-                  <MicroInteraction interaction="hover" intensity="moderate">
-                    <div className="p-2 rounded-lg bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
-                      <DollarSign className="h-5 w-5 text-orange-500 dark:text-orange-400" />
-                    </div>
-                  </MicroInteraction>
-                </div>
-                <div className="space-y-3">
-                  <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                    {globalData.market_cap_percentage?.btc?.toFixed(1) || 0}%
+        {/* Professional Global Market Stats */}
+        {globalData && (
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+            <MetricsCard>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-sm bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <DollarSign className="h-3 w-3 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Of total market cap
-                  </p>
-                  <div className="mt-2">
-                    <Progress value={globalData.market_cap_percentage?.btc || 0} className="h-2" />
-                  </div>
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Total Market Cap</span>
                 </div>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:from-orange-400/20 transition-all duration-300" />
-              </DashboardGlassCard>
-            </MicroInteraction>
-            <MicroInteraction interaction="hover" intensity="subtle">
-              <DashboardGlassCard className="relative overflow-hidden group border-blue-500/20 hover:border-blue-500/40">
-                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <h3 className="text-sm font-medium text-foreground/80">Active Cryptocurrencies</h3>
-                  <MicroInteraction interaction="hover" intensity="moderate">
-                    <div className="p-2 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                      <Globe className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-                    </div>
-                  </MicroInteraction>
+              </div>
+              <div className="space-y-1">
+                <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  {formatMarketCap(globalData.total_market_cap?.usd || 0)}
                 </div>
-                <div className="space-y-3">
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    {globalData.active_cryptocurrencies?.toLocaleString() || 0}
+                <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                  {globalData.market_cap_change_percentage_24h_usd >= 0 ? (
+                    <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
+                  )}
+                  <span className={globalData.market_cap_change_percentage_24h_usd >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                    {globalData.market_cap_change_percentage_24h_usd >= 0 ? '+' : ''}{globalData.market_cap_change_percentage_24h_usd?.toFixed(2)}% 24h
+                  </span>
+                </div>
+              </div>
+            </MetricsCard>
+
+            <MetricsCard>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-sm bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                    <BarChart3 className="h-3 w-3 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">24h Volume</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  {formatMarketCap(globalData.total_volume?.usd || 0)}
+                </div>
+                <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                  <Activity className="h-3 w-3 mr-1 text-purple-500" />
+                  <span className="text-purple-600 dark:text-purple-400">
+                    Trading Volume
+                  </span>
+                </div>
+              </div>
+            </MetricsCard>
+
+            <MetricsCard>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-sm bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                    <DollarSign className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Bitcoin Dominance</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  {globalData.market_cap_percentage?.btc?.toFixed(1) || 0}%
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Of total market cap</div>
+                  <Progress value={globalData.market_cap_percentage?.btc || 0} className="h-1" />
+                </div>
+              </div>
+            </MetricsCard>
+
+            <MetricsCard>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-sm bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <Globe className="h-3 w-3 text-green-600 dark:text-green-400" />
+                  </div>
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Active Cryptos</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  {globalData.active_cryptocurrencies?.toLocaleString() || 0}
+                </div>
+                <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                  <Activity className="h-3 w-3 mr-1 text-green-500" />
+                  <span className="text-green-600 dark:text-green-400">
                     Tracked by CoinGecko
-                  </p>
-                  <Badge variant="secondary" className="mt-2">
-                    <Activity className="w-3 h-3 mr-1" />
-                    Live tracking
-                  </Badge>
+                  </span>
                 </div>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full -mr-16 -mt-16 group-hover:from-blue-400/20 transition-all duration-300" />
-              </DashboardGlassCard>
-            </MicroInteraction>
-            </motion.div>
-          )}
+              </div>
+            </MetricsCard>
+          </div>
+        )}
 
-          {/* Enhanced Tabs Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-          >
+        {/* Professional Tabs Section */}
+        <div className="space-y-4">
             <Tabs defaultValue="all" className="space-y-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <TabsList className="w-fit">
@@ -426,152 +440,139 @@ export default function MarketPage() {
 
                 <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-slate-500" />
                     <Input
                       placeholder="Search cryptocurrencies..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-80 h-10 bg-background/50 border-2 border-muted focus:border-primary transition-colors"
+                      className="pl-9 w-80 h-8 text-sm rounded-sm border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600"
                     />
                   </div>
-                  <Button variant="outline" size="sm" className="h-10">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    View Charts
+                  <Button variant="outline" size="sm" className="h-8 text-xs rounded-sm">
+                    <BarChart3 className="w-3 h-3 mr-1.5" />
+                    Charts
                   </Button>
                 </div>
               </div>
 
-              <TabsContent value="all" className="mt-6">
-                <Card className="ai-card border-2 border-muted/20">
-                  <CardHeader className="pb-4">
+              <TabsContent value="all" className="mt-4">
+                <TableCard>
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl font-semibold">All Cryptocurrencies</CardTitle>
-                      <Badge variant="secondary">
+                      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">All Cryptocurrencies</h3>
+                      <Badge variant="secondary" className="text-xs rounded-sm">
                         {filteredCryptoData.length} assets
                       </Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <DataTable
-                      columns={columns}
-                      data={filteredCryptoData.map(crypto => ({
-                        ...crypto,
-                        watchlisted: watchlist.includes(crypto.id)
-                      }))}
-                      searchKey="name"
-                      searchPlaceholder="Search cryptocurrencies..."
-                    />
-                  </CardContent>
-                </Card>
+                  </div>
+                  <DataTable
+                    columns={columns}
+                    data={filteredCryptoData.map(crypto => ({
+                      ...crypto,
+                      watchlisted: watchlist.includes(crypto.id)
+                    }))}
+                    searchKey="name"
+                    searchPlaceholder="Search cryptocurrencies..."
+                  />
+                </TableCard>
               </TabsContent>
 
-              <TabsContent value="watchlist" className="mt-6">
-                <Card className="ai-card border-2 border-yellow-500/20">
-                  <CardHeader className="pb-4">
+              <TabsContent value="watchlist" className="mt-4">
+                <TableCard>
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl font-semibold flex items-center">
-                        <Star className="w-5 h-5 mr-2 text-yellow-500" />
-                        Your Watchlist
-                      </CardTitle>
-                      <Badge variant="secondary">
+                      <div className="flex items-center space-x-2">
+                        <Star className="w-4 h-4 text-yellow-500" />
+                        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Your Watchlist</h3>
+                      </div>
+                      <Badge variant="secondary" className="text-xs rounded-sm">
                         {watchlist.length} assets
                       </Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    {watchlist.length > 0 ? (
-                      <DataTable
-                        columns={columns}
-                        data={filteredCryptoData
-                          .filter(crypto => watchlist.includes(crypto.id))
-                          .map(crypto => ({
-                            ...crypto,
-                            watchlisted: true
-                          }))}
-                        searchKey="name"
-                        searchPlaceholder="Search watchlist..."
-                      />
-                    ) : (
-                      <div className="text-center py-12">
-                        <Star className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">No assets in watchlist</h3>
-                        <p className="text-muted-foreground mb-4">Start by adding some cryptocurrencies to track</p>
-                        <Button onClick={() => setSearchQuery("")} variant="outline">
-                          Browse All Assets
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                  </div>
+                  {watchlist.length > 0 ? (
+                    <DataTable
+                      columns={columns}
+                      data={filteredCryptoData
+                        .filter(crypto => watchlist.includes(crypto.id))
+                        .map(crypto => ({
+                          ...crypto,
+                          watchlisted: true
+                        }))}
+                      searchKey="name"
+                      searchPlaceholder="Search watchlist..."
+                    />
+                  ) : (
+                    <div className="text-center py-12">
+                      <Star className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+                      <h3 className="text-base font-medium mb-2 text-slate-900 dark:text-slate-100">No assets in watchlist</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Start by adding some cryptocurrencies to track</p>
+                      <Button onClick={() => setSearchQuery("")} variant="outline" size="sm" className="text-xs h-8 rounded-sm">
+                        Browse All Assets
+                      </Button>
+                    </div>
+                  )}
+                </TableCard>
               </TabsContent>
 
-              <TabsContent value="trending" className="mt-6">
-                <Card className="ai-card border-2 border-green-500/20">
-                  <CardHeader className="pb-4">
+              <TabsContent value="trending" className="mt-4">
+                <DataCard>
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl font-semibold flex items-center">
-                        <TrendingUp className="w-5 h-5 mr-2 text-green-500" />
-                        Trending Now
-                      </CardTitle>
-                      <Badge variant="secondary">
+                      <div className="flex items-center space-x-2">
+                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Trending Now</h3>
+                      </div>
+                      <Badge variant="secondary" className="text-xs rounded-sm">
                         Top {trendingData.slice(0, 6).length} trending
                       </Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  </div>
+                  <div className="p-4">
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                       {trendingData.slice(0, 6).map((trending, index) => (
-                        <motion.div
-                          key={trending.item.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                        >
-                          <Link href={`/market/${trending.item.id}`}>
-                            <Card className="ai-card hover:shadow-xl hover:border-primary/30 transition-all duration-300 cursor-pointer group">
-                              <CardContent className="p-4">
-                                <div className="flex items-center space-x-3 mb-3">
-                                  <div className="relative">
-                                    <img
-                                      src={trending.item.large}
-                                      alt={trending.item.name}
-                                      className="w-10 h-10 rounded-full border-2 border-muted group-hover:border-primary transition-colors"
-                                    />
-                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                                      <span className="text-xs font-bold text-white">{index + 1}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="font-semibold group-hover:text-primary transition-colors">{trending.item.name}</div>
-                                    <div className="text-sm text-muted-foreground uppercase font-medium">
-                                      {trending.item.symbol}
-                                    </div>
-                                  </div>
-                                  <Badge variant="outline" className="text-xs">
-                                    #{trending.item.market_cap_rank}
-                                  </Badge>
+                        <Link key={trending.item.id} href={`/market/${trending.item.id}`}>
+                          <div className="p-3 rounded-sm border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200 cursor-pointer">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <div className="relative">
+                                <img
+                                  src={trending.item.large}
+                                  alt={trending.item.name}
+                                  className="w-8 h-8 rounded-full"
+                                />
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full flex items-center justify-center">
+                                  <span className="text-xs font-bold text-white" style={{ fontSize: '8px' }}>{index + 1}</span>
                                 </div>
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center space-x-1">
-                                    <TrendingUp className="h-4 w-4 text-green-500" />
-                                    <span className="text-sm font-medium text-green-600 dark:text-green-400">Trending #{index + 1}</span>
-                                  </div>
-                                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                                    <Activity className="h-3 w-3" />
-                                    <span>Hot</span>
-                                  </div>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{trending.item.name}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-medium">
+                                  {trending.item.symbol}
                                 </div>
-                              </CardContent>
-                            </Card>
-                          </Link>
-                        </motion.div>
+                              </div>
+                              <Badge variant="outline" className="text-xs px-1 py-0 rounded-sm">
+                                #{trending.item.market_cap_rank}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-1">
+                                <TrendingUp className="h-3 w-3 text-green-500" />
+                                <span className="text-xs font-medium text-green-600 dark:text-green-400">Trending #{index + 1}</span>
+                              </div>
+                              <div className="flex items-center space-x-1 text-xs text-slate-400">
+                                <Activity className="h-2 w-2" />
+                                <span>Hot</span>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </DataCard>
               </TabsContent>
             </Tabs>
-          </motion.div>
+        </div>
 
           {/* Enhanced Market Analysis Charts */}
           <motion.div
