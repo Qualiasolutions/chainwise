@@ -5,7 +5,7 @@ import HeroSection from "@/components/hero-section";
 import ChainWisePricing from "@/components/chainwise-pricing";
 import { CyberneticBentoGrid } from "@/components/ui/cybernetic-bento-grid";
 import { Footer } from "@/components/ui/footer";
-import { StatsSection } from "@/components/stats-section";
+import { CryptoInsightsSection } from "@/components/crypto-insights-section";
 import { SectionDivider } from "@/components/ui/section-divider";
 
 export default function Home() {
@@ -31,8 +31,8 @@ export default function Home() {
       {/* Smooth transition to stats */}
       <SectionDivider variant="geometric" />
 
-      {/* Stats Section - Light background for contrast */}
-      <StatsSection />
+      {/* Crypto Insights Section - Educational and interactive content */}
+      <CryptoInsightsSection />
 
       {/* Elegant transition to pricing */}
       <SectionDivider variant="dots" />
