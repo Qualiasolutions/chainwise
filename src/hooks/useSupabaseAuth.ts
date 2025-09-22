@@ -172,16 +172,26 @@ export const useSupabaseAuth = () => {
 
     try {
       // First check if email already exists
-      const emailCheckResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`)
-      const emailCheckData = await emailCheckResponse.json()
+      try {
+        const emailCheckResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`)
 
-      if (emailCheckResponse.ok && emailCheckData.exists) {
-        setAuthState(prev => ({
-          ...prev,
-          error: 'An account with this email already exists. Please sign in instead.',
-          loading: false
-        }))
-        return { error: 'An account with this email already exists. Please sign in instead.' }
+        if (emailCheckResponse.ok) {
+          const emailCheckData = await emailCheckResponse.json()
+
+          if (emailCheckData.exists) {
+            setAuthState(prev => ({
+              ...prev,
+              error: 'An account with this email already exists. Please sign in instead.',
+              loading: false
+            }))
+            return { error: 'An account with this email already exists. Please sign in instead.' }
+          }
+        } else {
+          console.warn('Email check API failed, proceeding with signup')
+        }
+      } catch (emailCheckError) {
+        console.warn('Email check failed:', emailCheckError)
+        // Continue with signup if email check fails
       }
 
       const { data, error } = await supabase.auth.signUp({
