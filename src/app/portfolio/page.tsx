@@ -15,7 +15,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
   PieChart,
+  Pie,
+  Cell
+} from "recharts"
+import {
+  PieChart as PieChartIcon,
   TrendingUp,
   TrendingDown,
   Plus,
@@ -66,6 +80,8 @@ export default function PortfolioPage() {
   const [portfolioId, setPortfolioId] = useState<string | null>(null)
   const [holdings, setHoldings] = useState<PortfolioHolding[]>([])
   const [metrics, setMetrics] = useState<PortfolioMetrics | null>(null)
+  const [performanceData, setPerformanceData] = useState<any[]>([])
+  const [allocationData, setAllocationData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -177,6 +193,36 @@ export default function PortfolioPage() {
         topGainer,
         topLoser
       })
+
+      // Generate performance chart data (simulated for now)
+      const performanceHistory = []
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date()
+        date.setDate(date.getDate() - i)
+
+        // Simulate portfolio value over time
+        const baseValue = totalValue - totalPnL
+        const progressFactor = (29 - i) / 29
+        const variation = (Math.random() - 0.5) * 0.1
+        const simulatedValue = baseValue * (1 + (totalPnLPercentage / 100) * progressFactor + variation)
+
+        performanceHistory.push({
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          value: Math.max(0, simulatedValue),
+          pnl: simulatedValue - baseValue
+        })
+      }
+      setPerformanceData(performanceHistory)
+
+      // Generate allocation chart data
+      const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#84cc16', '#f97316']
+      const allocationChartData = processedHoldings.map((holding, index) => ({
+        name: holding.symbol,
+        value: holding.value,
+        percentage: holding.allocation,
+        color: COLORS[index % COLORS.length]
+      }))
+      setAllocationData(allocationChartData)
 
     } catch (err) {
       console.error('Error fetching portfolio data:', err)
@@ -501,52 +547,240 @@ export default function PortfolioPage() {
           </TabsContent>
 
           <TabsContent value="allocation">
-            <Card className="ai-card">
-              <CardHeader>
-                <CardTitle>Portfolio Allocation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {holdings.length > 0 ? (
-                  <div className="space-y-4">
-                    {holdings.map((holding) => (
-                      <div key={holding.id} className="flex items-center space-x-4">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
-                          {holding.symbol.slice(0, 2)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium">{holding.name}</span>
-                            <span className="text-sm font-medium">{holding.allocation.toFixed(1)}%</span>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Allocation Pie Chart */}
+              <Card className="ai-card">
+                <CardHeader>
+                  <CardTitle>Portfolio Allocation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {allocationData.length > 0 ? (
+                    <>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={allocationData}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            dataKey="value"
+                            label={false}
+                          >
+                            {allocationData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            formatter={(value: any) => [formatPrice(value), 'Value']}
+                            labelFormatter={(label) => `${label}`}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="grid grid-cols-2 gap-2 mt-4">
+                        {allocationData.map((item) => (
+                          <div key={item.name} className="flex items-center space-x-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className="text-sm font-medium">{item.name}</span>
+                            <span className="text-xs text-muted-foreground ml-auto">
+                              {item.percentage.toFixed(1)}%
+                            </span>
                           </div>
-                          <Progress value={holding.allocation} className="h-2" />
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium">{formatPrice(holding.value)}</div>
-                          <div className="text-sm text-muted-foreground">{holding.amount.toFixed(4)} {holding.symbol}</div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center text-muted-foreground">
-                    No holdings to display allocation
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-64 text-muted-foreground">
+                      <div className="text-center">
+                        <PieChartIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No allocation data to display</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Allocation List */}
+              <Card className="ai-card">
+                <CardHeader>
+                  <CardTitle>Detailed Allocation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {holdings.length > 0 ? (
+                    <div className="space-y-4">
+                      {holdings.map((holding) => (
+                        <div key={holding.id} className="flex items-center space-x-4">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xs font-medium">
+                            {holding.symbol.slice(0, 2)}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium">{holding.name}</span>
+                              <span className="text-sm font-medium">{holding.allocation.toFixed(1)}%</span>
+                            </div>
+                            <Progress value={holding.allocation} className="h-2" />
+                          </div>
+                          <div className="text-right">
+                            <div className="font-medium">{formatPrice(holding.value)}</div>
+                            <div className="text-sm text-muted-foreground">{holding.amount.toFixed(4)} {holding.symbol}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-muted-foreground">
+                      No holdings to display allocation
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="performance">
-            <Card className="ai-card">
-              <CardHeader>
-                <CardTitle>Performance Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center text-muted-foreground py-8">
-                  Performance charts coming soon...
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Portfolio Value Chart */}
+              <Card className="ai-card">
+                <CardHeader>
+                  <CardTitle>Portfolio Value Over Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {performanceData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <AreaChart data={performanceData}>
+                        <defs>
+                          <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis
+                          dataKey="date"
+                          stroke="hsl(var(--muted-foreground))"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          stroke="hsl(var(--muted-foreground))"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => formatPrice(value)}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (active && payload && payload.length) {
+                              return (
+                                <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
+                                  <p className="font-medium">{label}</p>
+                                  <p className="text-sm">
+                                    <span className="text-muted-foreground">Value: </span>
+                                    <span className="font-semibold text-primary">
+                                      {formatPrice(payload[0].value)}
+                                    </span>
+                                  </p>
+                                  {payload[1] && (
+                                    <p className="text-sm">
+                                      <span className="text-muted-foreground">P&L: </span>
+                                      <span className={`font-semibold ${payload[1].value >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                        {formatPrice(payload[1].value)}
+                                      </span>
+                                    </p>
+                                  )}
+                                </div>
+                              )
+                            }
+                            return null
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="value"
+                          stroke="#8b5cf6"
+                          fill="url(#colorValue)"
+                          strokeWidth={2}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-64 text-muted-foreground">
+                      <div className="text-center">
+                        <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No performance data to display</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* P&L Chart */}
+              <Card className="ai-card">
+                <CardHeader>
+                  <CardTitle>Profit & Loss Over Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {performanceData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={performanceData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <XAxis
+                          dataKey="date"
+                          stroke="hsl(var(--muted-foreground))"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          stroke="hsl(var(--muted-foreground))"
+                          fontSize={12}
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => formatPrice(value)}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (active && payload && payload.length) {
+                              const value = payload[0].value as number
+                              return (
+                                <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
+                                  <p className="font-medium">{label}</p>
+                                  <p className="text-sm">
+                                    <span className="text-muted-foreground">P&L: </span>
+                                    <span className={`font-semibold ${value >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                      {formatPrice(value)}
+                                    </span>
+                                  </p>
+                                </div>
+                              )
+                            }
+                            return null
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="pnl"
+                          stroke="#10b981"
+                          strokeWidth={2}
+                          dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-64 text-muted-foreground">
+                      <div className="text-center">
+                        <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No P&L data to display</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="history">
