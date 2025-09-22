@@ -343,161 +343,6 @@ export default function MarketPage() {
         </motion.div>
       )}
 
-      {/* Market Overview Charts */}
-      <motion.div
-        className="grid gap-6 lg:grid-cols-2"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.15 }}
-      >
-        {/* Top Cryptocurrencies Price Chart */}
-        <Card className="ai-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Top 10 Cryptocurrencies</CardTitle>
-              <div className="flex items-center space-x-2">
-                {['24h', '7d', '30d'].map((timeframe) => (
-                  <Button
-                    key={timeframe}
-                    variant={selectedTimeframe === timeframe ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedTimeframe(timeframe as any)}
-                  >
-                    {timeframe}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={marketChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis
-                  dataKey="name"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload
-                      return (
-                        <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
-                          <p className="font-medium">{label}</p>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground">Price: </span>
-                            <span className="font-semibold text-primary">
-                              {formatPrice(data.price)}
-                            </span>
-                          </p>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground">24h Change: </span>
-                            <span className={`font-semibold ${data.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              {formatPercentage(data.change)}
-                            </span>
-                          </p>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground">Market Cap: </span>
-                            <span className="font-semibold">
-                              {formatMarketCap(data.marketCap)}
-                            </span>
-                          </p>
-                        </div>
-                      )
-                    }
-                    return null
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="price"
-                  stroke="#8b5cf6"
-                  fill="url(#colorGradient)"
-                  strokeWidth={2}
-                />
-                <defs>
-                  <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Market Performance Comparison */}
-        <Card className="ai-card">
-          <CardHeader>
-            <CardTitle>24h Price Changes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={marketChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                <XAxis
-                  dataKey="name"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `${value.toFixed(1)}%`}
-                />
-                <Tooltip
-                  content={({ active, payload, label }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload
-                      return (
-                        <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
-                          <p className="font-medium">{label}</p>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground">24h Change: </span>
-                            <span className={`font-semibold ${data.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              {formatPercentage(data.change)}
-                            </span>
-                          </p>
-                          <p className="text-sm">
-                            <span className="text-muted-foreground">Current Price: </span>
-                            <span className="font-semibold text-primary">
-                              {formatPrice(data.price)}
-                            </span>
-                          </p>
-                        </div>
-                      )
-                    }
-                    return null
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="change"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </motion.div>
-
       {/* Tabs for different views */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -598,6 +443,229 @@ export default function MarketPage() {
             </div>
           </TabsContent>
         </Tabs>
+      </motion.div>
+
+      {/* Market Analysis Charts */}
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Market Analysis</h2>
+            <p className="text-muted-foreground">
+              Visual insights into cryptocurrency market trends and performance
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            {['24h', '7d', '30d'].map((timeframe) => (
+              <Button
+                key={timeframe}
+                variant={selectedTimeframe === timeframe ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedTimeframe(timeframe as any)}
+              >
+                {timeframe}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Top Cryptocurrencies Price Chart */}
+          <Card className="ai-card border-2 border-muted/20 hover:border-primary/20 transition-colors">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg font-semibold">Top 10 Cryptocurrencies</CardTitle>
+                  <p className="text-sm text-muted-foreground">Current market prices by rank</p>
+                </div>
+                <BarChart3 className="h-5 w-5 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={marketChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="currentColor"
+                      opacity={0.1}
+                      className="text-muted-foreground"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke="currentColor"
+                      fontSize={11}
+                      fontWeight={500}
+                      tickLine={false}
+                      axisLine={false}
+                      className="text-foreground fill-foreground"
+                      tick={{ fill: 'currentColor' }}
+                    />
+                    <YAxis
+                      stroke="currentColor"
+                      fontSize={11}
+                      fontWeight={500}
+                      tickLine={false}
+                      axisLine={false}
+                      className="text-foreground fill-foreground"
+                      tick={{ fill: 'currentColor' }}
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload
+                          return (
+                            <div className="bg-background/95 backdrop-blur-sm border-2 border-primary/20 rounded-xl p-4 shadow-xl">
+                              <p className="font-semibold text-lg text-foreground mb-2">{label}</p>
+                              <div className="space-y-1">
+                                <p className="text-sm">
+                                  <span className="text-muted-foreground">Price: </span>
+                                  <span className="font-bold text-primary">
+                                    {formatPrice(data.price)}
+                                  </span>
+                                </p>
+                                <p className="text-sm">
+                                  <span className="text-muted-foreground">24h Change: </span>
+                                  <span className={`font-bold ${data.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    {formatPercentage(data.change)}
+                                  </span>
+                                </p>
+                                <p className="text-sm">
+                                  <span className="text-muted-foreground">Market Cap: </span>
+                                  <span className="font-semibold text-foreground">
+                                    {formatMarketCap(data.marketCap)}
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        }
+                        return null
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="price"
+                      stroke="#8b5cf6"
+                      strokeWidth={3}
+                      fill="url(#priceGradient)"
+                      dot={false}
+                      activeDot={{
+                        r: 6,
+                        stroke: "#8b5cf6",
+                        strokeWidth: 2,
+                        fill: "#ffffff"
+                      }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Market Performance Comparison */}
+          <Card className="ai-card border-2 border-muted/20 hover:border-primary/20 transition-colors">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-lg font-semibold">24h Price Changes</CardTitle>
+                  <p className="text-sm text-muted-foreground">Percentage changes across top cryptocurrencies</p>
+                </div>
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={marketChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="currentColor"
+                      opacity={0.1}
+                      className="text-muted-foreground"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      stroke="currentColor"
+                      fontSize={11}
+                      fontWeight={500}
+                      tickLine={false}
+                      axisLine={false}
+                      className="text-foreground fill-foreground"
+                      tick={{ fill: 'currentColor' }}
+                    />
+                    <YAxis
+                      stroke="currentColor"
+                      fontSize={11}
+                      fontWeight={500}
+                      tickLine={false}
+                      axisLine={false}
+                      className="text-foreground fill-foreground"
+                      tick={{ fill: 'currentColor' }}
+                      tickFormatter={(value) => `${value.toFixed(1)}%`}
+                    />
+                    <Tooltip
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload
+                          return (
+                            <div className="bg-background/95 backdrop-blur-sm border-2 border-primary/20 rounded-xl p-4 shadow-xl">
+                              <p className="font-semibold text-lg text-foreground mb-2">{label}</p>
+                              <div className="space-y-1">
+                                <p className="text-sm">
+                                  <span className="text-muted-foreground">24h Change: </span>
+                                  <span className={`font-bold ${data.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    {formatPercentage(data.change)}
+                                  </span>
+                                </p>
+                                <p className="text-sm">
+                                  <span className="text-muted-foreground">Current Price: </span>
+                                  <span className="font-bold text-primary">
+                                    {formatPrice(data.price)}
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        }
+                        return null
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="change"
+                      stroke="#10b981"
+                      strokeWidth={3}
+                      dot={{
+                        fill: "#10b981",
+                        strokeWidth: 2,
+                        r: 5,
+                        stroke: "#ffffff"
+                      }}
+                      activeDot={{
+                        r: 7,
+                        stroke: "#10b981",
+                        strokeWidth: 2,
+                        fill: "#ffffff"
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </motion.div>
     </motion.div>
   )

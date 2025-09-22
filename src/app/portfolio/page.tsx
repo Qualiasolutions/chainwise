@@ -656,19 +656,30 @@ export default function PortfolioPage() {
                             <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="currentColor"
+                          opacity={0.1}
+                          className="text-muted-foreground"
+                        />
                         <XAxis
                           dataKey="date"
-                          stroke="hsl(var(--muted-foreground))"
-                          fontSize={12}
+                          stroke="currentColor"
+                          fontSize={11}
+                          fontWeight={500}
                           tickLine={false}
                           axisLine={false}
+                          className="text-foreground fill-foreground"
+                          tick={{ fill: 'currentColor' }}
                         />
                         <YAxis
-                          stroke="hsl(var(--muted-foreground))"
-                          fontSize={12}
+                          stroke="currentColor"
+                          fontSize={11}
+                          fontWeight={500}
                           tickLine={false}
                           axisLine={false}
+                          className="text-foreground fill-foreground"
+                          tick={{ fill: 'currentColor' }}
                           tickFormatter={(value) => formatPrice(value)}
                         />
                         <Tooltip
@@ -726,19 +737,30 @@ export default function PortfolioPage() {
                   {performanceData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={performanceData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="currentColor"
+                          opacity={0.1}
+                          className="text-muted-foreground"
+                        />
                         <XAxis
                           dataKey="date"
-                          stroke="hsl(var(--muted-foreground))"
-                          fontSize={12}
+                          stroke="currentColor"
+                          fontSize={11}
+                          fontWeight={500}
                           tickLine={false}
                           axisLine={false}
+                          className="text-foreground fill-foreground"
+                          tick={{ fill: 'currentColor' }}
                         />
                         <YAxis
-                          stroke="hsl(var(--muted-foreground))"
-                          fontSize={12}
+                          stroke="currentColor"
+                          fontSize={11}
+                          fontWeight={500}
                           tickLine={false}
                           axisLine={false}
+                          className="text-foreground fill-foreground"
+                          tick={{ fill: 'currentColor' }}
                           tickFormatter={(value) => formatPrice(value)}
                         />
                         <Tooltip
