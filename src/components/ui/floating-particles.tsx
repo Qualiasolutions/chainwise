@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import { useEffect, useState, useMemo } from "react"
-import { Bitcoin, Ethereum, TrendingUp, Zap, DollarSign, Target, BarChart3, Shield } from "lucide-react"
+import { Bitcoin, Coins, TrendingUp, Zap, DollarSign, Target, BarChart3, Shield } from "lucide-react"
 
 interface Particle {
   id: number
@@ -27,7 +27,7 @@ interface FloatingParticlesProps {
   density?: "low" | "medium" | "high"
 }
 
-const cryptoIcons = [Bitcoin, Ethereum, TrendingUp, Zap, DollarSign, Target, BarChart3, Shield]
+const cryptoIcons = [Bitcoin, Coins, TrendingUp, Zap, DollarSign, Target, BarChart3, Shield]
 
 const colorPalettes = {
   crypto: [
@@ -99,8 +99,8 @@ export function FloatingParticles({
 
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
+      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+      y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
       size: (Math.random() * 20 + 10) * sizeMultiplier,
       speed: (Math.random() * 0.5 + 0.3) * speedMultiplier,
       angle: Math.random() * Math.PI * 2,
@@ -123,7 +123,10 @@ export function FloatingParticles({
     }
 
     const handleResize = () => {
-      setContainerSize({ width: window.innerWidth, height: window.innerHeight })
+      setContainerSize({
+        width: typeof window !== 'undefined' ? window.innerWidth : 1200,
+        height: typeof window !== 'undefined' ? window.innerHeight : 800
+      })
     }
 
     window.addEventListener("mousemove", handleMouseMove)
@@ -254,8 +257,8 @@ export function Constellation({
     // Generate random points
     const newPoints = Array.from({ length: 20 }, (_, i) => ({
       id: i,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight
+      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+      y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800)
     }))
     setPoints(newPoints)
 
@@ -401,14 +404,14 @@ export function GradientOrbs({
           )}
           animate={{
             x: [
-              Math.random() * window.innerWidth,
-              Math.random() * window.innerWidth,
-              Math.random() * window.innerWidth
+              Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+              Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200),
+              Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1200)
             ],
             y: [
-              Math.random() * window.innerHeight,
-              Math.random() * window.innerHeight,
-              Math.random() * window.innerHeight
+              Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+              Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+              Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800)
             ]
           }}
           transition={{

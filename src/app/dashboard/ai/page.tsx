@@ -434,7 +434,7 @@ export default function AIPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </DashboardGlassCard>
           </div>
 
           {/* Professional Chat Interface */}
@@ -714,7 +714,7 @@ export default function AIPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </DashboardGlassCard>
           </div>
         </div>
 
