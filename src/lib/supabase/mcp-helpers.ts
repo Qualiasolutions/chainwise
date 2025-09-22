@@ -105,20 +105,39 @@ export class MCPSupabaseClient {
   // User Operations
   async getUserByAuthId(authId: string): Promise<User | null> {
     try {
-      // Use direct client-side call via API route
-      const response = await fetch('/api/users/by-auth-id', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authId })
-      })
+      // Check if we're in server context (API route)
+      if (typeof window === 'undefined') {
+        // Server-side: Use direct Supabase client instead of API call
+        const supabase = await this.getSupabaseClient()
 
-      if (!response.ok) {
-        console.error('API Error fetching user:', await response.text())
-        return null
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('auth_id', authId)
+          .single()
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Database error fetching user:', error)
+          return null
+        }
+
+        return data || null
+      } else {
+        // Client-side: Use API route
+        const response = await fetch('/api/users/by-auth-id', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ authId })
+        })
+
+        if (!response.ok) {
+          console.error('API Error fetching user:', await response.text())
+          return null
+        }
+
+        const data = await response.json()
+        return data.user || null
       }
-
-      const data = await response.json()
-      return data.user || null
     } catch (error: any) {
       console.error('Error fetching user by auth ID:', error)
       return null
@@ -127,20 +146,52 @@ export class MCPSupabaseClient {
 
   async createUser(userData: UserInsert): Promise<User> {
     try {
-      // Use API route for creating users
-      const response = await fetch('/api/users/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userData })
-      })
+      // Check if we're in server context (API route)
+      if (typeof window === 'undefined') {
+        // Server-side: Use MCP call directly
+        const query = `
+          INSERT INTO users (auth_id, email, full_name, bio, location, website, avatar_url, tier, credits, monthly_credits, created_at, updated_at)
+          VALUES (
+            '${userData.auth_id}',
+            '${userData.email}',
+            ${userData.full_name ? `'${userData.full_name.replace(/'/g, "''")}'` : 'NULL'},
+            ${userData.bio ? `'${userData.bio.replace(/'/g, "''")}'` : 'NULL'},
+            ${userData.location ? `'${userData.location.replace(/'/g, "''")}'` : 'NULL'},
+            ${userData.website ? `'${userData.website}'` : 'NULL'},
+            ${userData.avatar_url ? `'${userData.avatar_url}'` : 'NULL'},
+            '${userData.tier || 'free'}',
+            ${userData.credits || 3},
+            ${userData.monthly_credits || 3},
+            NOW(),
+            NOW()
+          )
+          RETURNING *;
+        `
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create user')
+        const response = await this.executeMCPQuery<User[]>(query)
+        const result = this.handleMCPResponse(response)
+
+        if (result && Array.isArray(result) && result.length > 0) {
+          return result[0]
+        }
+
+        throw new Error('Failed to create user - no data returned')
+      } else {
+        // Client-side: Use API route
+        const response = await fetch('/api/users/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userData })
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to create user')
+        }
+
+        const data = await response.json()
+        return data.user
       }
-
-      const data = await response.json()
-      return data.user
     } catch (error: any) {
       console.error('Error creating user:', error)
       throw new Error(`Failed to create user: ${error.message}`)
