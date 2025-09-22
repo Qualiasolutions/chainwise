@@ -382,19 +382,30 @@ export default function AnalyticsPage() {
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>
               <AreaChart data={performanceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="currentColor"
+                  opacity={0.1}
+                  className="text-muted-foreground"
+                />
                 <XAxis
                   dataKey="date"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
+                  stroke="currentColor"
+                  fontSize={11}
+                  fontWeight={500}
                   tickLine={false}
                   axisLine={false}
+                  className="text-foreground fill-foreground"
+                  tick={{ fill: 'currentColor' }}
                 />
                 <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={12}
+                  stroke="currentColor"
+                  fontSize={11}
+                  fontWeight={500}
                   tickLine={false}
                   axisLine={false}
+                  className="text-foreground fill-foreground"
+                  tick={{ fill: 'currentColor' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                 />
                 <Tooltip content={<CustomTooltip />} />

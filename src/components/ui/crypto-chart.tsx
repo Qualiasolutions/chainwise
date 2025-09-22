@@ -59,22 +59,29 @@ export function CryptoChart({
             {showGrid && (
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-                opacity={0.3}
+                stroke="currentColor"
+                opacity={0.1}
+                className="text-muted-foreground"
               />
             )}
             <XAxis
               dataKey="date"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={12}
+              stroke="currentColor"
+              fontSize={11}
+              fontWeight={500}
               tickLine={false}
               axisLine={false}
+              className="text-foreground fill-foreground"
+              tick={{ fill: 'currentColor' }}
             />
             <YAxis
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={12}
+              stroke="currentColor"
+              fontSize={11}
+              fontWeight={500}
               tickLine={false}
               axisLine={false}
+              className="text-foreground fill-foreground"
+              tick={{ fill: 'currentColor' }}
               tickFormatter={(value) => `$${value.toLocaleString()}`}
             />
             <Tooltip content={<CustomTooltip />} />

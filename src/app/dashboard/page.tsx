@@ -394,15 +394,28 @@ export default function DashboardPage() {
                         </linearGradient>
                       ))}
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="currentColor"
+                      opacity={0.1}
+                      className="text-muted-foreground"
+                    />
                     <XAxis
                       dataKey="time"
-                      className="text-xs fill-muted-foreground"
+                      stroke="currentColor"
+                      fontSize={11}
+                      fontWeight={500}
+                      className="text-foreground fill-foreground"
+                      tick={{ fill: 'currentColor' }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
-                      className="text-xs fill-muted-foreground"
+                      stroke="currentColor"
+                      fontSize={11}
+                      fontWeight={500}
+                      className="text-foreground fill-foreground"
+                      tick={{ fill: 'currentColor' }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
