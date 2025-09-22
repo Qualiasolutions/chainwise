@@ -1,0 +1,28 @@
+{
+  "project": {
+    "name": "ChainWise",
+    "type": "nextjs",
+    "version": "1.0.0",
+    "description": "AI-powered cryptocurrency advisory platform"
+  },
+  "claude": {
+    "version": "1.0.120",
+    "initialized": true,
+    "date": "2025-09-22"
+  },
+  "development": {
+    "commands": {
+      "dev": "npm run dev",
+      "build": "npm run build",
+      "start": "npm run start",
+      "lint": "npm run lint"
+    }
+  },
+  "mcp": {
+    "servers": [
+      "context7",
+      "filesystem",
+      "playwright"
+    ]
+  }
+}
