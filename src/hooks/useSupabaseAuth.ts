@@ -109,8 +109,10 @@ export const useSupabaseAuth = () => {
 
   useEffect(() => {
     let isMounted = true
+    let retryCount = 0
+    const maxRetries = 2
 
-    // Get initial session
+    // Get initial session with retry logic
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
@@ -119,6 +121,25 @@ export const useSupabaseAuth = () => {
 
         if (error) {
           console.error('Error getting session:', error)
+
+          // Handle refresh token errors specifically
+          if (error.message?.includes('refresh') || error.message?.includes('Refresh Token')) {
+            console.log('Refresh token error detected, clearing session...')
+
+            // Clear invalid session data
+            await supabase.auth.signOut({ scope: 'local' })
+
+            // Retry once after clearing
+            if (retryCount < maxRetries) {
+              retryCount++
+              console.log(`Retrying session initialization (attempt ${retryCount}/${maxRetries})...`)
+              setTimeout(() => {
+                if (isMounted) getInitialSession()
+              }, 1000)
+              return
+            }
+          }
+
           setAuthState(prev => ({ ...prev, error: error.message, loading: false }))
           return
         }
@@ -158,12 +179,26 @@ export const useSupabaseAuth = () => {
 
     getInitialSession()
 
-    // Listen for auth changes
+    // Listen for auth changes with better error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!isMounted) return
 
         try {
+          // Handle specific auth events
+          if (event === 'TOKEN_REFRESHED') {
+            console.log('Token successfully refreshed')
+            retryCount = 0 // Reset retry count on successful refresh
+          } else if (event === 'SIGNED_OUT') {
+            console.log('User signed out')
+            // Clear any stored tokens
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('chainwise-auth-token')
+            }
+          } else if (event === 'USER_UPDATED') {
+            console.log('User data updated')
+          }
+
           if (session?.user) {
             const profile = await fetchUserProfile(session.user)
             if (isMounted) {
@@ -184,8 +219,15 @@ export const useSupabaseAuth = () => {
               })
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error in auth state change:', error)
+
+          // Handle refresh token errors during state change
+          if (error?.message?.includes('refresh') || error?.message?.includes('Refresh Token')) {
+            console.log('Refresh token error during state change, clearing session...')
+            await supabase.auth.signOut({ scope: 'local' })
+          }
+
           if (isMounted) {
             setAuthState(prev => ({ ...prev, error: 'Authentication error', loading: false }))
           }
@@ -335,12 +377,26 @@ export const useSupabaseAuth = () => {
 
   const refreshProfile = async () => {
     if (authState.user) {
-      const profile = await fetchUserProfile(authState.user)
-      setAuthState(prev => ({
-        ...prev,
-        profile,
-        error: null
-      }))
+      try {
+        // First check if session is still valid
+        const { data: { session }, error } = await supabase.auth.getSession()
+
+        if (error || !session) {
+          console.log('Session invalid during profile refresh, signing out...')
+          await signOut()
+          return
+        }
+
+        const profile = await fetchUserProfile(authState.user)
+        setAuthState(prev => ({
+          ...prev,
+          profile,
+          error: null
+        }))
+      } catch (error) {
+        console.error('Error refreshing profile:', error)
+        setAuthState(prev => ({ ...prev, error: 'Failed to refresh profile' }))
+      }
     }
   }
 
