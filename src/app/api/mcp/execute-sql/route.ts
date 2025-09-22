@@ -29,34 +29,24 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Use direct SQL execution via rpc for more complex queries
-    const { data, error } = await supabase.rpc('execute_sql', {
-      sql_query: query
-    })
+    // Parse and execute manually for basic operations (no RPC needed)
+    const cleanQuery = query.trim()
 
-    if (error) {
-      // If the RPC doesn't exist, try direct SQL execution
-      try {
-        // Parse and execute manually for basic operations
-        const cleanQuery = query.trim()
-
-        if (cleanQuery.toLowerCase().startsWith('select')) {
-          // For SELECT queries, try to parse and execute using Supabase client
-          const result = await executeSelectQuery(supabase, cleanQuery)
-          return NextResponse.json({ result })
-        } else if (cleanQuery.toLowerCase().startsWith('insert')) {
-          // For INSERT queries, try to parse and execute using Supabase client
-          const result = await executeInsertQuery(supabase, cleanQuery)
-          return NextResponse.json({ result })
-        }
-
-        throw new Error(`Unsupported query type: ${cleanQuery.substring(0, 20)}...`)
-      } catch (fallbackError: any) {
-        throw new Error(error.message || fallbackError.message)
+    try {
+      if (cleanQuery.toLowerCase().startsWith('select')) {
+        // For SELECT queries, try to parse and execute using Supabase client
+        const result = await executeSelectQuery(supabase, cleanQuery)
+        return NextResponse.json({ result })
+      } else if (cleanQuery.toLowerCase().startsWith('insert')) {
+        // For INSERT queries, try to parse and execute using Supabase client
+        const result = await executeInsertQuery(supabase, cleanQuery)
+        return NextResponse.json({ result })
       }
-    }
 
-    return NextResponse.json({ result: data })
+      throw new Error(`Unsupported query type: ${cleanQuery.substring(0, 20)}...`)
+    } catch (fallbackError: any) {
+      throw new Error(fallbackError.message)
+    }
 
   } catch (error: any) {
     console.error('Database query execution error:', error)
@@ -85,14 +75,14 @@ async function executeSelectQuery(supabase: any, query: string) {
         .from(tableName)
         .select('*')
         .eq('auth_id', authId)
-        .single()
+        .limit(1)
 
       if (error && error.code === 'PGRST116') {
         return []
       } else if (error) {
         throw error
       }
-      return data ? [data] : []
+      return data || []
     }
   }
 
