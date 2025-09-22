@@ -62,7 +62,7 @@ export function ModernNavigation() {
 
         {/* Navigation Content */}
         <div className="relative">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto pl-2 pr-6 md:pl-4 md:pr-8">
             <div className="flex h-16 items-center justify-between">
               {/* Logo */}
               <Link href="/" className="flex items-center space-x-3 group">
@@ -112,7 +112,7 @@ export function ModernNavigation() {
               </nav>
 
               {/* Right Section */}
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 md:space-x-4 ml-auto">
                 {user ? (
                   <>
                     {/* Credits Display */}
