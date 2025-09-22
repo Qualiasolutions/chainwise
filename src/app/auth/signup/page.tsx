@@ -196,7 +196,19 @@ export default function SignUpPage() {
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {error}
+                {error.includes('already exists') && (
+                  <div className="mt-2">
+                    <Link
+                      href="/auth/signin"
+                      className="font-medium text-primary hover:text-primary/80 underline"
+                    >
+                      Go to sign in page
+                    </Link>
+                  </div>
+                )}
+              </AlertDescription>
             </Alert>
           )}
 

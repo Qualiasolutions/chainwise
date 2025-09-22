@@ -28,6 +28,8 @@ export const useSupabaseAuth = () => {
 
       // Create profile if it doesn't exist
       if (!profile) {
+        console.log('Creating new user profile for auth_id:', authUser.id)
+
         const newProfileData: UserInsert = {
           auth_id: authUser.id,
           email: authUser.email || '',
@@ -41,10 +43,29 @@ export const useSupabaseAuth = () => {
           monthly_credits: 3
         }
 
-        const createdProfile = await mcpSupabase.createUser(newProfileData)
-        return createdProfile
+        try {
+          const createdProfile = await mcpSupabase.createUser(newProfileData)
+          console.log('Successfully created user profile:', createdProfile.id)
+          return createdProfile
+        } catch (createError: any) {
+          console.error('Error creating user profile:', createError)
+
+          // If user creation fails due to constraint, try to fetch again
+          // This handles race conditions where user might have been created elsewhere
+          if (createError.message?.includes('duplicate') || createError.message?.includes('constraint')) {
+            console.log('Duplicate user detected, trying to fetch existing profile...')
+            const existingProfile = await mcpSupabase.getUserByAuthId(authUser.id)
+            if (existingProfile) {
+              console.log('Found existing profile after constraint error:', existingProfile.id)
+              return existingProfile
+            }
+          }
+
+          throw createError
+        }
       }
 
+      console.log('Found existing user profile:', profile.id)
       return profile
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -150,6 +171,19 @@ export const useSupabaseAuth = () => {
     setAuthState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
+      // First check if email already exists
+      const emailCheckResponse = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`)
+      const emailCheckData = await emailCheckResponse.json()
+
+      if (emailCheckResponse.ok && emailCheckData.exists) {
+        setAuthState(prev => ({
+          ...prev,
+          error: 'An account with this email already exists. Please sign in instead.',
+          loading: false
+        }))
+        return { error: 'An account with this email already exists. Please sign in instead.' }
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,

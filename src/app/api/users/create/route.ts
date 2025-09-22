@@ -43,20 +43,42 @@ export async function POST(request: NextRequest) {
         }
       })
 
+      // Use PostgreSQL UPSERT functionality to handle duplicates gracefully
       const { data, error } = await supabase
         .from('users')
-        .insert(userData)
+        .upsert(userData, {
+          onConflict: 'auth_id',
+          ignoreDuplicates: false
+        })
         .select()
         .single()
 
       if (error) {
-        console.error('Database error:', error)
+        console.error('Database upsert error:', error)
+
+        // If upsert fails, try to get the existing user
+        if (error.message?.includes('duplicate') || error.code === '23505') {
+          console.log('Duplicate key detected, fetching existing user...')
+
+          const { data: existingUser, error: fetchError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('auth_id', userData.auth_id)
+            .single()
+
+          if (!fetchError && existingUser) {
+            console.log('Found existing user:', existingUser.auth_id)
+            return NextResponse.json({ user: existingUser })
+          }
+        }
+
         return NextResponse.json(
           { error: error.message },
           { status: 500 }
         )
       }
 
+      console.log('User upserted successfully:', data.auth_id)
       return NextResponse.json({ user: data })
     } catch (mcpError) {
       console.error('Database operation failed:', mcpError)
