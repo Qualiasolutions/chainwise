@@ -8,6 +8,7 @@ import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { OpenAIService } from '@/lib/openai/service'
 import { AI_PERSONAS, PersonaId } from '@/lib/openai/personas'
+import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,14 +22,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile from profiles table
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('auth_id', session.user.id)
-      .single()
+    // Get user profile using MCP helpers
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
-    if (profileError || !profile) {
+    if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
@@ -65,36 +62,34 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
-    // Deduct credits from user profile
-    const { error: creditError } = await supabase
-      .from('profiles')
-      .update({ credits: profile.credits - personaConfig.creditCost })
-      .eq('id', profile.id)
+    // Deduct credits and record transaction using MCP helpers
+    const creditSuccess = await mcpSupabase.recordCreditUsage(
+      profile.id,
+      personaConfig.creditCost,
+      `AI chat with ${personaConfig.name}`,
+      persona,
+      sessionId
+    )
 
-    if (creditError) {
-      return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
+    if (!creditSuccess) {
+      console.warn('Credit usage recording failed, but continuing with chat')
     }
 
-    // Record credit transaction
-    const { error: transactionError } = await supabase
-      .from('credit_transactions')
-      .insert({
-        user_id: profile.id,
-        amount: -personaConfig.creditCost,
-        description: `AI chat with ${personaConfig.name}`,
-        transaction_type: 'deduction',
-        reference_id: sessionId
+    // Also update the profile credits directly
+    try {
+      await mcpSupabase.updateUser(profile.id, {
+        credits: profile.credits - personaConfig.creditCost
       })
-
-    if (transactionError) {
-      console.error('Credit transaction record error:', transactionError)
-      // Don't fail the request if transaction logging fails
+    } catch (error) {
+      console.error('Failed to update user credits:', error)
+      return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
     // Get conversation history for context
     let conversationHistory: any[] = []
     let existingSession: any = null
     if (sessionId) {
+      // For now, use direct Supabase until session management is fully migrated to MCP
       const { data: session } = await supabase
         .from('ai_chat_sessions')
         .select('messages')
@@ -114,13 +109,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate AI response using OpenAI
+    console.log(`Generating AI response for persona: ${persona}, message length: ${message.length}`);
     const aiResponse = await OpenAIService.generateChatResponse({
       persona: persona as PersonaId,
       message,
       conversationHistory,
       maxTokens: persona === 'trader' ? 250 : persona === 'professor' ? 300 : 400,
       temperature: persona === 'trader' ? 0.5 : 0.7
-    })
+    });
+    console.log(`AI response generated successfully, length: ${aiResponse.length}`);
 
     // Handle session management
     let chatSession

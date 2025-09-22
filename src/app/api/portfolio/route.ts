@@ -3,49 +3,35 @@
 // POST /api/portfolio - Create new portfolio
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { cryptoAPI } from '@/lib/crypto-api'
+
 export async function GET(request: NextRequest) {
   try {
-    // Get auth_id from query parameters or headers
-    const url = new URL(request.url)
-    const authId = url.searchParams.get('auth_id')
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
-    if (!authId) {
-      return NextResponse.json({ error: 'Missing auth_id parameter' }, { status: 400 })
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Use service role client to bypass RLS for administrative operations
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json({ error: 'Supabase configuration missing' }, { status: 500 })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    })
-
-    // Get user profile to get user ID
+    // Get user profile from profiles table
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
-      .eq('auth_id', authId)
+      .eq('auth_id', session.user.id)
       .single()
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // TODO: Replace with MCP query
-    // const portfolios = await useMCPQuery(
-    //   'SELECT * FROM portfolios WHERE user_id = $1 ORDER BY is_default DESC, created_at ASC',
-    //   [profile.id]
-    // )
-
-    // For now, using direct supabase call - this will be replaced with MCP
+    // Get portfolios for the user
     const { data: portfolios, error } = await supabase
       .from('portfolios')
       .select(`
@@ -203,35 +189,29 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { name, description, authId } = body
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
-    if (!authId) {
-      return NextResponse.json({ error: 'Missing authId' }, { status: 400 })
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Use service role client to bypass RLS
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json({ error: 'Supabase configuration missing' }, { status: 500 })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    })
-
-    // Get user profile
+    // Get user profile from profiles table
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, tier')
-      .eq('auth_id', authId)
+      .eq('auth_id', session.user.id)
       .single()
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
+
+    const body = await request.json()
+    const { name, description } = body
 
     if (!name || name.trim().length === 0) {
       return NextResponse.json({ error: 'Portfolio name is required' }, { status: 400 })
@@ -257,13 +237,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // TODO: Replace with MCP query
-    // const newPortfolio = await useMCPQuery(
-    //   'INSERT INTO portfolios (user_id, name, description) VALUES ($1, $2, $3) RETURNING *',
-    //   [profile.id, name.trim(), description?.trim() || null]
-    // )
-
-    // For now, using direct supabase call
+    // Create new portfolio
     const { data: newPortfolio, error } = await supabase
       .from('portfolios')
       .insert({
