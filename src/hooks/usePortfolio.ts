@@ -138,6 +138,17 @@ export const usePortfolio = () => {
     fetchPortfolios()
   }, [user])
 
+  // Refresh portfolios every 5 minutes to get updated prices
+  useEffect(() => {
+    if (!user?.auth_id) return
+
+    const interval = setInterval(() => {
+      fetchPortfolios()
+    }, 5 * 60 * 1000) // 5 minutes
+
+    return () => clearInterval(interval)
+  }, [user])
+
   return {
     ...portfolioState,
     fetchPortfolios,

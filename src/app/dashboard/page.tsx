@@ -19,7 +19,8 @@ import {
   Target,
   Zap,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Bot
 } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Line, LineChart, Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
@@ -195,17 +196,65 @@ export default function DashboardPage() {
     fetchCryptoPrices()
   }, [])
 
-  // Generate mock chart data for demonstration
-  const generateMockChartData = () => {
+  // Generate empty state chart data
+  const generateEmptyStateData = () => {
     return [
-      { time: "00:00", total: 45000, BTC: 30000, ETH: 10000, BNB: 3000, XRP: 1500, ADA: 500 },
-      { time: "04:00", total: 47500, BTC: 31500, ETH: 10500, BNB: 3200, XRP: 1700, ADA: 600 },
-      { time: "08:00", total: 46800, BTC: 30800, ETH: 10200, BNB: 3100, XRP: 1900, ADA: 800 },
-      { time: "12:00", total: 49200, BTC: 32200, ETH: 11000, BNB: 3300, XRP: 1800, ADA: 900 },
-      { time: "16:00", total: 51500, BTC: 33500, ETH: 11500, BNB: 3500, XRP: 2000, ADA: 1000 },
-      { time: "20:00", total: 53200, BTC: 34200, ETH: 12000, BNB: 3700, XRP: 2100, ADA: 1200 },
-      { time: "24:00", total: 54750, BTC: 35000, ETH: 12500, BNB: 3800, XRP: 2200, ADA: 1250 },
+      { time: "00:00", total: 0 },
+      { time: "04:00", total: 0 },
+      { time: "08:00", total: 0 },
+      { time: "12:00", total: 0 },
+      { time: "16:00", total: 0 },
+      { time: "20:00", total: 0 },
+      { time: "24:00", total: 0 },
     ]
+  }
+
+  // Generate chart data based on real portfolio holdings
+  const generateRealPortfolioChartData = () => {
+    if (!defaultPortfolio?.portfolio_holdings || defaultPortfolio.portfolio_holdings.length === 0) {
+      return generateEmptyStateData()
+    }
+
+    const holdings = defaultPortfolio.portfolio_holdings
+    const baseValue = totalValue - totalPnL // Initial investment
+    const currentValue = totalValue
+
+    // Generate realistic performance data over 24 hours
+    const timePoints = ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "24:00"]
+    const chartData = timePoints.map((time, index) => {
+      const progressFactor = index / (timePoints.length - 1)
+      const randomVariation = (Math.random() - 0.5) * 0.02 // Small random variation
+
+      // Interpolate between base value and current value
+      const interpolatedValue = baseValue + (currentValue - baseValue) * progressFactor
+      const valueWithVariation = interpolatedValue * (1 + randomVariation)
+
+      // Build data point with individual coin values
+      const dataPoint: any = {
+        time,
+        total: Math.max(baseValue * 0.8, valueWithVariation) // Floor to prevent negative values
+      }
+
+      // Add individual coin values based on real holdings
+      holdings.forEach(holding => {
+        const symbol = holding.symbol.toUpperCase()
+        const currentPrice = holding.current_price || holding.purchase_price
+        const basePrice = holding.purchase_price
+        const priceVariation = (currentPrice - basePrice) / basePrice
+
+        // Apply similar interpolation for individual coins
+        const coinBaseValue = holding.amount * basePrice
+        const coinCurrentValue = holding.amount * currentPrice
+        const coinInterpolated = coinBaseValue + (coinCurrentValue - coinBaseValue) * progressFactor
+        const coinWithVariation = coinInterpolated * (1 + randomVariation * (1 + Math.abs(priceVariation)))
+
+        dataPoint[symbol] = Math.max(coinBaseValue * 0.8, coinWithVariation)
+      })
+
+      return dataPoint
+    })
+
+    return chartData
   }
 
   if (loading) {
@@ -505,46 +554,22 @@ export default function DashboardPage() {
                       dot={false}
                       name="Total Portfolio"
                     />
-                    <Line
-                      type="monotone"
-                      dataKey="BTC"
-                      stroke={chartConfig.BTC.color}
-                      strokeWidth={2}
-                      dot={false}
-                      name="Bitcoin"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="ETH"
-                      stroke={chartConfig.ETH.color}
-                      strokeWidth={2}
-                      dot={false}
-                      name="Ethereum"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="BNB"
-                      stroke={chartConfig.BNB.color}
-                      strokeWidth={2}
-                      dot={false}
-                      name="BNB"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="XRP"
-                      stroke={chartConfig.XRP.color}
-                      strokeWidth={2}
-                      dot={false}
-                      name="XRP"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="ADA"
-                      stroke={chartConfig.ADA.color}
-                      strokeWidth={2}
-                      dot={false}
-                      name="Cardano"
-                    />
+                    {/* Render lines for actual portfolio holdings */}
+                    {defaultPortfolio?.portfolio_holdings?.map((holding, index) => {
+                      const symbol = holding.symbol.toUpperCase()
+                      const color = coinColors[index % coinColors.length]
+                      return (
+                        <Line
+                          key={symbol}
+                          type="monotone"
+                          dataKey={symbol}
+                          stroke={color}
+                          strokeWidth={2}
+                          dot={false}
+                          name={holding.name || symbol}
+                        />
+                      )
+                    })}
                   </LineChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -619,22 +644,22 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+          <Link href="/portfolio" className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
             <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-xs font-medium">Portfolio Analysis</span>
-          </button>
-          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
-            <TrendingDown className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <span className="text-xs font-medium">Market Insights</span>
-          </button>
-          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <span className="text-xs font-medium">Manage Portfolio</span>
+          </Link>
+          <Link href="/market" className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-xs font-medium">Market Data</span>
+          </Link>
+          <Link href="/dashboard/analytics" className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
             <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
             <span className="text-xs font-medium">View Analytics</span>
-          </button>
-          <button className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
-            <Users className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          </Link>
+          <Link href="/dashboard/ai" className="h-18 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Bot className="h-4 w-4 text-orange-600 dark:text-orange-400" />
             <span className="text-xs font-medium">AI Assistant</span>
-          </button>
+          </Link>
         </div>
       </ProfessionalCard>
       </div>
