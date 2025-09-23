@@ -50,10 +50,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Portfolio not found' }, { status: 404 })
     }
 
-    // Get portfolio holdings with action recommendations
+    // Get portfolio holdings
     const { data: holdings, error: holdingsError } = await supabase
       .from('portfolio_holdings')
-      .select('*, action_recommendation, recommendation_reason, recommendation_confidence')
+      .select('*')
       .eq('portfolio_id', portfolioId)
 
     if (holdingsError) {

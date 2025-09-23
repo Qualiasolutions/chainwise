@@ -176,9 +176,9 @@ export default function PortfolioPage() {
         pnlPercentage: holding.pnlPercentage,
         allocation: 0, // Will be calculated below
         image: holding.image,
-        action_recommendation: holding.action_recommendation,
-        recommendation_reason: holding.recommendation_reason,
-        recommendation_confidence: holding.recommendation_confidence
+        action_recommendation: holding.action_recommendation || null,
+        recommendation_reason: holding.recommendation_reason || null,
+        recommendation_confidence: holding.recommendation_confidence || null
       }))
 
       // Calculate allocations
