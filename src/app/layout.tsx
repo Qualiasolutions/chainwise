@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { ModernNavigation } from "@/components/modern-navigation";
+import { EnhancedNavigation } from "@/components/enhanced-navigation";
 import PageWrapper from "@/components/page-wrapper";
 import { GlobalSidebarLayout } from "@/components/global-sidebar-layout";
 
@@ -89,7 +89,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <ModernNavigation />
+          <EnhancedNavigation />
           <main className="min-h-screen">
             <GlobalSidebarLayout>
               <PageWrapper>
