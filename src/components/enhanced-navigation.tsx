@@ -125,57 +125,40 @@ export function EnhancedNavigation() {
 
         {/* Desktop Navigation - Center */}
         <div className="flex-1 flex justify-center">
-          <NavigationMenu className="hidden lg:flex">
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50">
-                  Platform
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="grid gap-3 p-4 w-[500px] lg:grid-cols-2">
-                    {navItems.map((item) => {
-                      const Icon = item.icon
-                      const isActive = isActivePath(item.href)
+          <nav className="hidden lg:flex items-center space-x-1">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const isActive = isActivePath(item.href)
 
-                      return (
-                        <NavigationMenuLink asChild key={item.href}>
-                          <Link
-                            href={item.href}
-                            className={cn(
-                              "group flex items-start space-x-3 rounded-lg p-3 hover:bg-accent/50 transition-colors",
-                              isActive && "bg-primary/5 border border-primary/20"
-                            )}
-                          >
-                            <div className={cn(
-                              "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                              isActive
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted group-hover:bg-primary/10"
-                            )}>
-                              <Icon className="h-5 w-5" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">{item.label}</span>
-                                {item.badge && (
-                                  <span className="px-1.5 py-0.5 text-xs bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-full">
-                                    {item.badge}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                                {item.description}
-                              </p>
-                            </div>
-                          </Link>
-                        </NavigationMenuLink>
-                      )
-                    })}
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 group relative",
+                    isActive
+                      ? "bg-gradient-to-r from-violet-500/10 to-blue-500/10 text-primary border border-primary/20"
+                      : "text-muted-foreground hover:text-primary hover:bg-accent/50"
+                  )}
+                >
+                  <Icon className={cn(
+                    "w-4 h-4 transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary"
+                  )} />
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.5 text-xs bg-gradient-to-r from-violet-600 to-blue-600 text-white rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
+                  {/* Active indicator */}
+                  {isActive && (
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
         </div>
 
         {/* Right Section - User & Auth */}
