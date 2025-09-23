@@ -570,7 +570,7 @@ export default function PortfolioPage() {
   if (loading) {
     return (
       <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 px-4 pb-4 pt-2">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
               Portfolio
@@ -608,7 +608,7 @@ export default function PortfolioPage() {
   return (
     <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
       <motion.div
-        className="space-y-4 p-4"
+        className="space-y-4 px-4 pb-4 pt-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
