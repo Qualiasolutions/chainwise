@@ -2,85 +2,61 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   Bot,
   GraduationCap,
   TrendingUp,
   Send,
   Sparkles,
-  Brain,
-  Target,
-  MessageCircle,
-  Zap,
-  Star,
-  Clock,
-  CreditCard,
-  Crown,
-  Shield,
+  Menu,
+  Plus,
+  ArrowUp,
+  User,
   ChevronDown,
-  Mic,
-  Paperclip,
-  MoreVertical,
-  Settings,
-  Maximize2,
   Copy,
-  ThumbsUp,
-  ThumbsDown,
-  RefreshCw
+  RotateCw,
+  Share,
+  Zap
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { UpgradeModal } from "@/components/UpgradeModal"
-import { DCAPlanner } from "@/components/premium/dca-planner-modal"
-import { PortfolioAllocator } from "@/components/premium/portfolio-allocator-modal"
-import { ScamDetector } from "@/components/premium/scam-detector-modal"
-import { SmartSkeleton } from "@/components/ui/smart-skeleton"
-import { AnimatedLoader } from "@/components/ui/animated-loader"
-import { MicroInteraction } from "@/components/ui/micro-interaction"
-import { DashboardGlassCard, GlassmorphismCard } from "@/components/ui/glassmorphism-card"
 
-// AI Personas configuration matching OpenAI personas
 const AI_PERSONAS = {
   buddy: {
     id: 'buddy',
     name: 'Buddy',
     icon: Bot,
-    description: 'Casual crypto advice and friendly guidance',
-    gradient: 'from-blue-500 to-cyan-500',
+    description: 'Casual crypto companion',
+    gradient: 'from-blue-500 to-blue-600',
+    bgColor: 'bg-blue-500',
     tier: 'free',
     creditCost: 1,
-    features: ['Basic market insights', 'Friendly conversation', 'General crypto advice', 'Simple explanations']
   },
   professor: {
     id: 'professor',
     name: 'Professor',
     icon: GraduationCap,
-    description: 'Educational insights and deep analysis',
-    gradient: 'from-purple-500 to-indigo-500',
+    description: 'Educational insights',
+    gradient: 'from-purple-500 to-purple-600',
+    bgColor: 'bg-purple-500',
     tier: 'pro',
     creditCost: 2,
-    features: ['Educational content', 'Technical analysis', 'Market research', 'Investment strategies', 'Historical context']
   },
   trader: {
     id: 'trader',
     name: 'Trader',
     icon: TrendingUp,
-    description: 'Professional trading signals and strategies',
-    gradient: 'from-emerald-500 to-teal-500',
+    description: 'Professional trading',
+    gradient: 'from-emerald-500 to-emerald-600',
+    bgColor: 'bg-emerald-500',
     tier: 'elite',
     creditCost: 3,
-    features: ['Trading signals', 'Risk management', 'Portfolio optimization', 'Advanced strategies', 'Professional insights']
   }
 }
-
-// Note: Mock user data replaced with real Supabase integration
 
 interface Message {
   id: string
@@ -92,12 +68,12 @@ interface Message {
 }
 
 export default function AIPage() {
-  const { profile } = useSupabaseAuth() // Get real user data from Supabase
+  const { profile } = useSupabaseAuth()
   const [selectedPersona, setSelectedPersona] = useState<keyof typeof AI_PERSONAS>('buddy')
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: `Hi! I'm ${AI_PERSONAS.buddy.name}, your friendly crypto advisor. I'm here to help you navigate the exciting world of cryptocurrency with casual, easy-to-understand advice. What would you like to know about crypto today?`,
+      content: `Hi! I'm ${AI_PERSONAS.buddy.name}, your crypto companion. How can I help you today?`,
       sender: 'ai',
       persona: 'buddy',
       timestamp: new Date()
@@ -105,7 +81,9 @@ export default function AIPage() {
   ])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -115,9 +93,17 @@ export default function AIPage() {
     scrollToBottom()
   }, [messages])
 
+  useEffect(() => {
+    // Auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
+    }
+  }, [inputMessage])
+
   const canUsePersona = (persona: keyof typeof AI_PERSONAS) => {
     const personaConfig = AI_PERSONAS[persona]
-    const userTier = profile?.tier || 'free' // Use real user tier from Supabase
+    const userTier = profile?.tier || 'free'
 
     if (personaConfig.tier === 'free') return true
     if (personaConfig.tier === 'pro') return ['pro', 'elite'].includes(userTier)
@@ -129,9 +115,6 @@ export default function AIPage() {
     if (!canUsePersona(persona)) return
 
     setSelectedPersona(persona)
-    const personaConfig = AI_PERSONAS[persona]
-
-    // Add welcome message from new persona
     const welcomeMessage: Message = {
       id: Date.now().toString(),
       content: getPersonaWelcomeMessage(persona),
@@ -139,38 +122,31 @@ export default function AIPage() {
       persona: persona,
       timestamp: new Date()
     }
-
-    setMessages(prev => [...prev, welcomeMessage])
+    setMessages([welcomeMessage])
+    setShowSidebar(false)
   }
 
   const getPersonaWelcomeMessage = (persona: keyof typeof AI_PERSONAS) => {
     switch (persona) {
       case 'buddy':
-        return "Hey there! I'm Buddy, your friendly crypto companion. I'll help you understand crypto in simple terms and give you casual advice. What's on your mind?"
+        return "Hey! I'm Buddy, here to help with crypto in simple terms. What's on your mind?"
       case 'professor':
-        return "Greetings! I'm Professor, your educational crypto advisor. I specialize in providing in-depth analysis, technical insights, and comprehensive market research. How can I assist your learning journey today?"
+        return "Greetings! I'm Professor, ready to provide in-depth analysis and insights. How can I assist?"
       case 'trader':
-        return "Welcome! I'm Trader, your professional trading strategist. I provide advanced trading signals, risk management strategies, and portfolio optimization techniques. What trading challenge can I help you solve?"
+        return "Welcome! I'm Trader, your professional trading strategist. What's your trading question?"
       default:
-        return "Hello! How can I assist you today?"
+        return "Hello! How can I help you today?"
     }
   }
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return
+    if (!inputMessage.trim() || isLoading) return
 
     const personaConfig = AI_PERSONAS[selectedPersona]
-
-    // Check if user has enough credits
     const userCredits = profile?.credits || 0
+
     if (userCredits < personaConfig.creditCost) {
-      // Show proper upgrade modal for credit refill
-      const upgradeModal = document.querySelector('[data-upgrade-modal-trigger]') as HTMLElement
-      if (upgradeModal) {
-        upgradeModal.click()
-      } else {
-        alert(`Insufficient credits. You need ${personaConfig.creditCost} credits to use ${personaConfig.name}. Please upgrade your plan.`)
-      }
+      alert(`Insufficient credits. You need ${personaConfig.creditCost} credits.`)
       return
     }
 
@@ -186,23 +162,20 @@ export default function AIPage() {
     setIsLoading(true)
 
     try {
-      // Call real chat API
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: inputMessage,
           persona: selectedPersona,
-          sessionId: null // For now, create new session each time - can be enhanced later
+          sessionId: null
         })
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to get AI response')
+        throw new Error(data.error || 'Failed to get response')
       }
 
       const aiResponse: Message = {
@@ -216,630 +189,311 @@ export default function AIPage() {
 
       setMessages(prev => [...prev, aiResponse])
 
-      // Update user credits in the UI (will be refetched on next auth state change)
-      // This is a temporary solution until we implement proper state management
       if (profile && data.creditsRemaining !== undefined) {
-        // Update the profile credits optimistically
         profile.credits = data.creditsRemaining
       }
 
     } catch (error: any) {
-      console.error('Chat error:', error)
-
-      // Show error message as AI response
       const errorResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: `Sorry, I encountered an error: ${error.message}. Please try again.`,
+        content: `Sorry, I encountered an error. Please try again.`,
         sender: 'ai',
         persona: selectedPersona,
         timestamp: new Date()
       }
-
       setMessages(prev => [...prev, errorResponse])
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Mock response function removed - now using real API integration
-
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      {/* Professional Header - Clean and minimal */}
-      <GlassmorphismCard variant="frost" className="relative border-b border-slate-200/60 dark:border-slate-800/60 flex-shrink-0 rounded-none"
-        border={false}>
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-600 flex items-center justify-center shadow-lg">
-                    <Brain className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-slate-900">
-                    <div className="w-full h-full bg-green-400 rounded-full animate-ping"></div>
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                    AI Advisory Console
-                  </h1>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Professional cryptocurrency intelligence platform
-                  </p>
-                </div>
-              </div>
-              <div className="hidden md:flex items-center gap-4 ml-8">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-950/30 rounded-full border border-green-200 dark:border-green-800">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-xs font-medium text-green-700 dark:text-green-400">Online</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <MessageCircle className="h-4 w-4" />
-                  <span>{messages.length - 1} conversations</span>
-                </div>
-              </div>
+    <div className="h-screen flex flex-col bg-white dark:bg-slate-950 overflow-hidden">
+      {/* Mobile-first header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden p-2"
+            onClick={() => setShowSidebar(!showSidebar)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-900 rounded-lg"
+            onClick={() => setShowSidebar(!showSidebar)}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="text-sm">New chat</span>
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <div className={cn(
+              "w-8 h-8 rounded-lg flex items-center justify-center text-white",
+              AI_PERSONAS[selectedPersona].bgColor
+            )}>
+              {(() => {
+                const Icon = AI_PERSONAS[selectedPersona].icon
+                return <Icon className="h-4 w-4" />
+              })()}
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-blue-600" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{profile?.credits || 0}</span>
-                    <span className="text-xs text-slate-500">credits</span>
-                  </div>
-                </div>
-                <Separator orientation="vertical" className="h-6" />
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "font-medium",
-                    profile?.tier === 'elite' ? "border-amber-300 text-amber-700 bg-amber-50 dark:bg-amber-950/30" :
-                    profile?.tier === 'pro' ? "border-purple-300 text-purple-700 bg-purple-50 dark:bg-purple-950/30" :
-                    "border-slate-300 text-slate-700 bg-slate-50 dark:bg-slate-800"
-                  )}
-                >
-                  {profile?.tier === 'elite' && <Crown className="h-3 w-3 mr-1" />}
-                  {(profile?.tier || 'free').toUpperCase()}
-                </Badge>
+            <div className="hidden sm:block">
+              <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                {AI_PERSONAS[selectedPersona].name}
               </div>
-              {profile?.tier === 'free' && (
-                <UpgradeModal requiredTier="pro" personaName="Professor & Trader">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                    <Crown className="h-4 w-4 mr-2" />
-                    Upgrade Plan
-                  </Button>
-                </UpgradeModal>
-              )}
+              <div className="text-xs text-slate-500">
+                {AI_PERSONAS[selectedPersona].description}
+              </div>
             </div>
           </div>
         </div>
-      </GlassmorphismCard>
 
-      <div className="flex-1 container mx-auto px-6 py-6">
-        <div className="grid gap-6 lg:grid-cols-4 h-full">
-          {/* Professional Persona Selection */}
-          <div className="lg:col-span-1">
-            <DashboardGlassCard className="h-full flex flex-col">
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-white" />
-                  </div>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">AI Advisors</h2>
-                </div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Select your specialized cryptocurrency advisor
-                </p>
-              </div>
-              <div className="flex-1 p-6 space-y-4">
-                {Object.entries(AI_PERSONAS).map(([key, persona]) => {
-                  const isSelected = selectedPersona === key
-                  const canUse = canUsePersona(key as keyof typeof AI_PERSONAS)
-                  const Icon = persona.icon
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-900 rounded-lg">
+            <Zap className="h-3 w-3 text-amber-500" />
+            <span className="text-sm font-medium">{profile?.credits || 0}</span>
+          </div>
 
-                  return (
-                    <div
-                      key={key}
-                      className={cn(
-                        "relative p-4 rounded-xl border cursor-pointer transition-all duration-200",
-                        isSelected
-                          ? "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 shadow-md"
-                          : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800",
-                        !canUse && "opacity-60"
-                      )}
-                      onClick={() => canUse && handlePersonaChange(key as keyof typeof AI_PERSONAS)}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={cn(
-                          "relative w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm",
-                          `bg-gradient-to-br ${persona.gradient}`,
-                          isSelected && "ring-2 ring-blue-200 dark:ring-blue-800"
-                        )}>
-                          <Icon className="h-5 w-5" />
-                          {isSelected && (
-                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white dark:border-slate-900"></div>
+          {profile?.tier === 'free' && (
+            <UpgradeModal requiredTier="pro" personaName="Premium">
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 px-3 py-1.5 text-sm"
+              >
+                Upgrade
+              </Button>
+            </UpgradeModal>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar - Mobile overlay or desktop persistent */}
+        <div className={cn(
+          "absolute md:relative z-40 md:z-0 w-64 md:w-72 bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 h-full",
+          showSidebar ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          "hidden md:block" // Hide on mobile by default
+        )}>
+          <div className="p-4">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">AI Advisors</h3>
+            <div className="space-y-2">
+              {Object.entries(AI_PERSONAS).map(([key, persona]) => {
+                const isSelected = selectedPersona === key
+                const canUse = canUsePersona(key as keyof typeof AI_PERSONAS)
+                const Icon = persona.icon
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => canUse && handlePersonaChange(key as keyof typeof AI_PERSONAS)}
+                    className={cn(
+                      "w-full p-3 rounded-lg text-left transition-all",
+                      isSelected
+                        ? "bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700"
+                        : "hover:bg-white/50 dark:hover:bg-slate-800/50",
+                      !canUse && "opacity-50 cursor-not-allowed"
+                    )}
+                    disabled={!canUse}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-9 h-9 rounded-lg flex items-center justify-center text-white",
+                        persona.bgColor
+                      )}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                            {persona.name}
+                          </span>
+                          {persona.tier !== 'free' && (
+                            <Badge variant="outline" className="text-xs h-4 px-1">
+                              {persona.tier}
+                            </Badge>
                           )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className={cn(
-                              "font-semibold text-sm",
-                              isSelected ? "text-blue-900 dark:text-blue-100" : "text-slate-900 dark:text-slate-100"
-                            )}>
-                              {persona.name}
-                            </h3>
-                            {persona.tier !== 'free' && (
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  "text-xs font-medium h-5",
-                                  persona.tier === 'elite' ? "border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-950/30" :
-                                  persona.tier === 'pro' ? "border-purple-200 text-purple-700 bg-purple-50 dark:bg-purple-950/30" : ""
-                                )}
-                              >
-                                {persona.tier.toUpperCase()}
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 mb-2 leading-relaxed">
-                            {persona.description}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1">
-                              <Zap className="h-3 w-3 text-amber-500" />
-                              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                                {persona.creditCost} credit{persona.creditCost > 1 ? 's' : ''}
-                              </span>
-                            </div>
-                            {isSelected && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 text-xs h-5">
-                                Active
-                              </Badge>
-                            )}
-                          </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          {persona.creditCost} credit{persona.creditCost > 1 ? 's' : ''} per message
                         </div>
                       </div>
-
-                      {!canUse && (
-                        <div className="absolute inset-0 bg-slate-50/80 dark:bg-slate-900/80 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                          <UpgradeModal requiredTier={persona.tier} personaName={persona.name}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="bg-white dark:bg-slate-800 shadow-sm text-xs"
-                            >
-                              <Crown className="h-3 w-3 mr-1" />
-                              Unlock
-                            </Button>
-                          </UpgradeModal>
-                        </div>
-                      )}
                     </div>
-                  )
-                })}
-
-                {/* Professional Stats */}
-                <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800/30 rounded-lg border border-slate-200 dark:border-slate-700">
-                  <div className="text-xs font-medium text-slate-700 dark:text-slate-300 mb-3">Session Overview</div>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="flex items-center gap-2">
-                      <MessageCircle className="h-3 w-3 text-blue-500" />
-                      <span className="text-slate-600 dark:text-slate-400">{messages.filter(m => m.sender === 'user').length} messages</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-3 w-3 text-amber-500" />
-                      <span className="text-slate-600 dark:text-slate-400">{messages.reduce((acc, m) => acc + (m.credits || 0), 0)} used</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DashboardGlassCard>
+                  </button>
+                )
+              })}
+            </div>
           </div>
+        </div>
 
-          {/* Professional Chat Interface */}
-          <div className="lg:col-span-3 flex flex-col h-full">
-            <DashboardGlassCard className="flex-1 flex flex-col overflow-hidden" data-chat-card>
-              {/* Clean Chat Header */}
-              <div className="flex-shrink-0 border-b border-white/10 p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+        {/* Mobile sidebar overlay backdrop */}
+        {showSidebar && (
+          <div
+            className="absolute inset-0 bg-black/20 z-30 md:hidden"
+            onClick={() => setShowSidebar(false)}
+          />
+        )}
+
+        {/* Main chat area */}
+        <div className="flex-1 flex flex-col bg-white dark:bg-slate-950">
+          {/* Messages */}
+          <ScrollArea className="flex-1 px-4 py-6">
+            <div className="max-w-3xl mx-auto space-y-6">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    "flex gap-3",
+                    message.sender === 'user' ? "justify-end" : "justify-start"
+                  )}
+                >
+                  {message.sender === 'ai' && (
                     <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm",
-                      `bg-gradient-to-br ${AI_PERSONAS[selectedPersona].gradient}`
+                      "w-8 h-8 rounded-lg flex items-center justify-center text-white flex-shrink-0",
+                      AI_PERSONAS[message.persona as keyof typeof AI_PERSONAS]?.bgColor || 'bg-slate-500'
                     )}>
                       {(() => {
-                        const IconComponent = AI_PERSONAS[selectedPersona].icon
-                        return <IconComponent className="h-5 w-5" />
+                        const persona = AI_PERSONAS[message.persona as keyof typeof AI_PERSONAS]
+                        const Icon = persona?.icon || Bot
+                        return <Icon className="h-4 w-4" />
                       })()}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                        {AI_PERSONAS[selectedPersona].name}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span>{AI_PERSONAS[selectedPersona].description}</span>
-                      </div>
+                  )}
+
+                  <div className={cn(
+                    "max-w-[85%] md:max-w-[75%] group relative",
+                    message.sender === 'user' ? "order-first" : ""
+                  )}>
+                    <div className={cn(
+                      "px-4 py-2.5 rounded-2xl",
+                      message.sender === 'user'
+                        ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
+                        : "bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                    )}>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                        {message.content}
+                      </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 h-8 w-8 p-0"
-                      onClick={() => {
-                        setMessages([{
-                          id: '1',
-                          content: getPersonaWelcomeMessage(selectedPersona),
-                          sender: 'ai',
-                          persona: selectedPersona,
-                          timestamp: new Date()
-                        }])
-                      }}
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 h-8 w-8 p-0"
-                      onClick={() => {
-                        const chatCard = document.querySelector('[data-chat-card]') as HTMLElement
-                        if (chatCard) {
-                          if (chatCard.style.position === 'fixed') {
-                            chatCard.style.position = 'relative'
-                            chatCard.style.top = 'auto'
-                            chatCard.style.left = 'auto'
-                            chatCard.style.width = 'auto'
-                            chatCard.style.height = 'auto'
-                            chatCard.style.zIndex = 'auto'
-                          } else {
-                            chatCard.style.position = 'fixed'
-                            chatCard.style.top = '0'
-                            chatCard.style.left = '0'
-                            chatCard.style.width = '100vw'
-                            chatCard.style.height = '100vh'
-                            chatCard.style.zIndex = '50'
-                          }
-                        }
-                      }}
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Professional Messages Container */}
-              <div className="flex-1 flex flex-col bg-slate-50/30 dark:bg-slate-800/20">
-                <ScrollArea className="flex-1 px-6 py-6">
-                  <div className="space-y-4">
-                    {messages.map((message, index) => (
-                      <div
-                        key={message.id}
-                        className={cn(
-                          "flex gap-3 group",
-                          message.sender === 'user' ? "justify-end" : "justify-start"
-                        )}
-                      >
-                        {message.sender === 'ai' && (
-                          <div className={cn(
-                            "w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-white shadow-sm",
-                            `bg-gradient-to-br ${AI_PERSONAS[selectedPersona].gradient}`
-                          )}>
-                            {(() => {
-                              const IconComponent = AI_PERSONAS[selectedPersona].icon
-                              return <IconComponent className="h-4 w-4" />
-                            })()}
-                          </div>
-                        )}
-
-                        <div className={cn(
-                          "max-w-[70%] flex flex-col",
-                          message.sender === 'user' ? "items-end" : "items-start"
-                        )}>
-                          <div className={cn(
-                            "relative px-4 py-3 rounded-2xl shadow-sm border",
-                            message.sender === 'user'
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700"
-                          )}>
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-
-                            {/* Professional Message Actions */}
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-7 right-0 flex items-center gap-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm px-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(message.content)
-                                }}
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                              {message.sender === 'ai' && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                    onClick={async () => {
-                                      try {
-                                        await fetch('/api/chat/feedback', {
-                                          method: 'POST',
-                                          headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({
-                                            messageId: message.id,
-                                            feedback: 'positive',
-                                            persona: selectedPersona
-                                          })
-                                        })
-                                      } catch (error) {
-                                        console.error('Failed to save feedback:', error)
-                                      }
-                                    }}
-                                  >
-                                    <ThumbsUp className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                    onClick={async () => {
-                                      try {
-                                        await fetch('/api/chat/feedback', {
-                                          method: 'POST',
-                                          headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({
-                                            messageId: message.id,
-                                            feedback: 'negative',
-                                            persona: selectedPersona
-                                          })
-                                        })
-                                      } catch (error) {
-                                        console.error('Failed to save feedback:', error)
-                                      }
-                                    }}
-                                  >
-                                    <ThumbsDown className="h-3 w-3" />
-                                  </Button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                            <span>
-                              {typeof window !== 'undefined' ? message.timestamp.toLocaleTimeString() : ''}
-                            </span>
-                            {message.credits && (
-                              <Badge variant="outline" className="text-xs border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-950/30">
-                                <Zap className="h-3 w-3 mr-1" />
-                                -{message.credits} credits
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        {message.sender === 'user' && (
-                          <div className="w-8 h-8 flex-shrink-0 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                            {profile?.email?.[0]?.toUpperCase() || 'U'}
-                          </div>
-                        )}
-                    </div>
-                  ))}
-
-                    {isLoading && (
-                      <div className="flex gap-3">
-                        <div className={cn(
-                          "w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-white shadow-sm",
-                          `bg-gradient-to-br ${AI_PERSONAS[selectedPersona].gradient}`
-                        )}>
-                          {(() => {
-                            const IconComponent = AI_PERSONAS[selectedPersona].icon
-                            return <IconComponent className="h-4 w-4" />
-                          })()}
-                        </div>
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl px-4 py-3 shadow-sm border border-slate-200 dark:border-slate-700">
-                          <div className="flex items-center gap-2">
-                            <div className="flex gap-1">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                              <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce delay-100"></div>
-                              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200"></div>
-                            </div>
-                            <span className="text-sm text-slate-500">Analyzing...</span>
-                          </div>
-                        </div>
+                    {/* Message actions */}
+                    {message.sender === 'ai' && (
+                      <div className="absolute -bottom-5 left-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          onClick={() => navigator.clipboard.writeText(message.content)}
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                        >
+                          <Share className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                        >
+                          <RotateCw className="h-3 w-3" />
+                        </Button>
                       </div>
                     )}
-                </div>
-                <div ref={messagesEndRef} />
-              </ScrollArea>
-
-                {/* Professional Input Area */}
-                <div className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex-shrink-0">
-                  <div className="flex items-end gap-3">
-                    <div className="flex-1 relative">
-                      <Textarea
-                        placeholder={`Message ${AI_PERSONAS[selectedPersona].name}...`}
-                        value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault()
-                            handleSendMessage()
-                          }
-                        }}
-                        disabled={isLoading}
-                        className="min-h-[48px] max-h-[120px] resize-none bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/30"
-                        rows={1}
-                      />
-                      <div className="absolute bottom-3 right-3 flex items-center gap-1">
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                          <Paperclip className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                          <Mic className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={isLoading || !inputMessage.trim()}
-                      size="lg"
-                      className="h-[48px] w-[48px] rounded-xl bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50"
-                    >
-                      {isLoading ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Send className="h-4 w-4" />
-                      )}
-                    </Button>
                   </div>
-                  <div className="flex items-center justify-between mt-3 text-xs text-slate-500">
-                    <span>
-                      Press Enter to send • Shift+Enter for new line
-                    </span>
+
+                  {message.sender === 'user' && (
+                    <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center flex-shrink-0">
+                      <User className="h-4 w-4 text-white dark:text-slate-900" />
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="flex gap-3">
+                  <div className={cn(
+                    "w-8 h-8 rounded-lg flex items-center justify-center text-white",
+                    AI_PERSONAS[selectedPersona].bgColor
+                  )}>
+                    {(() => {
+                      const Icon = AI_PERSONAS[selectedPersona].icon
+                      return <Icon className="h-4 w-4" />
+                    })()}
+                  </div>
+                  <div className="bg-slate-100 dark:bg-slate-900 rounded-2xl px-4 py-2.5">
                     <div className="flex items-center gap-1">
-                      <Zap className="h-3 w-3 text-amber-500" />
-                      <span>
-                        {AI_PERSONAS[selectedPersona].creditCost} credit{AI_PERSONAS[selectedPersona].creditCost > 1 ? 's' : ''} per message
-                      </span>
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </DashboardGlassCard>
-          </div>
-        </div>
-
-        {/* Professional Premium Tools Section */}
-        <div className="container mx-auto px-6 py-8 border-t border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Professional AI Tools</h2>
-              <p className="text-slate-600 dark:text-slate-400 mt-1">
-                Advanced cryptocurrency analysis and strategy tools
-              </p>
+              )}
+              <div ref={messagesEndRef} />
             </div>
-            {(profile?.tier === 'free' || !profile) && (
-              <UpgradeModal requiredTier="pro" personaName="Premium Tools">
-                <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800">
-                  <Crown className="h-4 w-4 mr-2" />
-                  Unlock Premium Tools
-                </Button>
-              </UpgradeModal>
-            )}
+          </ScrollArea>
+
+          {/* Input area */}
+          <div className="border-t border-slate-200 dark:border-slate-800 px-4 py-3 bg-white dark:bg-slate-950">
+            <div className="max-w-3xl mx-auto">
+              <div className="relative flex items-end gap-2">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={textareaRef}
+                    placeholder={`Message ${AI_PERSONAS[selectedPersona].name}...`}
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSendMessage()
+                      }
+                    }}
+                    disabled={isLoading}
+                    className={cn(
+                      "w-full px-4 py-3 pr-12 resize-none rounded-2xl",
+                      "bg-slate-100 dark:bg-slate-900",
+                      "border-0 focus:ring-2 focus:ring-slate-900 dark:focus:ring-slate-100",
+                      "text-sm placeholder:text-slate-500",
+                      "max-h-32 min-h-[48px]"
+                    )}
+                    rows={1}
+                    style={{ height: 'auto' }}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={isLoading || !inputMessage.trim()}
+                    size="sm"
+                    className={cn(
+                      "absolute right-2 bottom-2 h-8 w-8 rounded-lg p-0",
+                      "bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200",
+                      "disabled:opacity-50 disabled:cursor-not-allowed"
+                    )}
+                  >
+                    <ArrowUp className="h-4 w-4 text-white dark:text-slate-900" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-2 text-xs text-slate-500">
+                <span className="hidden sm:block">
+                  {AI_PERSONAS[selectedPersona].creditCost} credit{AI_PERSONAS[selectedPersona].creditCost > 1 ? 's' : ''} per message
+                </span>
+                <span className="sm:hidden">
+                  {AI_PERSONAS[selectedPersona].creditCost} credit{AI_PERSONAS[selectedPersona].creditCost > 1 ? 's' : ''}
+                </span>
+                <kbd className="px-2 py-0.5 bg-slate-100 dark:bg-slate-900 rounded text-xs">
+                  Enter to send
+                </kbd>
+              </div>
+            </div>
           </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {/* DCA Planner */}
-          <Card className="ai-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
-                DCA & Exit Planner
-                <Badge variant="secondary">5 Credits</Badge>
-              </CardTitle>
-              <CardDescription>
-                AI-powered Dollar Cost Averaging strategy with smart exit planning
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Optimized DCA schedules</li>
-                  <li>• Risk management strategies</li>
-                  <li>• Exit strategy planning</li>
-                  <li>• Professional trading advice</li>
-                </ul>
-                {(profile?.tier === 'pro' || profile?.tier === 'elite') ? (
-                  <DCAPlanner />
-                ) : (
-                  <UpgradeModal requiredTier="pro" personaName="DCA Planner">
-                    <Button variant="outline" className="w-full" disabled>
-                      <Crown className="h-4 w-4 mr-2" />
-                      Upgrade Required
-                    </Button>
-                  </UpgradeModal>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Portfolio Allocator */}
-          <Card className="ai-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-purple-600" />
-                Portfolio Allocator
-                <Badge variant="secondary">8 Credits</Badge>
-              </CardTitle>
-              <CardDescription>
-                AI-driven portfolio allocation and rebalancing recommendations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Smart allocation analysis</li>
-                  <li>• Risk-adjusted portfolios</li>
-                  <li>• Rebalancing strategies</li>
-                  <li>• Diversification insights</li>
-                </ul>
-                {(profile?.tier === 'pro' || profile?.tier === 'elite') ? (
-                  <PortfolioAllocator />
-                ) : (
-                  <UpgradeModal requiredTier="pro" personaName="Portfolio Allocator">
-                    <Button variant="outline" className="w-full" disabled>
-                      <Crown className="h-4 w-4 mr-2" />
-                      Upgrade Required
-                    </Button>
-                  </UpgradeModal>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Scam Detection */}
-          <Card className="ai-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-red-600" />
-                Scam & Risk Detector
-                <Badge variant="secondary">3 Credits</Badge>
-              </CardTitle>
-              <CardDescription>
-                Advanced scam detection and risk analysis for crypto projects
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Smart contract analysis</li>
-                  <li>• Social sentiment scoring</li>
-                  <li>• Developer activity tracking</li>
-                  <li>• Risk assessment reports</li>
-                </ul>
-                {(profile?.tier === 'pro' || profile?.tier === 'elite') ? (
-                  <ScamDetector />
-                ) : (
-                  <UpgradeModal requiredTier="pro" personaName="Scam & Risk Detector">
-                    <Button variant="outline" className="w-full" disabled>
-                      <Crown className="h-4 w-4 mr-2" />
-                      Upgrade Required
-                    </Button>
-                  </UpgradeModal>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
         </div>
       </div>
     </div>
