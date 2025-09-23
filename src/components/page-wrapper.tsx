@@ -20,9 +20,9 @@ export default function PageWrapper({ children }: PageWrapperProps) {
   const getPadding = () => {
     if (isHomePage) return "";
     if (isAuthPage) return "pt-0";
-    if (isCheckout) return "pt-20";
-    if (isDashboard) return "pt-20";
-    return "pt-20 pb-8";
+    if (isCheckout) return "pt-16";
+    if (isDashboard) return "pt-16";
+    return "pt-16 pb-8";
   };
 
   return (
@@ -43,7 +43,7 @@ export default function PageWrapper({ children }: PageWrapperProps) {
       )}
 
       {/* Content */}
-      <div className={!isHomePage && !isAuthPage ? "px-3 py-4 max-w-full" : ""}>
+      <div className={!isHomePage && !isAuthPage ? "max-w-full" : ""}>
         {children}
       </div>
     </motion.div>

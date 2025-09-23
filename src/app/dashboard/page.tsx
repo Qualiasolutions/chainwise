@@ -136,32 +136,39 @@ export default function DashboardPage() {
   // Fetch portfolio performance data
   useEffect(() => {
     const fetchPortfolioData = async () => {
-      if (!defaultPortfolio || !defaultPortfolio.portfolio_holdings || defaultPortfolio.portfolio_holdings.length === 0) {
-        // Use mock data for demonstration when no real portfolio exists
-        setPortfolioChartData(generateMockChartData())
-        return
-      }
-
       setChartLoading(true)
+
       try {
+        if (!defaultPortfolio || !defaultPortfolio.portfolio_holdings || defaultPortfolio.portfolio_holdings.length === 0) {
+          // Generate realistic empty state data
+          setPortfolioChartData(generateEmptyStateData())
+          return
+        }
+
         const holdings = defaultPortfolio.portfolio_holdings.map(holding => ({
           id: holding.id,
           symbol: holding.symbol.toUpperCase(),
           amount: holding.amount
         }))
 
-        const data = await cryptoAPI.getPortfolioPerformanceData(holdings, 7)
-        setPortfolioChartData(data)
+        // Try to get real performance data, fallback to generated data based on real holdings
+        try {
+          const data = await cryptoAPI.getPortfolioPerformanceData(holdings, 7)
+          setPortfolioChartData(data)
+        } catch (error) {
+          console.warn('Error fetching live chart data, generating from portfolio data:', error)
+          setPortfolioChartData(generateRealPortfolioChartData())
+        }
       } catch (error) {
-        console.error('Error fetching portfolio chart data:', error)
-        setPortfolioChartData(generateMockChartData())
+        console.error('Error processing portfolio chart data:', error)
+        setPortfolioChartData(generateEmptyStateData())
       } finally {
         setChartLoading(false)
       }
     }
 
     fetchPortfolioData()
-  }, [defaultPortfolio])
+  }, [defaultPortfolio, totalValue, totalPnL])
 
   // Fetch updated crypto prices
   useEffect(() => {

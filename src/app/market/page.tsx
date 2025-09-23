@@ -303,7 +303,7 @@ export default function MarketPage() {
 
   return (
     <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
-      <div className="container mx-auto px-4 pb-6 pt-2 space-y-6 max-w-none">
+      <div className="container mx-auto px-4 pb-6 pt-1 space-y-6 max-w-none">
         {/* Professional Header */}
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>

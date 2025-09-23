@@ -366,7 +366,7 @@ export default function AIPage() {
       <div className="flex-1 flex flex-col bg-white dark:bg-slate-950">
         {/* Messages */}
         <ScrollArea className="flex-1 px-4 py-0">
-          <div className="max-w-3xl mx-auto space-y-6 pt-4 pb-4">
+          <div className="max-w-3xl mx-auto space-y-6 pt-2 pb-4">
             {messages.map((message) => (
               <div
                 key={message.id}

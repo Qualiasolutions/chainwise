@@ -34,7 +34,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
-import { supabase } from "@/lib/supabase/client"
+import { usePortfolio } from "@/hooks/usePortfolio"
 import { cryptoAPI, formatPrice, formatPercentage } from "@/lib/crypto-api"
 import { motion } from "framer-motion"
 
@@ -66,7 +66,8 @@ interface PerformanceData {
 }
 
 export default function AnalyticsPage() {
-  const { user, profile } = useSupabaseAuth()
+  const { user } = useSupabaseAuth()
+  const { portfolios, loading: portfoliosLoading, getDefaultPortfolio, getTotalPortfolioValue, getTotalPortfolioPnL, getTotalPortfolioPnLPercentage } = usePortfolio()
   const [analytics, setAnalytics] = useState<PortfolioAnalytics | null>(null)
   const [allocations, setAllocations] = useState<AssetAllocation[]>([])
   const [performanceData, setPerformanceData] = useState<PerformanceData[]>([])
@@ -80,21 +81,11 @@ export default function AnalyticsPage() {
   ]
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      if (!user || !profile) return
+    const generateAnalytics = async () => {
+      if (portfoliosLoading) return
 
       try {
         setLoading(true)
-
-        // Get user's default portfolio
-        const { data: portfolios, error: portfolioError } = await supabase
-          .from('portfolios')
-          .select('id, total_value')
-          .eq('user_id', profile.id)
-          .eq('is_default', true)
-          .limit(1)
-
-        if (portfolioError) throw portfolioError
 
         if (!portfolios || portfolios.length === 0) {
           setAnalytics({
@@ -109,36 +100,24 @@ export default function AnalyticsPage() {
             diversification: 0,
             volatility: 0
           })
-          setLoading(false)
-          return
-        }
-
-        const portfolioId = portfolios[0].id
-        const totalValue = portfolios[0].total_value || 0
-
-        // Get portfolio holdings
-        const { data: holdings, error: holdingsError } = await supabase
-          .from('portfolio_holdings')
-          .select('*')
-          .eq('portfolio_id', portfolioId)
-
-        if (holdingsError) throw holdingsError
-
-        if (!holdings || holdings.length === 0) {
           setAllocations([])
           setPerformanceData([])
           setLoading(false)
           return
         }
 
-        // Get current prices
-        const cryptoIds = holdings.map(h => h.symbol.toLowerCase())
-        const priceData = await cryptoAPI.getSimplePrice(cryptoIds)
+        const defaultPortfolio = getDefaultPortfolio()
+        const totalValue = getTotalPortfolioValue()
+        const totalPnL = getTotalPortfolioPnL()
+        const totalPnLPercentage = getTotalPortfolioPnLPercentage()
+
+        // Get all holdings from default portfolio or all portfolios
+        const allHoldings = defaultPortfolio?.portfolio_holdings ||
+          portfolios.flatMap(p => p.portfolio_holdings || [])
 
         // Calculate allocations
-        const calculatedAllocations: AssetAllocation[] = holdings.map((holding, index) => {
-          const cryptoId = holding.symbol.toLowerCase()
-          const currentPrice = priceData[cryptoId]?.usd || holding.current_price || holding.purchase_price
+        const calculatedAllocations: AssetAllocation[] = allHoldings.map((holding, index) => {
+          const currentPrice = holding.current_price || holding.purchase_price
           const value = holding.amount * currentPrice
           const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0
 
@@ -153,18 +132,13 @@ export default function AnalyticsPage() {
 
         setAllocations(calculatedAllocations)
 
-        // Calculate analytics
-        let totalPnL = 0
+        // Calculate performance metrics
         let bestPerformer = { symbol: 'N/A', change: -Infinity }
         let worstPerformer = { symbol: 'N/A', change: Infinity }
 
-        holdings.forEach(holding => {
-          const cryptoId = holding.symbol.toLowerCase()
-          const currentPrice = priceData[cryptoId]?.usd || holding.current_price || holding.purchase_price
-          const pnl = (holding.amount * currentPrice) - (holding.amount * holding.purchase_price)
+        allHoldings.forEach(holding => {
+          const currentPrice = holding.current_price || holding.purchase_price
           const changePercentage = ((currentPrice - holding.purchase_price) / holding.purchase_price) * 100
-
-          totalPnL += pnl
 
           if (changePercentage > bestPerformer.change) {
             bestPerformer = { symbol: holding.symbol, change: changePercentage }
@@ -174,16 +148,15 @@ export default function AnalyticsPage() {
           }
         })
 
-        const totalPnLPercentage = totalValue > 0 ? (totalPnL / (totalValue - totalPnL)) * 100 : 0
-
         // Calculate risk metrics
-        const diversification = holdings.length <= 1 ? 0 :
-          Math.min(100, (holdings.length / 10) * 100) // More assets = better diversification
+        const uniqueAssets = new Set(allHoldings.map(h => h.symbol)).size
+        const diversification = uniqueAssets <= 1 ? 0 :
+          Math.min(100, (uniqueAssets / 10) * 100) // More unique assets = better diversification
 
         const volatility = Math.abs(totalPnLPercentage) // Simplified volatility measure
 
         const riskScore = Math.max(0, Math.min(100,
-          (100 - diversification) * 0.4 + volatility * 0.6
+          (100 - diversification) * 0.4 + Math.min(volatility, 100) * 0.6
         ))
 
         setAnalytics({
@@ -196,10 +169,10 @@ export default function AnalyticsPage() {
           worstPerformer,
           riskScore,
           diversification,
-          volatility
+          volatility: Math.min(volatility, 100)
         })
 
-        // Generate performance data
+        // Generate performance data based on real portfolio metrics
         const performanceHistory: PerformanceData[] = []
         const days = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : timeframe === '90d' ? 90 : 365
 
@@ -207,15 +180,16 @@ export default function AnalyticsPage() {
           const date = new Date()
           date.setDate(date.getDate() - i)
 
-          // Simulate portfolio performance
+          // Simulate portfolio performance based on real metrics
           const progressFactor = (days - i) / days
-          const randomVariation = (Math.random() - 0.5) * 0.1
-          const simulatedValue = (totalValue - totalPnL) * (1 + (totalPnLPercentage / 100) * progressFactor + randomVariation)
-          const simulatedPnL = simulatedValue - (totalValue - totalPnL)
+          const randomVariation = (Math.random() - 0.5) * 0.05 // Reduced randomness
+          const baseValue = totalValue - totalPnL // Initial investment
+          const simulatedValue = baseValue * (1 + (totalPnLPercentage / 100) * progressFactor + randomVariation)
+          const simulatedPnL = simulatedValue - baseValue
 
           performanceHistory.push({
             date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            value: Math.max(0, simulatedValue),
+            value: Math.max(baseValue * 0.5, simulatedValue), // Minimum value floor
             pnl: simulatedPnL
           })
         }
@@ -223,14 +197,14 @@ export default function AnalyticsPage() {
         setPerformanceData(performanceHistory)
 
       } catch (error) {
-        console.error('Error fetching analytics:', error)
+        console.error('Error generating analytics:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchAnalytics()
-  }, [user, profile, timeframe])
+    generateAnalytics()
+  }, [portfolios, portfoliosLoading, timeframe])
 
   if (loading) {
     return (
