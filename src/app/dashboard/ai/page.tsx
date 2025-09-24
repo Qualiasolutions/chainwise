@@ -670,8 +670,8 @@ export default function AIPage() {
             </motion.header>
 
             {/* Messages Area */}
-            <ScrollArea className="flex-1 px-4 py-0">
-              <div className="max-w-4xl mx-auto space-y-6 pt-4 pb-4">
+            <ScrollArea className="flex-1 px-4">
+              <div className="space-y-6 py-6">
                 <AnimatePresence>
                   {messages.map((message, index) => (
                     <motion.div
@@ -880,7 +880,7 @@ export default function AIPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-violet-500/5 via-transparent to-transparent pointer-events-none" />
-              <div className="max-w-4xl mx-auto relative">
+              <div className="relative">
                 <div className="flex items-end gap-3">
                   <div className="flex-1 relative">
                     <motion.div
