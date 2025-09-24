@@ -22,16 +22,19 @@ export const useSupabaseAuth = () => {
 
   // Add ref to track ongoing profile creation to prevent race conditions
   const profileCreationInProgress = useRef<string | null>(null)
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchUserProfile = async (authUser: SupabaseUser) => {
+  const fetchUserProfile = async (authUser: SupabaseUser, retryCount = 0): Promise<User | null> => {
+    console.log(`🔍 Fetching profile for user ${authUser.id} (attempt ${retryCount + 1})`)
+
     try {
       // Check if profile creation is already in progress for this user
       if (profileCreationInProgress.current === authUser.id) {
-        console.log('Profile creation already in progress for auth_id:', authUser.id)
+        console.log('⏳ Profile creation already in progress for auth_id:', authUser.id)
         // Wait for the in-progress creation to complete
         let retries = 0
-        while (profileCreationInProgress.current === authUser.id && retries < 10) {
-          await new Promise(resolve => setTimeout(resolve, 500))
+        while (profileCreationInProgress.current === authUser.id && retries < 20) {
+          await new Promise(resolve => setTimeout(resolve, 250))
           retries++
         }
       }
@@ -45,14 +48,16 @@ export const useSupabaseAuth = () => {
 
       // Create profile if it doesn't exist
       if (!profile && profileError?.code === 'PGRST116') {
+        console.log('🔨 Profile not found, creating new profile for auth_id:', authUser.id)
+
         // Mark this auth_id as having profile creation in progress
         if (profileCreationInProgress.current === authUser.id) {
-          console.log('Profile creation already marked as in progress, returning early')
+          console.log('⚠️ Profile creation already marked as in progress, returning early')
           return null
         }
 
         profileCreationInProgress.current = authUser.id
-        console.log('Creating new user profile for auth_id:', authUser.id)
+        console.log('✅ Profile creation marked as in progress for:', authUser.id)
 
         const newProfileData = {
           auth_id: authUser.id,
@@ -119,11 +124,31 @@ export const useSupabaseAuth = () => {
 
       // console.log('Found existing user profile:', profile.id) // Reduce console noise
       return profile
-    } catch (error) {
-      console.error('Error fetching user profile:', error)
+    } catch (error: any) {
+      console.error(`❌ Error fetching user profile (attempt ${retryCount + 1}):`, error)
+
       // Clear the in-progress flag on error
-      profileCreationInProgress.current = null
-      setAuthState(prev => ({ ...prev, error: 'Failed to load user profile' }))
+      if (profileCreationInProgress.current === authUser.id) {
+        profileCreationInProgress.current = null
+      }
+
+      // Retry logic for transient errors
+      if (retryCount < 3 && (
+        error.message?.includes('network') ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('connection') ||
+        error.code === 'NETWORK_ERROR'
+      )) {
+        console.log(`🔄 Retrying profile fetch in ${(retryCount + 1) * 1000}ms...`)
+        await new Promise(resolve => setTimeout(resolve, (retryCount + 1) * 1000))
+        return await fetchUserProfile(authUser, retryCount + 1)
+      }
+
+      setAuthState(prev => ({
+        ...prev,
+        error: `Failed to load user profile: ${error.message}`,
+        loading: false
+      }))
       return null
     }
   }
@@ -259,6 +284,15 @@ export const useSupabaseAuth = () => {
     return () => {
       isMounted = false
       subscription.unsubscribe()
+
+      // Clear any pending retry timeouts
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current)
+        retryTimeoutRef.current = null
+      }
+
+      // Clear profile creation flags
+      profileCreationInProgress.current = null
     }
   }, [])
 

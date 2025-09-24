@@ -259,35 +259,56 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 space-y-4 px-3 py-4 max-w-full">
-        {/* Header Skeleton */}
-        <div className="flex items-center justify-between">
-          <SmartSkeleton variant="text" width="200px" height="32px" />
-          <SmartSkeleton variant="rectangular" width="100px" height="40px" />
-        </div>
+      <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
+        <div className="container mx-auto px-4 pb-6 pt-2 space-y-6 max-w-none">
+          {/* Header Skeleton */}
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+            <div>
+              <SmartSkeleton variant="text" width="120px" height="28px" className="mb-2" />
+              <SmartSkeleton variant="text" width="200px" height="16px" />
+            </div>
+            <div className="flex items-center space-x-3">
+              <SmartSkeleton variant="rectangular" width="80px" height="32px" />
+              <SmartSkeleton variant="rectangular" width="90px" height="32px" />
+            </div>
+          </div>
 
-        {/* Metrics Cards Skeleton */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} className="h-32" />
-          ))}
-        </div>
+          {/* Loading Status */}
+          <ProfessionalCard className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-sm bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                <AnimatedLoader variant="spinner" size="sm" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                  Loading Dashboard
+                </h3>
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  Fetching your portfolio data and market information...
+                </p>
+              </div>
+            </div>
+          </ProfessionalCard>
 
-        {/* Charts Grid Skeleton */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <SkeletonChart className="lg:col-span-4 h-96" />
-          <div className="lg:col-span-3 space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <SkeletonCryptoCard key={i} />
+          {/* Metrics Cards Skeleton */}
+          <div className="grid gap-4 lg:grid-cols-4 md:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} className="h-32" />
             ))}
           </div>
-        </div>
 
-        <div className="flex-1 flex items-center justify-center py-8">
-          <div className="flex flex-col items-center space-y-3">
-            <AnimatedLoader variant="crypto" size="lg" />
-            <span className="text-sm text-muted-foreground">Loading your portfolio...</span>
+          {/* Charts Grid Skeleton */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            <SkeletonChart className="lg:col-span-4 h-96" />
+            <div className="lg:col-span-3 space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonCryptoCard key={i} />
+              ))}
+            </div>
           </div>
+
+          {/* Quick Actions Skeleton */}
+          <SkeletonCard className="h-32" />
         </div>
       </div>
     )
@@ -325,9 +346,36 @@ export default function DashboardPage() {
         {/* Error State */}
         {error && (
           <ProfessionalCard className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30">
-            <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-sm">Error loading portfolio data: {error}</span>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-sm bg-red-100 dark:bg-red-900/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-900 dark:text-red-100 mb-1">
+                  Portfolio Loading Error
+                </h3>
+                <p className="text-sm text-red-600 dark:text-red-400 mb-3">
+                  {error}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-7 border-red-300 text-red-700 hover:bg-red-100 dark:border-red-700 dark:text-red-300 dark:hover:bg-red-900/30"
+                    onClick={() => window.location.reload()}
+                  >
+                    Refresh Page
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs h-7 text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
+                    asChild
+                  >
+                    <Link href="/portfolio">Check Portfolio Settings</Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           </ProfessionalCard>
         )}

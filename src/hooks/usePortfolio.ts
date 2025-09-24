@@ -39,35 +39,86 @@ interface PortfolioState {
 }
 
 export const usePortfolio = () => {
-  const { user } = useSupabaseAuth()
+  const { user, profile } = useSupabaseAuth()
   const [portfolioState, setPortfolioState] = useState<PortfolioState>({
     portfolios: [],
     loading: true,
     error: null
   })
 
-  const fetchPortfolios = async () => {
+  const fetchPortfolios = async (retryCount = 0) => {
+    console.log(`🔍 Fetching portfolios (attempt ${retryCount + 1})`, {
+      hasUser: !!user,
+      hasProfile: !!profile,
+      authId: user?.auth_id,
+      profileId: profile?.id
+    })
+
     if (!user?.auth_id) {
-      setPortfolioState(prev => ({ ...prev, loading: false, portfolios: [] }))
+      console.log('❌ No user auth_id found, cannot fetch portfolios')
+      setPortfolioState(prev => ({ ...prev, loading: false, portfolios: [], error: null }))
       return
     }
 
     try {
-      const response = await fetch(`/api/portfolio?auth_id=${encodeURIComponent(user.auth_id)}`)
+      const response = await fetch(`/api/portfolio?auth_id=${encodeURIComponent(user.auth_id)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        // Add credentials to ensure cookies are sent
+        credentials: 'same-origin'
+      })
+
+      console.log('📡 Portfolio API response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to fetch portfolios')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`
+
+        console.error('❌ Portfolio API error:', { status: response.status, error: errorMessage })
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
+      console.log('✅ Portfolio data received:', {
+        portfolioCount: data.portfolios?.length || 0,
+        hasDebug: !!data.debug,
+        success: data.success,
+        fallback: data.fallback
+      })
 
       setPortfolioState({
         portfolios: data.portfolios || [],
         loading: false,
         error: null
       })
+
     } catch (error: any) {
-      console.error('Error fetching portfolios:', error)
+      console.error(`❌ Error fetching portfolios (attempt ${retryCount + 1}):`, error)
+
+      // Retry logic for transient errors
+      if (retryCount < 2 && (
+        error.message?.includes('fetch') ||
+        error.message?.includes('network') ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('500') ||
+        error.message?.includes('502') ||
+        error.message?.includes('503')
+      )) {
+        const retryDelay = (retryCount + 1) * 2000 // 2s, 4s, 6s
+        console.log(`🔄 Retrying portfolio fetch in ${retryDelay}ms...`)
+
+        setTimeout(() => {
+          fetchPortfolios(retryCount + 1)
+        }, retryDelay)
+        return
+      }
+
       setPortfolioState({
         portfolios: [],
         loading: false,
@@ -76,8 +127,15 @@ export const usePortfolio = () => {
     }
   }
 
-  const createPortfolio = async (name: string, description?: string) => {
+  const createPortfolio = async (name: string, description?: string, retryCount = 0) => {
+    console.log(`🔨 Creating portfolio "${name}" (attempt ${retryCount + 1})`, {
+      hasUser: !!user,
+      authId: user?.auth_id,
+      description: description?.substring(0, 50)
+    })
+
     if (!user?.auth_id) {
+      console.log('❌ No user auth_id found, cannot create portfolio')
       throw new Error('User not authenticated')
     }
 
@@ -87,22 +145,53 @@ export const usePortfolio = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, description, authId: user.auth_id })
+        body: JSON.stringify({ name, description, authId: user.auth_id }),
+        credentials: 'same-origin'
+      })
+
+      console.log('📡 Portfolio creation API response:', {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create portfolio')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`
+
+        console.error('❌ Portfolio creation API error:', { status: response.status, error: errorMessage })
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
+      console.log('✅ Portfolio created successfully:', {
+        portfolioId: data.portfolio?.id,
+        success: data.success
+      })
 
       // Refresh portfolios after creation
       await fetchPortfolios()
 
       return data.portfolio
     } catch (error: any) {
-      console.error('Error creating portfolio:', error)
+      console.error(`❌ Error creating portfolio (attempt ${retryCount + 1}):`, error)
+
+      // Retry logic for transient errors
+      if (retryCount < 2 && (
+        error.message?.includes('fetch') ||
+        error.message?.includes('network') ||
+        error.message?.includes('timeout') ||
+        error.message?.includes('500') ||
+        error.message?.includes('502') ||
+        error.message?.includes('503')
+      )) {
+        const retryDelay = (retryCount + 1) * 2000 // 2s, 4s
+        console.log(`🔄 Retrying portfolio creation in ${retryDelay}ms...`)
+
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+        return await createPortfolio(name, description, retryCount + 1)
+      }
+
       throw error
     }
   }
