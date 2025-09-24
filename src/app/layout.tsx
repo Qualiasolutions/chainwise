@@ -90,12 +90,10 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <EnhancedNavigation />
-          <main className="min-h-screen">
-            <GlobalSidebarLayout>
-              <PageWrapper>
-                {children}
-              </PageWrapper>
-            </GlobalSidebarLayout>
+          <main className="min-h-screen pt-16">
+            <PageWrapper>
+              {children}
+            </PageWrapper>
           </main>
         </ThemeProvider>
       </body>
