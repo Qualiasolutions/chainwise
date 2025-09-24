@@ -219,20 +219,38 @@ export class MCPSupabaseClient {
   // Portfolio Operations
   async getUserPortfolios(userId: string): Promise<Portfolio[]> {
     try {
-      // TODO: Replace with MCP call when available
+      console.log('📊 MCPSupabaseClient: Fetching portfolios for user:', userId)
+
+      // Get portfolios with holdings using direct Supabase query
       const supabase = await this.getSupabaseClient()
 
-      const { data, error } = await supabase
+      const { data: portfolios, error } = await supabase
         .from('portfolios')
-        .select('*')
+        .select(`
+          *,
+          portfolio_holdings (
+            id,
+            symbol,
+            name,
+            amount,
+            purchase_price,
+            purchase_date,
+            current_price
+          )
+        `)
         .eq('user_id', userId)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: true })
 
-      if (error) throw error
-      return data || []
+      if (error) {
+        console.error('❌ MCP: Error fetching portfolios:', error)
+        throw error
+      }
+
+      console.log('✅ MCP: Fetched portfolios:', portfolios?.length || 0)
+      return portfolios || []
     } catch (error: any) {
-      console.error('Error fetching user portfolios:', error)
+      console.error('❌ MCP: Error in getUserPortfolios:', error)
       throw new Error(`Failed to fetch portfolios: ${error.message}`)
     }
   }

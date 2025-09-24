@@ -120,8 +120,26 @@ const chartConfig = {
 }
 
 export default function DashboardPage() {
-  const { user } = useSupabaseAuth()
-  const { portfolios, loading, error, getTotalPortfolioValue, getTotalPortfolioPnL, getTotalPortfolioPnLPercentage, getDefaultPortfolio } = usePortfolio()
+  const { user, profile, loading: authLoading } = useSupabaseAuth()
+  const { portfolios, loading: portfolioLoading, error, getTotalPortfolioValue, getTotalPortfolioPnL, getTotalPortfolioPnLPercentage, getDefaultPortfolio } = usePortfolio()
+
+  // Overall loading state - show loading if either auth or portfolio is loading
+  const loading = authLoading || portfolioLoading
+
+  // Debug logging to help track authentication state
+  useEffect(() => {
+    console.log('🔍 Dashboard state:', {
+      hasUser: !!user,
+      userId: user?.id,
+      userEmail: user?.email,
+      hasProfile: !!profile,
+      profileId: profile?.id,
+      authLoading,
+      portfolioLoading,
+      portfoliosCount: portfolios?.length || 0,
+      error
+    })
+  }, [user, profile, authLoading, portfolioLoading, portfolios, error])
 
   // State for portfolio chart data
   const [portfolioChartData, setPortfolioChartData] = useState<any[]>([])
@@ -381,7 +399,7 @@ export default function DashboardPage() {
         )}
 
         {/* Empty State */}
-        {portfolios.length === 0 && !error && (
+        {!authLoading && !portfolioLoading && portfolios.length === 0 && !error && (
           <ProfessionalCard className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30" padding="lg">
             <div className="text-center">
               <div className="w-10 h-10 mx-auto mb-3 rounded-sm bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -391,11 +409,16 @@ export default function DashboardPage() {
                 No portfolios yet
               </h3>
               <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
-                Create your first portfolio to start tracking your investments
+                Welcome {user?.email || 'User'}! Create your first portfolio to start tracking your crypto investments.
               </p>
-              <Button size="sm" className="text-xs h-8" asChild>
-                <Link href="/portfolio">Create Portfolio</Link>
-              </Button>
+              <div className="flex items-center gap-2 justify-center">
+                <Button size="sm" className="text-xs h-8" asChild>
+                  <Link href="/portfolio">Create Portfolio</Link>
+                </Button>
+                <Button size="sm" variant="outline" className="text-xs h-8" asChild>
+                  <Link href="/market">Explore Market</Link>
+                </Button>
+              </div>
             </div>
           </ProfessionalCard>
         )}

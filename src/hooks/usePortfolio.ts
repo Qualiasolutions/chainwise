@@ -39,7 +39,7 @@ interface PortfolioState {
 }
 
 export const usePortfolio = () => {
-  const { user, profile } = useSupabaseAuth()
+  const { user, profile, loading: authLoading } = useSupabaseAuth()
   const [portfolioState, setPortfolioState] = useState<PortfolioState>({
     portfolios: [],
     loading: true,
@@ -47,21 +47,33 @@ export const usePortfolio = () => {
   })
 
   const fetchPortfolios = async (retryCount = 0) => {
+    // Get the correct user identifier - use user.id (auth_id) instead of user.auth_id
+    const authId = user?.id
+    const profileId = profile?.id
+
     console.log(`🔍 Fetching portfolios (attempt ${retryCount + 1})`, {
       hasUser: !!user,
       hasProfile: !!profile,
-      authId: user?.auth_id,
-      profileId: profile?.id
+      authId: authId,
+      profileId: profileId,
+      authLoading
     })
 
-    if (!user?.auth_id) {
-      console.log('❌ No user auth_id found, cannot fetch portfolios')
+    // Wait for authentication to complete before proceeding
+    if (authLoading) {
+      console.log('⏳ Auth still loading, waiting...')
+      return
+    }
+
+    // Check if we have proper authentication
+    if (!user || !authId) {
+      console.log('❌ No authenticated user found, cannot fetch portfolios')
       setPortfolioState(prev => ({ ...prev, loading: false, portfolios: [], error: null }))
       return
     }
 
     try {
-      const response = await fetch(`/api/portfolio?auth_id=${encodeURIComponent(user.auth_id)}`, {
+      const response = await fetch(`/api/portfolio?auth_id=${encodeURIComponent(authId)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -128,14 +140,16 @@ export const usePortfolio = () => {
   }
 
   const createPortfolio = async (name: string, description?: string, retryCount = 0) => {
+    const authId = user?.id
+
     console.log(`🔨 Creating portfolio "${name}" (attempt ${retryCount + 1})`, {
       hasUser: !!user,
-      authId: user?.auth_id,
+      authId: authId,
       description: description?.substring(0, 50)
     })
 
-    if (!user?.auth_id) {
-      console.log('❌ No user auth_id found, cannot create portfolio')
+    if (!user || !authId) {
+      console.log('❌ No authenticated user found, cannot create portfolio')
       throw new Error('User not authenticated')
     }
 
@@ -145,7 +159,7 @@ export const usePortfolio = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, description, authId: user.auth_id }),
+        body: JSON.stringify({ name, description, authId: authId }),
         credentials: 'same-origin'
       })
 
@@ -224,19 +238,25 @@ export const usePortfolio = () => {
   }
 
   useEffect(() => {
-    fetchPortfolios()
-  }, [user])
+    // Only fetch portfolios when authentication is complete and we have a user
+    if (!authLoading && user?.id) {
+      fetchPortfolios()
+    } else if (!authLoading && !user) {
+      // Authentication complete but no user - clear portfolios
+      setPortfolioState({ portfolios: [], loading: false, error: null })
+    }
+  }, [user, authLoading])
 
   // Refresh portfolios every 5 minutes to get updated prices
   useEffect(() => {
-    if (!user?.auth_id) return
+    if (!user?.id || authLoading) return
 
     const interval = setInterval(() => {
       fetchPortfolios()
     }, 5 * 60 * 1000) // 5 minutes
 
     return () => clearInterval(interval)
-  }, [user])
+  }, [user, authLoading])
 
   return {
     ...portfolioState,
