@@ -62,6 +62,29 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
+    // Get conversation history for context
+    let conversationHistory: any[] = []
+    let existingSession: any = null
+    if (sessionId) {
+      // For now, use direct Supabase until session management is fully migrated to MCP
+      const { data: session } = await supabase
+        .from('ai_chat_sessions')
+        .select('messages')
+        .eq('id', sessionId)
+        .eq('user_id', profile.id)
+        .single()
+
+      existingSession = session
+      if (session?.messages) {
+        conversationHistory = Array.isArray(session.messages) ? session.messages : []
+        // Convert to OpenAI format (last 10 messages for context)
+        conversationHistory = conversationHistory.slice(-10).map((msg: any) => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        }))
+      }
+    }
+
     // Generate AI response using OpenAI
     console.log(`Generating AI response for persona: ${persona}, message length: ${message.length}`);
     const aiResponse = await OpenAIService.generateChatResponse({
@@ -94,29 +117,6 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('Failed to update user credits:', error)
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
-    }
-
-    // Get conversation history for context
-    let conversationHistory: any[] = []
-    let existingSession: any = null
-    if (sessionId) {
-      // For now, use direct Supabase until session management is fully migrated to MCP
-      const { data: session } = await supabase
-        .from('ai_chat_sessions')
-        .select('messages')
-        .eq('id', sessionId)
-        .eq('user_id', profile.id)
-        .single()
-
-      existingSession = session
-      if (session?.messages) {
-        conversationHistory = Array.isArray(session.messages) ? session.messages : []
-        // Convert to OpenAI format (last 10 messages for context)
-        conversationHistory = conversationHistory.slice(-10).map((msg: any) => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.content
-        }))
-      }
     }
 
     // Handle session management
