@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Bot, User, LogIn, UserPlus, ChevronDown } from "lucide-react"
+import { Bot, User, LogIn, UserPlus, ChevronDown, Wrench, FileText, TrendingUp, Zap, Bell, Brain, Gem } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -99,6 +99,115 @@ export function HeaderNavigation() {
                     AI Assistant
                   </Link>
                 </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>
+                  <Wrench className="mr-2 h-4 w-4" />
+                  Tools
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                    <div className="row-span-3">
+                      <NavigationMenuLink asChild>
+                        <div className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md">
+                          <Wrench className="h-6 w-6" />
+                          <div className="mb-2 mt-4 text-lg font-medium">
+                            Pro Tools
+                          </div>
+                          <p className="text-sm leading-tight text-muted-foreground">
+                            Advanced tools for crypto analysis and portfolio management
+                          </p>
+                        </div>
+                      </NavigationMenuLink>
+                    </div>
+                    <div className="grid gap-2">
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/whale-tracker"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">Whale Tracker</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Track whale wallets and analyze their trading patterns
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/ai-reports"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">AI Reports</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Generate weekly Pro and monthly Elite market reports
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/smart-alerts"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Bell className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">Smart Alerts</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Get notified about important market movements
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/narrative-scanner"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Brain className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">Narrative Scanner</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            AI-powered narrative and sentiment analysis
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/portfolio-allocator"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Zap className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">Portfolio Allocator</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Optimize your portfolio allocation using AI
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/altcoin-detector"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Gem className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">Altcoin Early Detector</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Discover hidden gem altcoins before they moon
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </div>
+                  </div>
+                </NavigationMenuContent>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -218,14 +327,14 @@ export function HeaderNavigation() {
                 AI Assistant
               </Link>
               <Link
-                href="/contact"
+                href="/tools/whale-tracker"
                 className={cn(
                   "flex flex-col items-center py-2 px-3 text-xs",
-                  pathname === "/contact" ? "text-purple-300" : "text-white/70"
+                  pathname.startsWith("/tools") ? "text-purple-300" : "text-white/70"
                 )}
               >
-                <User className="h-5 w-5 mb-1" />
-                Contact
+                <Wrench className="h-5 w-5 mb-1" />
+                Tools
               </Link>
             </nav>
           </div>

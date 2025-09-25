@@ -76,31 +76,41 @@ Always use the real-time data provided in your context. Give specific, executabl
 
 export type PersonaId = keyof typeof AI_PERSONAS;
 
-// Credit costs for different features (matching checklist)
+// Credit costs for different features (matching Annex B requirements)
 export const CREDIT_COSTS = {
   // AI Chat
   ai_chat_buddy: 1,
   ai_chat_professor: 2,
   ai_chat_trader: 3,
 
-  // Premium Features
-  whale_tracker: 5,
-  narrative_scan: 10,
-  deep_report: 10,
+  // Premium Features (matching Annex B document)
+  whale_tracker_standard: 5,
+  whale_tracker_detailed: 10,
+  whale_copy_signals: 5, // Per signal
+  narrative_deep_scan: 40,
   scam_check: 5,
   stress_test: 5,
   dca_plan: 5,
   nft_analyzer: 5,
+  defi_analyzer: 15,
   trading_simulation: 5,
 
-  // Advanced Features
-  narrative_deep_scan: 40,
+  // Tools
   portfolio_allocator: 20,
-  defi_analyzer: 15,
+  altcoin_detector: 5, // Per scan
+  fear_greed_monitor: 5,
 
   // Reports
+  ai_deep_dive_report: 10,
   extra_pro_report: 5,
   extra_elite_report: 10,
+  weekly_pro_report: 0, // Included in Pro
+  monthly_elite_report: 0, // Included in Elite
+
+  // Advanced Features
+  tax_compliance: 10, // Per report
+  regulatory_radar: 5, // Per session
+  trading_playbook: 10, // Per run
 } as const;
 
 export type CreditFeature = keyof typeof CREDIT_COSTS;
