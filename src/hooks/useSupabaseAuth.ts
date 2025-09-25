@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { User as SupabaseUser } from '@supabase/auth-helpers-nextjs'
 import { supabase } from '@/lib/supabase/client'
 import { User, UserInsert } from '@/lib/supabase/types'
+import { authManager, debounce, handleAuthError } from '@/lib/auth-utils'
 
 interface AuthState {
   user: SupabaseUser | null
@@ -20,23 +21,21 @@ export const useSupabaseAuth = () => {
     error: null
   })
 
-  // Add ref to track ongoing profile creation to prevent race conditions
-  const profileCreationInProgress = useRef<string | null>(null)
+  // Enhanced race condition prevention with mutex-like behavior
+  const profileCreationInProgress = useRef<Map<string, Promise<User | null>>>(new Map())
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const sessionCheckInterval = useRef<NodeJS.Timeout | null>(null)
 
   const fetchUserProfile = async (authUser: SupabaseUser, retryCount = 0): Promise<User | null> => {
     console.log(`🔍 Fetching profile for user ${authUser.id} (attempt ${retryCount + 1})`)
 
     try {
       // Check if profile creation is already in progress for this user
-      if (profileCreationInProgress.current === authUser.id) {
+      const existingPromise = profileCreationInProgress.current.get(authUser.id)
+      if (existingPromise) {
         console.log('⏳ Profile creation already in progress for auth_id:', authUser.id)
-        // Wait for the in-progress creation to complete
-        let retries = 0
-        while (profileCreationInProgress.current === authUser.id && retries < 20) {
-          await new Promise(resolve => setTimeout(resolve, 250))
-          retries++
-        }
+        // Return the existing promise to prevent race conditions
+        return await existingPromise
       }
 
       // Try to get existing profile using direct Supabase call
@@ -50,71 +49,69 @@ export const useSupabaseAuth = () => {
       if (!profile && profileError?.code === 'PGRST116') {
         console.log('🔨 Profile not found, creating new profile for auth_id:', authUser.id)
 
-        // Mark this auth_id as having profile creation in progress
-        if (profileCreationInProgress.current === authUser.id) {
-          console.log('⚠️ Profile creation already marked as in progress, returning early')
-          return null
-        }
-
-        profileCreationInProgress.current = authUser.id
-        console.log('✅ Profile creation marked as in progress for:', authUser.id)
-
-        const newProfileData = {
-          auth_id: authUser.id,
-          email: authUser.email || '',
-          full_name: authUser.user_metadata?.full_name || null,
-          bio: null,
-          location: null,
-          website: null,
-          avatar_url: authUser.user_metadata?.avatar_url || null,
-          tier: 'free',
-          credits: 3,
-          monthly_credits: 3
-        }
-
-        try {
-          const { data: createdProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert(newProfileData)
-            .select()
-            .single()
-
-          if (createError) {
-            throw createError
+        // Create a promise for profile creation to prevent race conditions
+        const profileCreationPromise = (async (): Promise<User | null> => {
+          const newProfileData = {
+            auth_id: authUser.id,
+            email: authUser.email || '',
+            full_name: authUser.user_metadata?.full_name || null,
+            bio: null,
+            location: null,
+            website: null,
+            avatar_url: authUser.user_metadata?.avatar_url || null,
+            tier: 'free',
+            credits: 3,
+            monthly_credits: 3
           }
 
-          console.log('Successfully created user profile:', createdProfile.id)
-
-          // Clear the in-progress flag
-          profileCreationInProgress.current = null
-
-          return createdProfile
-        } catch (createError: any) {
-          console.error('Error creating user profile:', createError)
-
-          // Clear the in-progress flag
-          profileCreationInProgress.current = null
-
-          // If user creation fails due to constraint, try to fetch again
-          // This handles race conditions where user might have been created elsewhere
-          if (createError.code === '23505' || createError.message?.includes('duplicate') || createError.message?.includes('constraint')) {
-            console.log('Duplicate user detected, trying to fetch existing profile...')
-
-            // Wait a bit and try to fetch the existing profile
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            const { data: existingProfile } = await supabase
+          try {
+            const { data: createdProfile, error: createError } = await supabase
               .from('profiles')
-              .select('*')
-              .eq('auth_id', authUser.id)
+              .insert(newProfileData)
+              .select()
               .single()
 
-            if (existingProfile) {
-              console.log('Found existing profile after constraint error:', existingProfile.id)
-              return existingProfile
+            if (createError) {
+              throw createError
             }
-          }
 
-          throw createError
+            console.log('Successfully created user profile:', createdProfile.id)
+            return createdProfile
+          } catch (createError: any) {
+            console.error('Error creating user profile:', createError)
+
+            // If user creation fails due to constraint, try to fetch again
+            // This handles race conditions where user might have been created elsewhere
+            if (createError.code === '23505' || createError.message?.includes('duplicate') || createError.message?.includes('constraint')) {
+              console.log('Duplicate user detected, trying to fetch existing profile...')
+
+              // Wait a bit and try to fetch the existing profile
+              await new Promise(resolve => setTimeout(resolve, 1000))
+              const { data: existingProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('auth_id', authUser.id)
+                .single()
+
+              if (existingProfile) {
+                console.log('Found existing profile after constraint error:', existingProfile.id)
+                return existingProfile
+              }
+            }
+
+            throw createError
+          }
+        })()
+
+        // Store the promise to prevent concurrent calls
+        profileCreationInProgress.current.set(authUser.id, profileCreationPromise)
+
+        try {
+          const result = await profileCreationPromise
+          return result
+        } finally {
+          // Clean up the promise from the map
+          profileCreationInProgress.current.delete(authUser.id)
         }
       } else if (profileError && profileError.code !== 'PGRST116') {
         // Handle other database errors
@@ -127,10 +124,8 @@ export const useSupabaseAuth = () => {
     } catch (error: any) {
       console.error(`❌ Error fetching user profile (attempt ${retryCount + 1}):`, error)
 
-      // Clear the in-progress flag on error
-      if (profileCreationInProgress.current === authUser.id) {
-        profileCreationInProgress.current = null
-      }
+      // Clear any in-progress promises on error
+      profileCreationInProgress.current.delete(authUser.id)
 
       // Retry logic for transient errors
       if (retryCount < 3 && (
@@ -291,8 +286,14 @@ export const useSupabaseAuth = () => {
         retryTimeoutRef.current = null
       }
 
-      // Clear profile creation flags
-      profileCreationInProgress.current = null
+      // Clear profile creation promises
+      profileCreationInProgress.current.clear()
+
+      // Clear session check interval
+      if (sessionCheckInterval.current) {
+        clearInterval(sessionCheckInterval.current)
+        sessionCheckInterval.current = null
+      }
     }
   }, [])
 
@@ -430,29 +431,40 @@ export const useSupabaseAuth = () => {
     }
   }
 
-  const refreshProfile = async () => {
-    if (authState.user) {
-      try {
-        // First check if session is still valid
-        const { data: { session }, error } = await supabase.auth.getSession()
+  // Debounced profile refresh to prevent rapid successive calls
+  const debouncedProfileRefresh = useRef(
+    debounce(async () => {
+      if (authState.user) {
+        try {
+          // Use auth manager to ensure valid session
+          const hasValidSession = await authManager.ensureValidSession()
 
-        if (error || !session) {
-          console.log('Session invalid during profile refresh, signing out...')
-          await signOut()
-          return
+          if (!hasValidSession) {
+            console.log('Session invalid during profile refresh, signing out...')
+            await signOut()
+            return
+          }
+
+          const profile = await authManager.retryWithAuth(() =>
+            fetchUserProfile(authState.user!)
+          )
+
+          setAuthState(prev => ({
+            ...prev,
+            profile,
+            error: null
+          }))
+        } catch (error) {
+          const authError = handleAuthError(error)
+          console.error('Error refreshing profile:', authError)
+          setAuthState(prev => ({ ...prev, error: authError.message }))
         }
-
-        const profile = await fetchUserProfile(authState.user)
-        setAuthState(prev => ({
-          ...prev,
-          profile,
-          error: null
-        }))
-      } catch (error) {
-        console.error('Error refreshing profile:', error)
-        setAuthState(prev => ({ ...prev, error: 'Failed to refresh profile' }))
       }
-    }
+    }, 1000) // 1 second debounce
+  )
+
+  const refreshProfile = async () => {
+    debouncedProfileRefresh.current()
   }
 
   return {

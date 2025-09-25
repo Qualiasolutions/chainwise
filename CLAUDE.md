@@ -56,6 +56,12 @@ ChainWise is a production-deployed AI-powered cryptocurrency advisory platform w
 
 **Note**: No test framework is currently configured. The project uses TypeScript and ESLint errors ignored during builds (see `next.config.ts`). Turbopack is enabled for both dev and build commands for faster performance.
 
+### Database Commands (Supabase)
+- `npx supabase db push` - Apply database migrations
+- `npx supabase db reset` - Reset local database with all migrations
+- `npx supabase start` - Start local Supabase services
+- `npx supabase stop` - Stop local Supabase services
+
 ## Tech Stack
 
 - **Framework**: Next.js 15.5.3 with App Router + TypeScript 5.9.2 + React 19.1.0
@@ -136,6 +142,13 @@ ChainWise is a production-deployed AI-powered cryptocurrency advisory platform w
 - TypeScript and ESLint errors ignored during builds (for faster development)
 - Located in `next.config.ts`
 
+### Database Migrations
+Database schema is managed through Supabase migrations located in `supabase/migrations/`:
+- Migration files are prefixed with timestamps (e.g., `001_initial_schema.sql`)
+- Latest migration includes premium features and complete RLS (Row Level Security)
+- All 31 database security warnings have been resolved for production readiness
+- Functions use `SET search_path = ''` for enhanced security
+
 ### Environment Variables
 Environment configuration files are present:
 - `.env.example` - Template with all required variables and Supabase credentials
@@ -198,6 +211,17 @@ The codebase includes Model Context Protocol (MCP) integration for database oper
 - **MCP Tools**: Wrapper functions in `src/lib/mcp-tools.ts` for client-side MCP operations
 - **Migration Status**: Most operations still use direct Supabase client calls with TODO comments for MCP migration
 - **Active Features**: User creation, credit transactions, and profile management use API routes
+
+### API Routes Structure
+The project includes 25+ API endpoints organized by functionality:
+- `/api/portfolio/*` - Portfolio CRUD operations and holdings management
+- `/api/chat` - AI chat system with credit tracking
+- `/api/credits/*` - Credit management and transaction history
+- `/api/subscription/*` - Subscription management and billing
+- `/api/tools/*` - Premium tools (DCA planner, whale tracker, etc.)
+- `/api/profile` - User profile management
+- `/api/alerts/*` - Price alert system
+- `/api/crypto/*` - Cryptocurrency data and search
 
 ### Technical Debt
 Current TODOs requiring attention:
