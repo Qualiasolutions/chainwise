@@ -100,6 +100,12 @@ export const CREDIT_COSTS = {
   altcoin_detector: 5, // Per scan
   fear_greed_monitor: 5,
 
+  // Signal Packs
+  signals_daily_pack: 15, // Daily signals (Pro)
+  signals_weekly_pack: 10, // Weekly signals (Pro)
+  signals_flash_pack: 20, // Flash signals (Elite)
+  signals_premium_pack: 8, // Premium signals (Elite)
+
   // Reports
   ai_deep_dive_report: 10,
   extra_pro_report: 5,

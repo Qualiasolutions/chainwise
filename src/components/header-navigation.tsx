@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Bot, User, LogIn, UserPlus, ChevronDown, Wrench, FileText, TrendingUp, Zap, Bell, Brain, Gem } from "lucide-react"
+import { Bot, User, LogIn, UserPlus, ChevronDown, Wrench, FileText, TrendingUp, Zap, Bell, Brain, Gem, Activity } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -202,6 +202,20 @@ export function HeaderNavigation() {
                           </div>
                           <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
                             Discover hidden gem altcoins before they moon
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/signals-pack"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Activity className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">ChainWise Signals Pack</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            AI-powered trading signals for maximum profit
                           </p>
                         </Link>
                       </NavigationMenuLink>
