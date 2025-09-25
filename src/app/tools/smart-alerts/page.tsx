@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { AlertTriangle, Bell, BellRing, Plus, Settings, Trash2, Edit, TrendingUp, Activity, Whale, Brain } from "lucide-react"
+import { AlertTriangle, Bell, BellRing, Plus, Settings, Trash2, Edit, TrendingUp, Activity, Wallet, Brain } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
@@ -195,7 +195,7 @@ export default function SmartAlertsPage() {
       case 'volume_spike':
         return <Activity className="h-5 w-5" />
       case 'whale_activity':
-        return <Whale className="h-5 w-5" />
+        return <Wallet className="h-5 w-5" />
       case 'narrative_change':
         return <Brain className="h-5 w-5" />
       default:
