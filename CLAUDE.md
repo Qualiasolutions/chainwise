@@ -4,7 +4,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
+**🚨 IMPORTANT: We are following the comprehensive development roadmap outlined in `development.md`.**
+
+**Current Status**: Phase 2 Complete (95%) - Ready for Production Launch
+- All core features implemented and functional
+- Real-time crypto data integration completed (just finished!)
+- AI personas now providing live Bitcoin/Ethereum prices ($113K+)
+- Complete UI/UX with professional design system
+- Database and authentication fully operational
+- 25+ pages with 30+ API endpoints ready
+
 ChainWise is a production-ready AI-powered cryptocurrency advisory platform with complete backend integration, real Stripe payment processing, and comprehensive MCP (Model Context Protocol) database helpers. All major features are fully operational with real API integrations (CoinGecko + Supabase + Stripe).
+
+**Next Steps**: Follow Phase 5 production launch checklist in `development.md` (2-3 hours to live deployment).
+
+## 📋 DEVELOPMENT ROADMAP COMPLIANCE
+
+**PRIMARY REFERENCE**: Always refer to `development.md` for:
+- Complete project status and phase breakdown (78% complete overall)
+- Phase-by-phase implementation status (Phase 1-5)
+- Production launch readiness checklist
+- Technical debt and improvement priorities
+- Feature completion matrix
+- Revenue model implementation status
+
+**CURRENT FOCUS**: Phase 5 Production Launch (80% ready)
+- Environment variable configuration needed
+- OpenAI API key integration
+- Live Stripe keys for payments
+- Production deployment to Vercel
 
 **Key Pages (run `npm run dev`):**
 - `/` - Landing page with 3D globe, animated pricing, and orbital timeline
