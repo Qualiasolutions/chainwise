@@ -143,19 +143,9 @@ class CryptoAPI {
 
   async getTopCryptos(limit: number = 100): Promise<CryptoData[]> {
     try {
-      // Use internal API endpoint to avoid CORS issues
-      if (typeof window !== 'undefined') {
-        const response = await fetch(`/api/crypto/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=24h`)
-        if (!response.ok) {
-          throw new Error(`Server API request failed: ${response.status}`)
-        }
-        return await response.json()
-      } else {
-        // Server-side: use CoinGecko directly
-        return await this.fetchAPI(
-          `/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=24h`
-        )
-      }
+      return await this.fetchAPI(
+        `/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=24h`
+      )
     } catch (error) {
       console.warn('CoinGecko API failed, using fallback data:', error)
 
@@ -304,21 +294,10 @@ class CryptoAPI {
 
   async getCrypto(id: string): Promise<CryptoData> {
     try {
-      // Use internal API endpoint to avoid CORS issues
-      if (typeof window !== 'undefined') {
-        const response = await fetch(`/api/crypto/markets?vs_currency=usd&ids=${id}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`)
-        if (!response.ok) {
-          throw new Error(`Server API request failed: ${response.status}`)
-        }
-        const data = await response.json()
-        return data[0]
-      } else {
-        // Server-side: use CoinGecko directly
-        const data = await this.fetchAPI(
-          `/coins/markets?vs_currency=usd&ids=${id}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`
-        )
-        return data[0]
-      }
+      const data = await this.fetchAPI(
+        `/coins/markets?vs_currency=usd&ids=${id}&order=market_cap_desc&per_page=1&page=1&sparkline=false&price_change_percentage=24h`
+      )
+      return data[0]
     } catch (error) {
       console.warn(`CoinGecko API failed for ${id}, using fallback data:`, error)
 
@@ -411,36 +390,8 @@ class CryptoAPI {
   }
 
   async getGlobalData(): Promise<MarketData> {
-    try {
-      // Use internal API endpoint to avoid CORS issues
-      if (typeof window !== 'undefined') {
-        const response = await fetch('/api/crypto/global')
-        if (!response.ok) {
-          throw new Error(`Server API request failed: ${response.status}`)
-        }
-        const data = await response.json()
-        return data.data
-      } else {
-        // Server-side: use CoinGecko directly
-        const response = await this.fetchAPI('/global')
-        return response.data
-      }
-    } catch (error) {
-      console.warn('Global data API failed, using fallback data:', error)
-      // Return fallback data
-      return {
-        active_cryptocurrencies: 13856,
-        upcoming_icos: 0,
-        ongoing_icos: 49,
-        ended_icos: 3376,
-        markets: 1097,
-        total_market_cap: { usd: 3450000000000 },
-        total_volume: { usd: 89000000000 },
-        market_cap_percentage: { btc: 58.2, eth: 12.8 },
-        market_cap_change_percentage_24h_usd: 2.1,
-        updated_at: Math.floor(Date.now() / 1000)
-      }
-    }
+    const response = await this.fetchAPI('/global')
+    return response.data
   }
 
   async getCryptoChart(id: string, days: number = 7): Promise<ChartData> {
@@ -539,17 +490,7 @@ class CryptoAPI {
   // Get detailed coin data for individual coin pages
   async getCoinDetails(id: string): Promise<any> {
     try {
-      // Use internal API endpoint to avoid CORS issues
-      if (typeof window !== 'undefined') {
-        const response = await fetch(`/api/crypto/coin/${id}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`)
-        if (!response.ok) {
-          throw new Error(`Server API request failed: ${response.status}`)
-        }
-        return await response.json()
-      } else {
-        // Server-side: use CoinGecko directly
-        return await this.fetchAPI(`/coins/${id}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`)
-      }
+      return await this.fetchAPI(`/coins/${id}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`)
     } catch (error) {
       console.error(`Error fetching coin details for ${id}:`, error)
       throw error
