@@ -243,6 +243,20 @@ export function HeaderNavigation() {
                           </p>
                         </Link>
                       </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/tools/whale-copy"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4" />
+                            <div className="text-sm font-medium leading-none">Whale Copy Signals</div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Copy whale trading patterns for Elite profits
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
                     </div>
                   </div>
                 </NavigationMenuContent>

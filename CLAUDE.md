@@ -80,11 +80,11 @@ ChainWise is a production-deployed AI-powered cryptocurrency advisory platform w
 
 ### Key Directories
 - `src/app/` - Next.js App Router pages and API routes
-- `src/app/api/` - 25+ API endpoints organized by feature (portfolio, chat, tools, auth, etc.)
+- `src/app/api/` - 40+ API endpoints organized by feature (portfolio, chat, tools, auth, crypto, settings, etc.)
 - `src/components/ui/` - shadcn/ui components (20+ components)
 - `src/lib/` - Utilities and services (crypto API, Supabase client, auth helpers)
 - `src/hooks/` - Custom React hooks for authentication and state management
-- `supabase/migrations/` - Database schema migrations with RLS policies
+- `supabase/migrations/` - 20+ database schema migrations with RLS policies and functions
 
 ### Authentication Flow
 - Sign-in/sign-up pages in `src/app/auth/`
@@ -215,15 +215,16 @@ The codebase includes Model Context Protocol (MCP) integration for database oper
 - **Active Features**: User creation, credit transactions, and profile management use API routes
 
 ### API Routes Structure
-The project includes 25+ API endpoints organized by functionality:
+The project includes 40+ API endpoints organized by functionality:
 - `/api/portfolio/*` - Portfolio CRUD operations and holdings management
 - `/api/chat` - AI chat system with credit tracking
 - `/api/credits/*` - Credit management and transaction history
 - `/api/subscription/*` - Subscription management and billing
-- `/api/tools/*` - Premium tools (DCA planner, whale tracker, etc.)
+- `/api/tools/*` - Premium tools (DCA planner, whale tracker, AI reports, smart alerts, etc.)
 - `/api/profile` - User profile management
 - `/api/alerts/*` - Price alert system
-- `/api/crypto/*` - Cryptocurrency data and search
+- `/api/crypto/*` - Cryptocurrency data, search, charts, and market information
+- `/api/settings/*` - User settings management (notifications, security, billing, etc.)
 
 ### Technical Debt
 Current TODOs requiring attention:
