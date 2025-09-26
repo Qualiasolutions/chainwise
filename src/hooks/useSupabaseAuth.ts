@@ -27,11 +27,8 @@ export const useSupabaseAuth = () => {
   const sessionCheckInterval = useRef<NodeJS.Timeout | null>(null)
 
   const fetchUserProfile = async (authUser: SupabaseUser, retryCount = 0): Promise<User | null> => {
-    // Minimal logging to reduce console noise
-    if (retryCount === 0) {
-      // Only log once per session to avoid spam
-      console.log(`🔍 Initializing profile for user`)
-    }
+    // Silent operation to avoid console spam
+    // Only log errors for debugging
 
     try {
       // Check if profile creation is already in progress for this user

@@ -51,29 +51,21 @@ export const usePortfolio = () => {
     const authId = user?.id
     const profileId = profile?.id
 
-    console.log(`🔍 Fetching portfolios (attempt ${retryCount + 1})`, {
-      hasUser: !!user,
-      hasProfile: !!profile,
-      authId: authId,
-      profileId: profileId,
-      authLoading
-    })
+    // Silent portfolio fetch to reduce console noise
 
     // Wait for authentication to complete before proceeding
     if (authLoading) {
-      console.log('⏳ Auth still loading, waiting...')
       return
     }
 
     // Check if we have proper authentication
     if (!user || !authId) {
-      console.log('❌ No authenticated user found, cannot fetch portfolios')
       setPortfolioState(prev => ({ ...prev, loading: false, portfolios: [], error: null }))
       return
     }
 
     try {
-      const response = await fetch(`/api/portfolio?auth_id=${encodeURIComponent(authId)}`, {
+      const response = await fetch('/api/portfolio', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -82,27 +74,18 @@ export const usePortfolio = () => {
         credentials: 'same-origin'
       })
 
-      console.log('📡 Portfolio API response:', {
-        status: response.status,
-        ok: response.ok,
-        statusText: response.statusText
-      })
+      // Silent API response handling
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
         const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`
 
-        console.error('❌ Portfolio API error:', { status: response.status, error: errorMessage })
+        // Log only critical errors
         throw new Error(errorMessage)
       }
 
       const data = await response.json()
-      console.log('✅ Portfolio data received:', {
-        portfolioCount: data.portfolios?.length || 0,
-        hasDebug: !!data.debug,
-        success: data.success,
-        fallback: data.fallback
-      })
+      // Portfolio data processed successfully
 
       setPortfolioState({
         portfolios: data.portfolios || [],
@@ -111,7 +94,7 @@ export const usePortfolio = () => {
       })
 
     } catch (error: any) {
-      console.error(`❌ Error fetching portfolios (attempt ${retryCount + 1}):`, error)
+      // Handle portfolio fetch errors
 
       // Retry logic for transient errors
       if (retryCount < 2 && (

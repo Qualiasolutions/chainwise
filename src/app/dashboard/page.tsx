@@ -133,20 +133,7 @@ export default function DashboardPage() {
   // Overall loading state - show loading if either auth or portfolio is loading
   const loading = authLoading || portfolioLoading
 
-  // Debug logging to help track authentication state
-  useEffect(() => {
-    console.log('🔍 Dashboard state:', {
-      hasUser: !!user,
-      userId: user?.id,
-      userEmail: user?.email,
-      hasProfile: !!profile,
-      profileId: profile?.id,
-      authLoading,
-      portfolioLoading,
-      portfoliosCount: portfolios?.length || 0,
-      error
-    })
-  }, [user, profile, authLoading, portfolioLoading, portfolios, error])
+  // Silent dashboard state management
 
   // State for portfolio chart data
   const [portfolioChartData, setPortfolioChartData] = useState<any[]>([])
