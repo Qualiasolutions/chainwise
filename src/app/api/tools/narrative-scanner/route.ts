@@ -249,3 +249,77 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { tokenSymbol } = await request.json()
+
+    if (!tokenSymbol) {
+      return NextResponse.json({
+        error: 'Token symbol is required'
+      }, { status: 400 })
+    }
+
+    // Get token-specific narrative insights
+    const { data: insightsData, error: insightsError } = await supabase
+      .rpc('get_token_narrative_insights', {
+        p_token_symbol: tokenSymbol.toLowerCase()
+      })
+
+    if (insightsError) {
+      console.error('Token narrative insights error:', insightsError)
+      return NextResponse.json({
+        error: 'Failed to get token insights'
+      }, { status: 500 })
+    }
+
+    const insights = insightsData[0]
+    if (!insights) {
+      return NextResponse.json({
+        error: 'No insights available for this token'
+      }, { status: 404 })
+    }
+
+    // Analyze current narrative trends
+    const { data: trendsData, error: trendsError } = await supabase
+      .rpc('analyze_narrative_trends')
+
+    if (trendsError) {
+      console.error('Narrative trends analysis error:', trendsError)
+    }
+
+    const trendsAnalysis = trendsData?.[0] || {
+      trends_updated: 0,
+      new_keywords_detected: 0,
+      narrative_shifts_detected: 0
+    }
+
+    return NextResponse.json({
+      success: true,
+      tokenSymbol: tokenSymbol.toUpperCase(),
+      narrativeThemes: insights.narrative_themes,
+      sentimentAnalysis: insights.sentiment_analysis,
+      socialMetrics: insights.social_metrics,
+      riskFactors: insights.risk_factors,
+      trendsAnalysis,
+      analysisTimestamp: new Date().toISOString()
+    })
+
+  } catch (error) {
+    console.error('Narrative scanner PATCH API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

@@ -282,3 +282,87 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { action } = await request.json()
+
+    if (action === 'update_market_data') {
+      // Update altcoin market data
+      const { data: updateData, error: updateError } = await supabase
+        .rpc('update_altcoin_market_data')
+
+      if (updateError) {
+        console.error('Market data update error:', updateError)
+        return NextResponse.json({
+          error: 'Failed to update market data'
+        }, { status: 500 })
+      }
+
+      // Get trending opportunities
+      const { data: trendsData, error: trendsError } = await supabase
+        .rpc('get_trending_altcoin_opportunities')
+
+      if (trendsError) {
+        console.error('Trending opportunities error:', trendsError)
+      }
+
+      const update = updateData?.[0] || {
+        updated_tokens: 0,
+        price_changes_detected: 0,
+        new_opportunities: 0
+      }
+
+      console.log(`Market data update complete: ${update.updated_tokens} tokens updated`)
+
+      return NextResponse.json({
+        success: true,
+        updateSummary: update,
+        trendingOpportunities: trendsData || [],
+        lastUpdated: new Date().toISOString(),
+        message: 'Market data refresh completed successfully'
+      })
+
+    } else if (action === 'get_opportunities') {
+      // Get trending opportunities only
+      const { data: opportunitiesData, error: opportunitiesError } = await supabase
+        .rpc('get_trending_altcoin_opportunities')
+
+      if (opportunitiesError) {
+        console.error('Opportunities fetch error:', opportunitiesError)
+        return NextResponse.json({
+          error: 'Failed to fetch opportunities'
+        }, { status: 500 })
+      }
+
+      return NextResponse.json({
+        success: true,
+        opportunities: opportunitiesData || [],
+        totalOpportunities: opportunitiesData?.length || 0,
+        generatedAt: new Date().toISOString()
+      })
+
+    } else {
+      return NextResponse.json({
+        error: 'Invalid action. Supported actions: update_market_data, get_opportunities'
+      }, { status: 400 })
+    }
+
+  } catch (error) {
+    console.error('Altcoin detector PATCH API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

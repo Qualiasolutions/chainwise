@@ -348,3 +348,86 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user profile
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+
+    if (!profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+    }
+
+    const { action } = await request.json()
+
+    if (action === 'evaluate_performance') {
+      // Evaluate signal performance
+      const { data: evaluationData, error: evaluationError } = await supabase
+        .rpc('evaluate_signal_performance')
+
+      if (evaluationError) {
+        console.error('Signal evaluation error:', evaluationError)
+        return NextResponse.json({
+          error: 'Failed to evaluate signals'
+        }, { status: 500 })
+      }
+
+      // Get user's performance stats
+      const { data: performanceData, error: performanceError } = await supabase
+        .rpc('get_user_signal_performance', {
+          p_user_id: profile.id
+        })
+
+      if (performanceError) {
+        console.error('User performance stats error:', performanceError)
+      }
+
+      const evaluation = evaluationData?.[0] || {
+        signals_evaluated: 0,
+        successful_signals: 0,
+        failed_signals: 0,
+        avg_performance: 0
+      }
+
+      const performance = performanceData?.[0] || {
+        total_packs: 0,
+        active_signals: 0,
+        completed_signals: 0,
+        overall_success_rate: 0,
+        total_credits_spent: 0,
+        average_pack_performance: 0
+      }
+
+      console.log(`Signal evaluation complete: ${evaluation.signals_evaluated} signals processed`)
+
+      return NextResponse.json({
+        success: true,
+        evaluation,
+        userPerformance: performance,
+        message: 'Signal performance evaluation completed'
+      })
+
+    } else {
+      return NextResponse.json({
+        error: 'Invalid action. Supported actions: evaluate_performance'
+      }, { status: 400 })
+    }
+
+  } catch (error) {
+    console.error('Signals pack PATCH API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

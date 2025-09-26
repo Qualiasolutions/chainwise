@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
     console.log(`Creating smart alert for user: ${profile.id}`)
     console.log(`Alert: ${alertName}, Type: ${alertType}, Symbol: ${targetSymbol}`)
 
-    // Create the smart alert using database function
+    // Create the smart alert using enhanced database function with AI integration
     const { data: alertData, error: alertError } = await supabase
-      .rpc('create_smart_alert', {
+      .rpc('generate_smart_alert_system', {
         p_user_id: profile.id,
         p_alert_name: alertName,
         p_alert_type: alertType,
@@ -84,18 +84,21 @@ export async function POST(request: NextRequest) {
     }
 
     const result = alertData[0]
-    if (!result || !result.success) {
+    if (!result) {
       return NextResponse.json({
-        error: result?.message || 'Failed to create alert'
+        error: 'Failed to create alert - no result returned'
       }, { status: 400 })
     }
 
     console.log(`Smart alert created successfully: ${result.alert_id}`)
+    console.log(`Credits charged: ${result.credits_charged}`)
 
     return NextResponse.json({
       success: true,
       alertId: result.alert_id,
-      message: result.message
+      alertConfig: result.alert_config,
+      creditsCharged: result.credits_charged,
+      message: `Smart alert "${alertName}" created successfully with AI-enhanced configuration`
     })
 
   } catch (error) {
@@ -202,6 +205,74 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Smart alerts GET API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user profile
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+
+    if (!profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+    }
+
+    // Check for alert triggers using the enhanced function
+    const { data: triggerResults, error: triggerError } = await supabase
+      .rpc('check_smart_alerts')
+
+    if (triggerError) {
+      console.error('Alert checking error:', triggerError)
+      return NextResponse.json({
+        error: 'Failed to check alerts'
+      }, { status: 500 })
+    }
+
+    // Get user's performance stats
+    const { data: performanceData, error: performanceError } = await supabase
+      .rpc('get_alert_performance_stats', {
+        p_user_id: profile.id
+      })
+
+    if (performanceError) {
+      console.error('Performance stats error:', performanceError)
+    }
+
+    const performance = performanceData?.[0] || {
+      total_alerts: 0,
+      active_alerts: 0,
+      total_triggers: 0,
+      avg_accuracy: 0,
+      performance_score: 0
+    }
+
+    console.log(`Alert check complete: ${triggerResults?.length || 0} alerts processed`)
+
+    return NextResponse.json({
+      success: true,
+      alertsChecked: triggerResults?.length || 0,
+      triggeredAlerts: triggerResults?.filter(r => r.triggered)?.length || 0,
+      notificationsSent: triggerResults?.filter(r => r.notification_sent)?.length || 0,
+      performance,
+      message: 'Alert monitoring cycle completed successfully'
+    })
+
+  } catch (error) {
+    console.error('Smart alerts PATCH API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -68,59 +68,49 @@ export async function POST(request: NextRequest) {
         800 // Max tokens for detailed analysis
       )
 
-      // Parse AI analysis and create structured response
-      const mockAllocation: any = {}
+      // Generate portfolio allocation using enhanced database function
+      const cookieStore = await cookies()
+      const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
-      // Generate allocation based on risk tolerance as fallback
-      if (riskTolerance === 'conservative') {
-        mockAllocation.allocations = [
-          { symbol: 'BTC', name: 'Bitcoin', percentage: 60, amount: totalAmount * 0.6 },
-          { symbol: 'ETH', name: 'Ethereum', percentage: 25, amount: totalAmount * 0.25 },
-          { symbol: 'USDC', name: 'USD Coin', percentage: 15, amount: totalAmount * 0.15 }
-        ]
-        mockAllocation.riskScore = 3
-        mockAllocation.expectedReturn = '8-12%'
-        mockAllocation.volatility = 'Low to Medium'
-      } else if (riskTolerance === 'moderate') {
-        mockAllocation.allocations = [
-          { symbol: 'BTC', name: 'Bitcoin', percentage: 40, amount: totalAmount * 0.4 },
-          { symbol: 'ETH', name: 'Ethereum', percentage: 30, amount: totalAmount * 0.3 },
-          { symbol: 'SOL', name: 'Solana', percentage: 15, amount: totalAmount * 0.15 },
-          { symbol: 'ADA', name: 'Cardano', percentage: 10, amount: totalAmount * 0.1 },
-          { symbol: 'USDC', name: 'USD Coin', percentage: 5, amount: totalAmount * 0.05 }
-        ]
-        mockAllocation.riskScore = 6
-        mockAllocation.expectedReturn = '15-25%'
-        mockAllocation.volatility = 'Medium'
-      } else { // aggressive
-        mockAllocation.allocations = [
-          { symbol: 'BTC', name: 'Bitcoin', percentage: 30, amount: totalAmount * 0.3 },
-          { symbol: 'ETH', name: 'Ethereum', percentage: 25, amount: totalAmount * 0.25 },
-          { symbol: 'SOL', name: 'Solana', percentage: 15, amount: totalAmount * 0.15 },
-          { symbol: 'AVAX', name: 'Avalanche', percentage: 10, amount: totalAmount * 0.1 },
-          { symbol: 'DOT', name: 'Polkadot', percentage: 10, amount: totalAmount * 0.1 },
-          { symbol: 'MATIC', name: 'Polygon', percentage: 10, amount: totalAmount * 0.1 }
-        ]
-        mockAllocation.riskScore = 9
-        mockAllocation.expectedReturn = '25-50%'
-        mockAllocation.volatility = 'High'
+      const { data: allocationData, error: allocationError } = await supabase
+        .rpc('generate_portfolio_allocation', {
+          p_user_id: profile.id,
+          p_total_amount: totalAmount,
+          p_risk_tolerance: riskTolerance,
+          p_investment_horizon: investmentHorizon,
+          p_goals: goals || null,
+          p_preferences: preferences || {}
+        })
+
+      if (allocationError) {
+        console.error('Portfolio allocation generation error:', allocationError)
+        return NextResponse.json({
+          error: 'Failed to generate portfolio allocation'
+        }, { status: 500 })
       }
 
+      const allocation = allocationData[0]
+      if (!allocation) {
+        return NextResponse.json({
+          error: 'No allocation data generated'
+        }, { status: 500 })
+      }
+
+      // Combine database allocation with AI analysis
       const enhancedAnalysis = {
-        ...mockAllocation,
+        allocations: allocation.allocations,
+        analysisResults: allocation.analysis_results,
         totalAmount,
         riskTolerance,
         investmentHorizon,
-        diversificationScore: mockAllocation.allocations.length * 20,
-        rebalanceRecommendation: investmentHorizon === 'short' ? 'Monthly' : investmentHorizon === 'medium' ? 'Quarterly' : 'Semi-annually',
-        keyInsights: [
-          `AI-optimized allocation for ${riskTolerance} risk tolerance`,
-          `Market conditions analyzed with live data`,
-          `Suitable for ${investmentHorizon}-term investment horizon`,
-          preferences?.includeAltcoins ? 'Includes alternative cryptocurrencies' : 'Focus on established cryptocurrencies'
-        ],
-        aiAnalysis, // Include the detailed AI analysis
-        enhanced: true // Flag indicating AI enhancement
+        goals,
+        preferences,
+        allocationId: allocation.allocation_id,
+        creditsCharged: allocation.credits_charged,
+        aiAnalysis, // Include the detailed AI analysis from OpenAI
+        enhanced: true, // Flag indicating AI enhancement
+        lyraOptimized: true, // Indicates Lyra optimization
+        generatedAt: new Date().toISOString()
       }
 
       // Deduct credits using MCP helper
@@ -156,6 +146,82 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Portfolio Allocator API error:', error)
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: error.message
+    }, { status: 500 })
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user profile
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+
+    if (!profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+    }
+
+    // Get user's portfolio allocation history
+    const { data: allocationsData, error: allocationsError } = await supabase
+      .rpc('get_user_portfolio_allocations', {
+        p_user_id: profile.id
+      })
+
+    if (allocationsError) {
+      console.error('Failed to fetch portfolio allocations:', allocationsError)
+      return NextResponse.json({
+        error: 'Failed to fetch allocation history'
+      }, { status: 500 })
+    }
+
+    // Get allocation templates for different risk tolerances
+    const allocationTemplates = {
+      conservative: {
+        description: 'Low-risk portfolio focused on established cryptocurrencies',
+        expectedReturn: '8-12%',
+        riskScore: 3,
+        volatility: 'Low to Medium',
+        sampleAssets: ['BTC', 'ETH', 'USDC']
+      },
+      moderate: {
+        description: 'Balanced portfolio with mix of established and emerging assets',
+        expectedReturn: '15-25%',
+        riskScore: 6,
+        volatility: 'Medium',
+        sampleAssets: ['BTC', 'ETH', 'SOL', 'ADA', 'USDC']
+      },
+      aggressive: {
+        description: 'High-growth portfolio with significant altcoin exposure',
+        expectedReturn: '25-50%',
+        riskScore: 9,
+        volatility: 'High',
+        sampleAssets: ['BTC', 'ETH', 'SOL', 'AVAX', 'DOT', 'MATIC']
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      allocations: allocationsData || [],
+      allocationTemplates,
+      userTier: profile.tier,
+      creditsRemaining: profile.credits,
+      creditCost: 4,
+      totalAllocations: allocationsData?.length || 0
+    })
+
+  } catch (error: any) {
+    console.error('Portfolio Allocator GET API error:', error)
     return NextResponse.json({
       error: 'Internal server error',
       details: error.message
