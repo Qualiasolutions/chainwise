@@ -165,7 +165,7 @@ export default function DashboardPage() {
         }
 
         const holdings = defaultPortfolio.portfolio_holdings.map(holding => ({
-          id: holding.id,
+          id: holding.symbol, // Use symbol as identifier for API mapping
           symbol: holding.symbol.toUpperCase(),
           amount: holding.amount
         }))

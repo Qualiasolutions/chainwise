@@ -436,6 +436,10 @@ export default function MarketPage() {
                     <TrendingUp className="w-4 h-4 mr-1" />
                     Trending
                   </TabsTrigger>
+                  <TabsTrigger value="news" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <Newspaper className="w-4 h-4 mr-1" />
+                    News
+                  </TabsTrigger>
                 </TabsList>
 
                 <div className="flex items-center space-x-3">
@@ -568,6 +572,99 @@ export default function MarketPage() {
                         </Link>
                       ))}
                     </div>
+                  </div>
+                </DataCard>
+              </TabsContent>
+
+              <TabsContent value="news" className="mt-4">
+                <DataCard>
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Newspaper className="w-4 h-4 text-blue-500" />
+                        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Crypto News</h3>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="secondary" className="text-xs rounded-sm">
+                          {newsData.length} articles
+                        </Badge>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={refreshNews}
+                          disabled={newsLoading}
+                          className="h-8 text-xs rounded-sm"
+                        >
+                          {newsLoading ? (
+                            <div className="w-3 h-3 border border-slate-400 border-t-transparent rounded-full animate-spin mr-1.5" />
+                          ) : (
+                            <Clock className="w-3 h-3 mr-1.5" />
+                          )}
+                          Refresh
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    {newsData.length > 0 ? (
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {newsData.map((article, index) => (
+                          <div key={index} className="group p-4 rounded-sm border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200">
+                            <div className="flex flex-col space-y-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-tight line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                  {article.title}
+                                </h4>
+                                <ExternalLink className="w-3 h-3 text-slate-400 flex-shrink-0 mt-0.5" />
+                              </div>
+
+                              {article.description && (
+                                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
+                                  {article.description}
+                                </p>
+                              )}
+
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex items-center space-x-1">
+                                    <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                      {article.source}
+                                    </span>
+                                  </div>
+                                  {article.publishedAt && (
+                                    <span className="text-xs text-slate-400">
+                                      {new Date(article.publishedAt).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {article.url && (
+                                  <a
+                                    href={article.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                                  >
+                                    Read More
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <Newspaper className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+                        <h3 className="text-base font-medium mb-2 text-slate-900 dark:text-slate-100">No news available</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Unable to load crypto news at the moment</p>
+                        <Button onClick={refreshNews} variant="outline" size="sm" className="text-xs h-8 rounded-sm">
+                          <Clock className="w-3 h-3 mr-1.5" />
+                          Try Refreshing
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </DataCard>
               </TabsContent>

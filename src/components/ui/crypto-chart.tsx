@@ -23,7 +23,7 @@ export function CryptoChart({
   title,
   height = 300,
   showGrid = true,
-  color = "#8b5cf6"
+  color = "hsl(var(--chart-1))"
 }: CryptoChartProps) {
   const formatTooltipValue = (value: number) => {
     return formatPrice(value)
@@ -32,8 +32,8 @@ export function CryptoChart({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
-          <p className="font-medium">{label}</p>
+        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg">
+          <p className="font-medium text-foreground">{label}</p>
           <p className="text-sm">
             <span className="text-muted-foreground">Price: </span>
             <span className="font-semibold text-primary">
@@ -59,29 +59,26 @@ export function CryptoChart({
             {showGrid && (
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="currentColor"
-                opacity={0.1}
-                className="text-muted-foreground"
+                stroke="hsl(var(--muted-foreground))"
+                opacity={0.3}
               />
             )}
             <XAxis
               dataKey="date"
-              stroke="currentColor"
+              stroke="hsl(var(--muted-foreground))"
               fontSize={11}
               fontWeight={500}
               tickLine={false}
               axisLine={false}
-              className="text-foreground fill-foreground"
-              tick={{ fill: 'currentColor' }}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
             />
             <YAxis
-              stroke="currentColor"
+              stroke="hsl(var(--muted-foreground))"
               fontSize={11}
               fontWeight={500}
               tickLine={false}
               axisLine={false}
-              className="text-foreground fill-foreground"
-              tick={{ fill: 'currentColor' }}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
               tickFormatter={(value) => `$${value.toLocaleString()}`}
             />
             <Tooltip content={<CustomTooltip />} />

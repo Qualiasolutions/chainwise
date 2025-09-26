@@ -631,12 +631,45 @@ class CryptoAPI {
     try {
       if (holdings.length === 0) return []
 
-      const ids = holdings.map(h => h.id).join(',')
+      // Convert symbols to proper coin IDs for CoinGecko API
+      const symbolToCoinId: Record<string, string> = {
+        'BTC': 'bitcoin',
+        'ETH': 'ethereum',
+        'ADA': 'cardano',
+        'DOT': 'polkadot',
+        'XRP': 'ripple',
+        'LINK': 'chainlink',
+        'SOL': 'solana',
+        'AVAX': 'avalanche-2',
+        'MATIC': 'matic-network',
+        'ATOM': 'cosmos',
+        'UNI': 'uniswap',
+        'AAVE': 'aave',
+        'ALGO': 'algorand',
+        'FTM': 'fantom',
+        'NEAR': 'near',
+        'ONE': 'harmony'
+      }
 
-      // Get current prices first
-      const currentData = await this.fetchAPI(
-        `/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&per_page=250&page=1&sparkline=false`
-      )
+      // Map holdings to valid coin IDs, filter out unknown symbols
+      const validHoldings = holdings.filter(h => symbolToCoinId[h.symbol.toUpperCase()])
+      if (validHoldings.length === 0) {
+        console.warn('No valid coin symbols found in holdings for API call')
+        return this.generateMockPortfolioData(holdings, days)
+      }
+
+      const coinIds = validHoldings.map(h => symbolToCoinId[h.symbol.toUpperCase()]).join(',')
+
+      // Get current prices first with error handling
+      let currentData
+      try {
+        currentData = await this.fetchAPI(
+          `/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc&per_page=250&page=1&sparkline=false`
+        )
+      } catch (apiError) {
+        console.warn('CoinGecko API failed, using mock data:', apiError)
+        return this.generateMockPortfolioData(holdings, days)
+      }
 
       // Generate time points for the chart
       const timePoints = []
@@ -659,8 +692,9 @@ class CryptoAPI {
           }
 
           // For each holding, calculate its value at this time point
-          for (const holding of holdings) {
-            const crypto = currentData.find((c: CryptoData) => c.id === holding.id)
+          for (const holding of validHoldings) {
+            const coinId = symbolToCoinId[holding.symbol.toUpperCase()]
+            const crypto = currentData.find((c: CryptoData) => c.id === coinId)
             if (crypto) {
               // Simulate price variation for demonstration (in real app, use historical data)
               const variation = 1 + (Math.random() - 0.5) * 0.1 * (days - index) / days

@@ -27,7 +27,10 @@ export const useSupabaseAuth = () => {
   const sessionCheckInterval = useRef<NodeJS.Timeout | null>(null)
 
   const fetchUserProfile = async (authUser: SupabaseUser, retryCount = 0): Promise<User | null> => {
-    console.log(`🔍 Fetching profile for user ${authUser.id} (attempt ${retryCount + 1})`)
+    // Only log on first attempt or errors to reduce console noise
+    if (retryCount === 0) {
+      console.log(`🔍 Fetching profile for user ${authUser.id}`)
+    }
 
     try {
       // Check if profile creation is already in progress for this user
@@ -40,7 +43,7 @@ export const useSupabaseAuth = () => {
 
       // Try to get existing profile using direct Supabase call
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('auth_id', authUser.id)
         .single()
@@ -66,7 +69,7 @@ export const useSupabaseAuth = () => {
 
           try {
             const { data: createdProfile, error: createError } = await supabase
-              .from('profiles')
+              .from('users')
               .insert(newProfileData)
               .select()
               .single()
@@ -88,7 +91,7 @@ export const useSupabaseAuth = () => {
               // Wait a bit and try to fetch the existing profile
               await new Promise(resolve => setTimeout(resolve, 1000))
               const { data: existingProfile } = await supabase
-                .from('profiles')
+                .from('users')
                 .select('*')
                 .eq('auth_id', authUser.id)
                 .single()

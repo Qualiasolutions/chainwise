@@ -835,42 +835,39 @@ export default function PortfolioPage() {
                       <AreaChart data={performanceData}>
                         <defs>
                           <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid
                           strokeDasharray="3 3"
-                          stroke="currentColor"
-                          opacity={0.1}
-                          className="text-muted-foreground"
+                          stroke="hsl(var(--muted-foreground))"
+                          opacity={0.3}
                         />
                         <XAxis
                           dataKey="date"
-                          stroke="currentColor"
+                          stroke="hsl(var(--muted-foreground))"
                           fontSize={11}
                           fontWeight={500}
                           tickLine={false}
                           axisLine={false}
-                          className="text-foreground fill-foreground"
-                          tick={{ fill: 'currentColor' }}
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
                         />
                         <YAxis
-                          stroke="currentColor"
+                          stroke="hsl(var(--muted-foreground))"
                           fontSize={11}
                           fontWeight={500}
                           tickLine={false}
                           axisLine={false}
-                          className="text-foreground fill-foreground"
-                          tick={{ fill: 'currentColor' }}
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
                           tickFormatter={(value) => formatPrice(value)}
                         />
                         <Tooltip
                           content={({ active, payload, label }) => {
                             if (active && payload && payload.length) {
                               return (
-                                <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
-                                  <p className="font-medium">{label}</p>
+                                <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg">
+                                  <p className="font-medium text-foreground">{label}</p>
                                   <p className="text-sm">
                                     <span className="text-muted-foreground">Value: </span>
                                     <span className="font-semibold text-primary">
@@ -894,7 +891,7 @@ export default function PortfolioPage() {
                         <Area
                           type="monotone"
                           dataKey="value"
-                          stroke="#8b5cf6"
+                          stroke="hsl(var(--chart-1))"
                           fill="url(#colorValue)"
                           strokeWidth={2}
                         />
@@ -917,28 +914,25 @@ export default function PortfolioPage() {
                       <LineChart data={performanceData}>
                         <CartesianGrid
                           strokeDasharray="3 3"
-                          stroke="currentColor"
-                          opacity={0.1}
-                          className="text-muted-foreground"
+                          stroke="hsl(var(--muted-foreground))"
+                          opacity={0.3}
                         />
                         <XAxis
                           dataKey="date"
-                          stroke="currentColor"
+                          stroke="hsl(var(--muted-foreground))"
                           fontSize={11}
                           fontWeight={500}
                           tickLine={false}
                           axisLine={false}
-                          className="text-foreground fill-foreground"
-                          tick={{ fill: 'currentColor' }}
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
                         />
                         <YAxis
-                          stroke="currentColor"
+                          stroke="hsl(var(--muted-foreground))"
                           fontSize={11}
                           fontWeight={500}
                           tickLine={false}
                           axisLine={false}
-                          className="text-foreground fill-foreground"
-                          tick={{ fill: 'currentColor' }}
+                          tick={{ fill: 'hsl(var(--muted-foreground))' }}
                           tickFormatter={(value) => formatPrice(value)}
                         />
                         <Tooltip
@@ -946,8 +940,8 @@ export default function PortfolioPage() {
                             if (active && payload && payload.length) {
                               const value = payload[0].value as number
                               return (
-                                <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-lg">
-                                  <p className="font-medium">{label}</p>
+                                <div className="bg-card/95 backdrop-blur-sm border border-border rounded-lg p-3 shadow-lg">
+                                  <p className="font-medium text-foreground">{label}</p>
                                   <p className="text-sm">
                                     <span className="text-muted-foreground">P&L: </span>
                                     <span className={`font-semibold ${value >= 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -963,10 +957,10 @@ export default function PortfolioPage() {
                         <Line
                           type="monotone"
                           dataKey="pnl"
-                          stroke="#10b981"
+                          stroke="hsl(var(--chart-2))"
                           strokeWidth={2}
-                          dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
-                          activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2 }}
+                          dot={{ fill: "hsl(var(--chart-2))", strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: "hsl(var(--chart-2))", strokeWidth: 2 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
