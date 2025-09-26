@@ -358,42 +358,39 @@ export default function AnalyticsPage() {
               <AreaChart data={performanceData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="currentColor"
-                  opacity={0.1}
-                  className="text-muted-foreground"
+                  stroke="hsl(var(--muted-foreground))"
+                  opacity={0.3}
                 />
                 <XAxis
                   dataKey="date"
-                  stroke="currentColor"
+                  stroke="hsl(var(--muted-foreground))"
                   fontSize={11}
                   fontWeight={500}
                   tickLine={false}
                   axisLine={false}
-                  className="text-foreground fill-foreground"
-                  tick={{ fill: 'currentColor' }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
                 />
                 <YAxis
-                  stroke="currentColor"
+                  stroke="hsl(var(--muted-foreground))"
                   fontSize={11}
                   fontWeight={500}
                   tickLine={false}
                   axisLine={false}
-                  className="text-foreground fill-foreground"
-                  tick={{ fill: 'currentColor' }}
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#8b5cf6"
+                  stroke="hsl(var(--chart-1))"
                   fill="url(#colorValue)"
                   strokeWidth={2}
                 />
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
               </AreaChart>

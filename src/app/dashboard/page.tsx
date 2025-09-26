@@ -571,26 +571,23 @@ export default function DashboardPage() {
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
-                      stroke="currentColor"
-                      opacity={0.1}
-                      className="text-muted-foreground"
+                      stroke="hsl(var(--muted-foreground))"
+                      opacity={0.3}
                     />
                     <XAxis
                       dataKey="time"
-                      stroke="currentColor"
+                      stroke="hsl(var(--muted-foreground))"
                       fontSize={11}
                       fontWeight={500}
-                      className="text-foreground fill-foreground"
-                      tick={{ fill: 'currentColor' }}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
-                      stroke="currentColor"
+                      stroke="hsl(var(--muted-foreground))"
                       fontSize={11}
                       fontWeight={500}
-                      className="text-foreground fill-foreground"
-                      tick={{ fill: 'currentColor' }}
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
                       axisLine={false}
                       tickLine={false}
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
