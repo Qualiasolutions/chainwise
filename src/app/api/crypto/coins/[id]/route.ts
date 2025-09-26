@@ -411,10 +411,10 @@ const FALLBACK_COIN_DATA: Record<string, any> = {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const coinId = params.id
+    const { id: coinId } = await params
 
     if (!coinId) {
       return NextResponse.json(
@@ -466,10 +466,9 @@ export async function GET(
     }
 
   } catch (error) {
-    console.error(`Coin details API error for ${params.id}:`, error)
+    console.error(`Coin details API error for ${coinId}:`, error)
 
     // Try fallback data
-    const coinId = params.id
     if (FALLBACK_COIN_DATA[coinId]) {
       return NextResponse.json(FALLBACK_COIN_DATA[coinId], {
         headers: {
@@ -483,7 +482,7 @@ export async function GET(
       {
         error: 'Failed to fetch coin details',
         message: 'Unable to retrieve cryptocurrency information. Please try again later.',
-        coinId: params.id
+        coinId: coinId
       },
       { status: 500 }
     )

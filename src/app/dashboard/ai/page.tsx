@@ -48,6 +48,12 @@ import {
   Bot,
   GraduationCap,
   TrendingUp,
+  Crown,
+  Wallet,
+  FileText,
+  Brain,
+  Gem,
+  Star,
   Send,
   Plus,
   ArrowUp,
@@ -60,7 +66,6 @@ import {
   Check,
   Lock,
   Sparkles,
-  Brain,
   MessageCircle,
   Clock,
   Search,
@@ -68,7 +73,6 @@ import {
   Settings,
   Trash2,
   Archive,
-  Star,
   MoreHorizontal,
   PanelLeftClose,
   PanelLeft,
@@ -78,6 +82,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import Link from "next/link"
 import { UpgradeModal } from "@/components/UpgradeModal"
 
 const AI_PERSONAS = {
@@ -494,6 +499,89 @@ export default function AIPage() {
                       ))}
                     </AnimatePresence>
                   </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
+              {/* Premium Tools Access */}
+              <SidebarGroup>
+                <SidebarGroupLabel className="px-2 text-xs font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                  <motion.div
+                    animate={{ rotate: [0, 5, -5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Crown className="h-3 w-3 text-yellow-500" />
+                  </motion.div>
+                  Premium Tools
+                </SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <div className="grid grid-cols-2 gap-2 px-2">
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto flex flex-col items-center gap-1 p-2 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-blue-100 hover:to-indigo-100 border border-blue-200/50 dark:border-slate-700/50"
+                        asChild
+                      >
+                        <Link href="/tools/whale-tracker">
+                          <Wallet className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                          <span className="text-[10px] font-medium">Whale Tracker</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto flex flex-col items-center gap-1 p-2 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-purple-100 hover:to-violet-100 border border-purple-200/50 dark:border-slate-700/50"
+                        asChild
+                      >
+                        <Link href="/tools/ai-reports">
+                          <FileText className="h-3 w-3 text-purple-600 dark:text-purple-400" />
+                          <span className="text-[10px] font-medium">AI Reports</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto flex flex-col items-center gap-1 p-2 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-green-100 hover:to-emerald-100 border border-green-200/50 dark:border-slate-700/50"
+                        asChild
+                      >
+                        <Link href="/tools/narrative-scanner">
+                          <Brain className="h-3 w-3 text-green-600 dark:text-green-400" />
+                          <span className="text-[10px] font-medium">Narrative Scanner</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto flex flex-col items-center gap-1 p-2 bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-orange-100 hover:to-red-100 border border-orange-200/50 dark:border-slate-700/50"
+                        asChild
+                      >
+                        <Link href="/tools/altcoin-detector">
+                          <Gem className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+                          <span className="text-[10px] font-medium">Altcoin Detector</span>
+                        </Link>
+                      </Button>
+                    </motion.div>
+                  </div>
+                  <div className="mt-2 px-2">
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button
+                        size="sm"
+                        className="w-full h-8 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-xs"
+                        asChild
+                      >
+                        <Link href="/checkout">
+                          <Star className="h-3 w-3 mr-1" />
+                          {profile?.tier === 'free' ? 'Upgrade Now' : 'View All Tools'}
+                        </Link>
+                      </Button>
+                    </motion.div>
+                  </div>
                 </SidebarGroupContent>
               </SidebarGroup>
             </SidebarContent>

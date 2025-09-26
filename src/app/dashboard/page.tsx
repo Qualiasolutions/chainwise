@@ -20,7 +20,14 @@ import {
   Zap,
   Loader2,
   AlertCircle,
-  Bot
+  Bot,
+  Bell,
+  Brain,
+  Gem,
+  FileText,
+  Wallet,
+  Crown,
+  Star
 } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Line, LineChart, Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
@@ -702,6 +709,78 @@ export default function DashboardPage() {
           </div>
         </DataCard>
       </div>
+
+      {/* Premium Tools */}
+      <ProfessionalCard>
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1 flex items-center gap-2">
+                <Crown className="h-4 w-4 text-yellow-500" />
+                Premium Tools
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Advanced AI-powered crypto analysis tools
+              </p>
+            </div>
+            <Badge variant="secondary" className="text-xs">
+              {profile?.tier === 'free' ? 'Upgrade to Access' : `${profile?.tier.charAt(0).toUpperCase()}${profile?.tier.slice(1)} Plan`}
+            </Badge>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Link href="/tools/whale-tracker" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-blue-100 hover:to-indigo-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-blue-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Wallet className="h-4 w-4 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">Whale Tracker</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">PRO+</Badge>
+          </Link>
+          <Link href="/tools/ai-reports" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-purple-100 hover:to-violet-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-purple-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <FileText className="h-4 w-4 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">AI Reports</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">PRO+</Badge>
+          </Link>
+          <Link href="/tools/narrative-scanner" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-green-100 hover:to-emerald-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-green-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Brain className="h-4 w-4 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">Narrative Scanner</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">PRO+</Badge>
+          </Link>
+          <Link href="/tools/altcoin-detector" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-orange-100 hover:to-red-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-orange-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Gem className="h-4 w-4 text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">Altcoin Detector</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">ELITE</Badge>
+          </Link>
+          <Link href="/tools/smart-alerts" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-cyan-100 hover:to-blue-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-cyan-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Bell className="h-4 w-4 text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">Smart Alerts</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">PRO+</Badge>
+          </Link>
+          <Link href="/tools/portfolio-allocator" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-yellow-100 hover:to-amber-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-yellow-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Zap className="h-4 w-4 text-yellow-600 dark:text-yellow-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">Portfolio Allocator</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">PRO+</Badge>
+          </Link>
+          <Link href="/tools/signals-pack" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-pink-50 to-rose-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-pink-100 hover:to-rose-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-pink-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <Activity className="h-4 w-4 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">Signals Pack</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">ELITE</Badge>
+          </Link>
+          <Link href="/tools/whale-copy" className="group h-20 flex flex-col items-center justify-center space-y-2 rounded-sm border border-slate-200 dark:border-slate-700 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-800/50 dark:to-slate-800/30 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-slate-800 dark:hover:to-slate-700 hover:border-indigo-300 dark:hover:border-slate-600 transition-all duration-200 text-slate-900 dark:text-slate-100">
+            <TrendingUp className="h-4 w-4 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-medium text-center">Whale Copy</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 bg-gradient-to-r from-yellow-500 to-orange-500 text-white">ELITE</Badge>
+          </Link>
+        </div>
+        {profile?.tier === 'free' && (
+          <div className="mt-4 text-center">
+            <Link href="/checkout">
+              <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white">
+                <Star className="h-3 w-3 mr-1" />
+                Upgrade to Unlock All Tools
+              </Button>
+            </Link>
+          </div>
+        )}
+      </ProfessionalCard>
 
       {/* Quick Actions */}
       <ProfessionalCard>
