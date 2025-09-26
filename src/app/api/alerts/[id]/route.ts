@@ -89,18 +89,34 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = await request.json()
     const { targetValue, isActive } = body
 
-    // Build update object
+    // Build update object with enhanced validation
     const updates: Record<string, unknown> = {}
 
     if (targetValue !== undefined) {
-      if (targetValue <= 0) {
-        return NextResponse.json({ error: 'Target value must be greater than 0' }, { status: 400 })
+      const parsedTargetValue = parseFloat(targetValue)
+      if (isNaN(parsedTargetValue) || parsedTargetValue <= 0) {
+        return NextResponse.json({
+          error: 'Target value must be a positive number greater than 0'
+        }, { status: 400 })
       }
-      updates.target_value = parseFloat(targetValue)
+
+      // Validate target value ranges
+      if (parsedTargetValue > 10000000) {
+        return NextResponse.json({
+          error: 'Price target cannot exceed $10,000,000'
+        }, { status: 400 })
+      }
+
+      updates.target_value = parsedTargetValue
     }
 
     if (isActive !== undefined) {
-      updates.is_active = Boolean(isActive)
+      if (typeof isActive !== 'boolean') {
+        return NextResponse.json({
+          error: 'isActive must be a boolean value'
+        }, { status: 400 })
+      }
+      updates.is_active = isActive
     }
 
     if (Object.keys(updates).length === 0) {

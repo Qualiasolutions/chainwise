@@ -51,16 +51,16 @@ ChainWise is a production-deployed AI-powered cryptocurrency advisory platform w
 
 - `npm run dev` - Start development server with Turbopack (localhost:3000)
 - `npm run build` - Build for production with Turbopack
-- `npm run lint` - Run ESLint (configured but may have unresolved issues)
+- `npm run lint` - Run ESLint (configured but errors ignored during builds)
 - `npm run start` - Start production server
 
-**Note**: No test framework is currently configured. The project uses TypeScript and ESLint errors ignored during builds (see `next.config.ts`). Turbopack is enabled for both dev and build commands for faster performance.
+**Important**: TypeScript and ESLint errors are ignored during builds for faster development (see `next.config.ts`). No test framework is currently configured. All development uses Turbopack for optimal performance.
 
 ### Database Commands (Supabase)
-- `npx supabase db push` - Apply database migrations
-- `npx supabase db reset` - Reset local database with all migrations
 - `npx supabase start` - Start local Supabase services
 - `npx supabase stop` - Stop local Supabase services
+- `npx supabase db push` - Apply database migrations to remote database
+- `npx supabase db reset` - Reset local database with all migrations and seed data
 
 ## Tech Stack
 
@@ -79,10 +79,12 @@ ChainWise is a production-deployed AI-powered cryptocurrency advisory platform w
 ## Project Architecture
 
 ### Key Directories
-- `src/app/` - Next.js App Router pages
-- `src/components/ui/` - shadcn/ui components
-- `src/lib/` - Utilities (crypto API, Supabase client)
-- `src/app/api/` - API routes for portfolio, chat, alerts
+- `src/app/` - Next.js App Router pages and API routes
+- `src/app/api/` - 25+ API endpoints organized by feature (portfolio, chat, tools, auth, etc.)
+- `src/components/ui/` - shadcn/ui components (20+ components)
+- `src/lib/` - Utilities and services (crypto API, Supabase client, auth helpers)
+- `src/hooks/` - Custom React hooks for authentication and state management
+- `supabase/migrations/` - Database schema migrations with RLS policies
 
 ### Authentication Flow
 - Sign-in/sign-up pages in `src/app/auth/`
@@ -316,11 +318,12 @@ Current TODOs requiring attention:
 - Real-time platform testing with live crypto data
 - Authentication system prepared for full functionality
 
-### Known Issues
-- **✅ Authentication**: FIXED - All login/logout issues permanently resolved with comprehensive auth system overhaul
-- **AI Chat**: Responses are currently mocked (needs OPENAI_API_KEY for real AI integration)
-- **TypeScript/ESLint**: Build errors ignored for faster development (see `next.config.ts`)
-- **react-globe.gl**: Occasional build issues with HTML imports (development works fine)
+### Known Issues & Notes
+- **✅ Authentication**: FIXED - All login/logout issues permanently resolved
+- **AI Chat**: Mock responses used in development (configure OPENAI_API_KEY for production)
+- **Build Configuration**: TypeScript/ESLint errors ignored during builds for faster development iteration
+- **Testing**: No test framework configured - manual testing currently used
+- **react-globe.gl**: May have occasional build issues with HTML imports (development works fine)
 
 ### Development Workflow
 When working on this codebase:

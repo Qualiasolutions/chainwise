@@ -95,10 +95,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { symbol, alertType, targetValue } = body
 
-    // Validation
-    if (!symbol || !alertType || !targetValue) {
+    // Enhanced validation
+    if (!symbol || !alertType || targetValue === undefined || targetValue === null) {
       return NextResponse.json({
         error: 'Missing required fields: symbol, alertType, targetValue'
+      }, { status: 400 })
+    }
+
+    // Validate symbol format (basic cryptocurrency symbol validation)
+    const symbolRegex = /^[A-Z0-9]{1,10}$/
+    if (!symbolRegex.test(symbol.toUpperCase())) {
+      return NextResponse.json({
+        error: 'Invalid symbol format. Use uppercase letters and numbers only (1-10 characters)'
       }, { status: 400 })
     }
 
@@ -109,10 +117,27 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    if (targetValue <= 0) {
+    const parsedTargetValue = parseFloat(targetValue)
+    if (isNaN(parsedTargetValue) || parsedTargetValue <= 0) {
       return NextResponse.json({
-        error: 'Target value must be greater than 0'
+        error: 'Target value must be a positive number greater than 0'
       }, { status: 400 })
+    }
+
+    // Validate target value ranges based on alert type
+    if (alertType === 'percentage_change') {
+      if (parsedTargetValue > 1000) {
+        return NextResponse.json({
+          error: 'Percentage change cannot exceed 1000%'
+        }, { status: 400 })
+      }
+    } else {
+      // For price alerts, check reasonable price limits
+      if (parsedTargetValue > 10000000) {
+        return NextResponse.json({
+          error: 'Price target cannot exceed $10,000,000'
+        }, { status: 400 })
+      }
     }
 
     // Check alert limits based on tier
@@ -160,7 +185,7 @@ export async function POST(request: NextRequest) {
         user_id: profile.id,
         symbol: symbol.toLowerCase(),
         alert_type: alertType,
-        target_value: parseFloat(targetValue),
+        target_value: parsedTargetValue,
         is_active: true
       })
       .select()

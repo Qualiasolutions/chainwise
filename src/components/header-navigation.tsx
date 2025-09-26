@@ -91,6 +91,30 @@ export function HeaderNavigation() {
               <NavigationMenuItem>
                 <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                   <Link
+                    href="/market"
+                    className={cn(
+                      pathname === "/market" && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    Market
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link
+                    href="/alerts"
+                    className={cn(
+                      pathname === "/alerts" && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    Alerts
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link
                     href="/dashboard/ai"
                     className={cn(
                       pathname === "/dashboard/ai" && "bg-accent text-accent-foreground"

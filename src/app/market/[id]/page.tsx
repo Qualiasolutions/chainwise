@@ -22,13 +22,15 @@ import {
   BarChart3,
   Activity,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Bell
 } from "lucide-react"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Line, LineChart, Area, AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid } from "recharts"
 import { cryptoAPI, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
 import { motion } from "framer-motion"
 import Link from "next/link"
+import CreateAlertModal from "@/components/alerts/CreateAlertModal"
 
 interface CoinDetails {
   id: string
@@ -122,6 +124,7 @@ export default function CoinDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chartPeriod, setChartPeriod] = useState(7)
+  const [showAlertModal, setShowAlertModal] = useState(false)
 
   useEffect(() => {
     const fetchCoinDetails = async () => {
@@ -237,6 +240,10 @@ export default function CoinDetailPage() {
           <Button variant="outline" size="sm">
             <Star className="h-4 w-4 mr-2" />
             Watchlist
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowAlertModal(true)}>
+            <Bell className="h-4 w-4 mr-2" />
+            Set Alert
           </Button>
           <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
             Add to Portfolio
@@ -606,6 +613,14 @@ export default function CoinDetailPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Alert Modal */}
+      <CreateAlertModal
+        isOpen={showAlertModal}
+        onClose={() => setShowAlertModal(false)}
+        defaultSymbol={coinDetails?.symbol}
+        currentPrice={currentPrice}
+      />
     </motion.div>
   )
 }

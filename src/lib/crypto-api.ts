@@ -501,13 +501,19 @@ class CryptoAPI {
   async getSimplePrice(ids: string[], vs_currencies: string[] = ['usd']): Promise<Record<string, Record<string, number>>> {
     const idsStr = ids.join(',')
     const currenciesStr = vs_currencies.join(',')
-    return this.fetchAPI(`/simple/price?ids=${idsStr}&vs_currencies=${currenciesStr}&include_24hr_change=true`)
+    const endpoint = isBrowser
+      ? `/api/crypto/simple/price?ids=${idsStr}&vs_currencies=${currenciesStr}&include_24hr_change=true`
+      : `/simple/price?ids=${idsStr}&vs_currencies=${currenciesStr}&include_24hr_change=true`
+    return this.fetchAPI(endpoint)
   }
 
   // Get detailed coin data for individual coin pages
   async getCoinDetails(id: string): Promise<any> {
     try {
-      return await this.fetchAPI(`/coins/${id}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`)
+      const endpoint = isBrowser
+        ? `/api/crypto/coins/${id}`
+        : `/coins/${id}?localization=false&tickers=false&market_data=true&community_data=true&developer_data=true&sparkline=false`
+      return await this.fetchAPI(endpoint)
     } catch (error) {
       console.error(`Error fetching coin details for ${id}:`, error)
       throw error
