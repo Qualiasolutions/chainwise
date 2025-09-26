@@ -1,6 +1,12 @@
 // CoinGecko API integration for real-time crypto data
 const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3'
 
+// Check if running in browser or server
+const isBrowser = typeof window !== 'undefined'
+
+// Use proxy routes in browser to avoid CORS issues
+const API_BASE = isBrowser ? '/api/crypto' : COINGECKO_API_BASE
+
 export interface CryptoData {
   id: string
   symbol: string
@@ -103,10 +109,17 @@ class CryptoAPI {
 
   private async makeRequest(endpoint: string): Promise<any> {
     try {
-      // Add delay to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Add delay to prevent rate limiting (only for direct API calls)
+      if (!isBrowser) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
 
-      const response = await fetch(`${COINGECKO_API_BASE}${endpoint}`, {
+      // Use appropriate base URL based on environment
+      const url = isBrowser
+        ? endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+        : `${COINGECKO_API_BASE}${endpoint}`
+
+      const response = await fetch(url, {
         headers: {
           'Accept': 'application/json',
           'Cache-Control': 'no-cache',
@@ -143,9 +156,11 @@ class CryptoAPI {
 
   async getTopCryptos(limit: number = 100): Promise<CryptoData[]> {
     try {
-      return await this.fetchAPI(
-        `/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=24h`
-      )
+      const endpoint = isBrowser
+        ? `/api/crypto/markets?limit=${limit}`
+        : `/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=24h`
+
+      return await this.fetchAPI(endpoint)
     } catch (error) {
       console.warn('CoinGecko API failed, using fallback data:', error)
 
@@ -390,8 +405,9 @@ class CryptoAPI {
   }
 
   async getGlobalData(): Promise<MarketData> {
-    const response = await this.fetchAPI('/global')
-    return response.data
+    const endpoint = isBrowser ? '/api/crypto/global' : '/global'
+    const response = await this.fetchAPI(endpoint)
+    return isBrowser ? response.data : response.data
   }
 
   async getCryptoChart(id: string, days: number = 7): Promise<ChartData> {
@@ -458,7 +474,8 @@ class CryptoAPI {
   }
 
   async getTrendingCryptos(): Promise<any[]> {
-    const response = await this.fetchAPI('/search/trending')
+    const endpoint = isBrowser ? '/api/crypto/trending' : '/search/trending'
+    const response = await this.fetchAPI(endpoint)
     return response.coins
   }
 
@@ -500,16 +517,18 @@ class CryptoAPI {
   // Get crypto news from multiple sources
   async getCryptoNews(limit: number = 10): Promise<NewsArticle[]> {
     try {
-      // Since CoinGecko doesn't have a direct news API, we'll use a combination of approaches
-      // For now, we'll return curated news data that updates regularly
-
-      // In a production environment, you would integrate with:
-      // 1. NewsAPI.org for general crypto news
-      // 2. CryptoPanic API for crypto-specific news
-      // 3. RSS feeds from major crypto news sources
-
-      const currentNews = this.generateCryptoNews()
-      return currentNews.slice(0, limit)
+      if (isBrowser) {
+        // Use proxy route in browser
+        const response = await fetch(`/api/crypto/news?limit=${limit}`)
+        if (!response.ok) {
+          throw new Error(`News API failed: ${response.status}`)
+        }
+        return await response.json()
+      } else {
+        // Server-side: use curated news
+        const currentNews = this.generateCryptoNews()
+        return currentNews.slice(0, limit)
+      }
     } catch (error) {
       console.error('Error fetching crypto news:', error)
       return this.generateCryptoNews().slice(0, limit)
