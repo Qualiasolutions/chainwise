@@ -27,7 +27,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Get user profile from profiles table
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()

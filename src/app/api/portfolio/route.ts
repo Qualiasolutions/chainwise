@@ -12,40 +12,28 @@ import { MCPSupabaseClient } from '@/lib/supabase/mcp-helpers'
 const mcpClient = new MCPSupabaseClient()
 
 export async function GET(request: NextRequest) {
-  console.log('🔍 Portfolio API GET request started')
-
   try {
     const cookieStore = await cookies()
     const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
-    // Get current user with detailed logging
+    // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
-    console.log('🔐 Auth session check:', { hasSession: !!session, authError: authError?.message })
 
     if (authError) {
-      console.error('❌ Auth error:', authError)
       return NextResponse.json({ error: 'Authentication error', details: authError.message }, { status: 401 })
     }
 
     if (!session) {
-      console.log('❌ No session found')
       return NextResponse.json({ error: 'No active session' }, { status: 401 })
     }
 
-    console.log('✅ Session found for user:', session.user.id)
-
-    // Get user profile from profiles table with enhanced error handling
+    // Get user profile from users table with enhanced error handling
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id, auth_id, email, tier, credits')
       .eq('auth_id', session.user.id)
       .single()
 
-    console.log('👤 Profile lookup:', {
-      hasProfile: !!profile,
-      profileId: profile?.id,
-      profileError: profileError?.message
-    })
 
     if (profileError) {
       console.error('❌ Profile fetch error:', profileError)
@@ -69,7 +57,7 @@ export async function GET(request: NextRequest) {
           }
 
           const { data: createdProfile, error: createError } = await supabase
-            .from('profiles')
+            .from('users')
             .insert(newProfileData)
             .select('id, auth_id, email, tier, credits')
             .single()
@@ -348,7 +336,7 @@ export async function POST(request: NextRequest) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id, tier')
       .eq('auth_id', session.user.id)
       .single()

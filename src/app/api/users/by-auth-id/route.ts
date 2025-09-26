@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('auth_id', authId)
       .single()

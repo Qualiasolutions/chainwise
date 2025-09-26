@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Get user profile from profiles table
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id, tier, credits, monthly_credits')
       .eq('auth_id', session.user.id)
       .single()
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Update user profile with new tier and credits
     const { data: updatedProfile, error: updateError } = await supabase
-      .from('profiles')
+      .from('users')
       .update({
         tier: planConfig.tier,
         credits: newCredits,

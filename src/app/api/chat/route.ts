@@ -230,7 +230,7 @@ export async function GET() {
 
     // Get user profile from profiles table
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+      .from('users')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()
