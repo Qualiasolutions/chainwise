@@ -334,6 +334,11 @@ When working on this codebase:
 
 The platform is production-ready with complete subscription system, animated pricing, and comprehensive settings management. Features include WebGL animations, 3D interactive globe, orbital timeline, and full user account management with Supabase MCP integration.
 
+## Working Directory Context
+
+**Current Location**: `/home/qualiasolutions/Desktop/Projects/websites/chainwise`
+This is a git repository with the main branch currently active and clean working directory.
+
 ## important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
