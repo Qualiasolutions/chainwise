@@ -19,6 +19,7 @@ interface NotificationSettings {
   security_alerts: boolean;
   marketing_emails: boolean;
   weekly_digest: boolean;
+  weekly_reports: boolean;
 }
 
 export default function NotificationsPage() {
@@ -34,6 +35,7 @@ export default function NotificationsPage() {
     security_alerts: true,
     marketing_emails: false,
     weekly_digest: true,
+    weekly_reports: true,
   });
 
   useEffect(() => {
@@ -43,9 +45,36 @@ export default function NotificationsPage() {
   const loadNotificationSettings = async () => {
     try {
       setLoading(true);
-      // TODO: Implement API call to load notification settings
-      // For now, use default settings
-      setLoading(false);
+
+      const response = await fetch('/api/settings/notifications', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.preferences) {
+        // Map backend response to frontend interface
+        const prefs = data.preferences;
+        setSettings({
+          email_notifications: prefs.email_notifications ?? true,
+          push_notifications: prefs.push_notifications ?? false,
+          price_alerts: prefs.price_alerts ?? true,
+          portfolio_updates: prefs.portfolio_updates ?? true,
+          market_news: prefs.market_news ?? false,
+          security_alerts: prefs.security_alerts ?? true,
+          marketing_emails: prefs.marketing_emails ?? false,
+          weekly_digest: prefs.weekly_digest ?? true,
+          weekly_reports: prefs.weekly_reports ?? true,
+        });
+      }
+
     } catch (error) {
       console.error("Failed to load notification settings:", error);
       toast({
@@ -53,6 +82,7 @@ export default function NotificationsPage() {
         description: "Failed to load notification settings",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
     }
   };
@@ -61,11 +91,29 @@ export default function NotificationsPage() {
     try {
       setSaving(true);
 
-      // Update local state
+      // Update local state optimistically
       setSettings(prev => ({ ...prev, [key]: value }));
 
-      // TODO: Implement API call to save settings
-      await new Promise(resolve => setTimeout(resolve, 500)); // Mock delay
+      // Send update to API
+      const response = await fetch('/api/settings/notifications', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          [key]: value
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to update settings');
+      }
 
       toast({
         title: "Settings Updated",
