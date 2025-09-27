@@ -58,8 +58,6 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
-    console.log(`Generating altcoin detection for user: ${profile.id}`)
-    console.log(`Detection: ${detectionName}, Market Cap: ${marketCapRange}, Risk: ${riskTolerance}`)
 
     // Generate altcoin detection using database function
     const { data: detectionData, error: detectionError } = await supabase
@@ -108,7 +106,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    console.log(`Altcoin detection generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,

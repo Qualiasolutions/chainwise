@@ -198,7 +198,6 @@ export class MCPSupabaseClient {
 
   async updateUser(userId: string, updates: UserUpdate): Promise<User> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -257,7 +256,6 @@ export class MCPSupabaseClient {
 
   async createPortfolio(portfolioData: PortfolioInsert): Promise<Portfolio> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -276,7 +274,6 @@ export class MCPSupabaseClient {
 
   async getPortfolioById(portfolioId: string): Promise<Portfolio | null> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -295,7 +292,6 @@ export class MCPSupabaseClient {
 
   async getPortfolioHoldings(portfolioId: string): Promise<PortfolioHolding[]> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -314,7 +310,6 @@ export class MCPSupabaseClient {
 
   async addPortfolioHolding(holdingData: PortfolioHoldingInsert): Promise<PortfolioHolding> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -333,7 +328,6 @@ export class MCPSupabaseClient {
 
   async updatePortfolioHolding(holdingId: string, updates: PortfolioHoldingUpdate): Promise<PortfolioHolding> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -353,7 +347,6 @@ export class MCPSupabaseClient {
 
   async deletePortfolioHolding(holdingId: string): Promise<boolean> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { error } = await supabase
@@ -373,7 +366,6 @@ export class MCPSupabaseClient {
   // AI Chat Operations
   async createChatSession(sessionData: AiChatSessionInsert): Promise<AiChatSession> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -392,7 +384,6 @@ export class MCPSupabaseClient {
 
   async updateChatSession(sessionId: string, messages: unknown[], creditsUsed: number): Promise<AiChatSession> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -418,7 +409,6 @@ export class MCPSupabaseClient {
   // Alert Operations
   async getUserAlerts(userId: string) {
     try {
-      // TODO: Replace with MCP call when available
       // Note: user_alerts table would need to be created first
       console.warn('getUserAlerts: user_alerts table not yet implemented')
       return []
@@ -430,7 +420,6 @@ export class MCPSupabaseClient {
 
   async createAlert(userId: string, symbol: string, alertType: string, targetValue: number) {
     try {
-      // TODO: Replace with MCP call when available
       // Note: user_alerts table would need to be created first
       console.warn('createAlert: user_alerts table not yet implemented')
       return null
@@ -443,7 +432,6 @@ export class MCPSupabaseClient {
   // Notification Operations
   async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       let query = supabase
@@ -470,7 +458,6 @@ export class MCPSupabaseClient {
 
   async markNotificationAsRead(notificationId: string): Promise<boolean> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { error } = await supabase
@@ -489,7 +476,6 @@ export class MCPSupabaseClient {
   // Credit Transaction Operations
   async getCreditTransactions(userId: string, limit: number = 50): Promise<CreditTransaction[]> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -509,7 +495,6 @@ export class MCPSupabaseClient {
 
   async createCreditTransaction(transactionData: CreditTransactionInsert): Promise<CreditTransaction> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -529,7 +514,6 @@ export class MCPSupabaseClient {
   // Payment Methods Operations
   async getUserPaymentMethods(userId: string): Promise<PaymentMethod[]> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -549,7 +533,6 @@ export class MCPSupabaseClient {
 
   async createPaymentMethod(paymentMethodData: PaymentMethodInsert): Promise<PaymentMethod> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -569,7 +552,6 @@ export class MCPSupabaseClient {
   // Portfolio Analytics Operations
   async getPortfolioMetrics(portfolioId: string): Promise<PortfolioMetrics> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -591,7 +573,6 @@ export class MCPSupabaseClient {
 
   async getUserPortfolioSummary(userId: string): Promise<UserPortfolioSummary> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -621,7 +602,6 @@ export class MCPSupabaseClient {
     sessionId?: string
   ): Promise<boolean> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -647,7 +627,6 @@ export class MCPSupabaseClient {
     refillType: 'monthly_reset' | 'refill' | 'bonus' = 'monthly_reset'
   ): Promise<boolean> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase
@@ -702,7 +681,6 @@ export class MCPSupabaseClient {
   // Get user by ID (alias for getUserByAuthId with different parameter)
   async getUserById(userId: string): Promise<User | null> {
     try {
-      // TODO: Replace with MCP call when available
       const supabase = await this.getSupabaseClient()
 
       const { data, error } = await supabase

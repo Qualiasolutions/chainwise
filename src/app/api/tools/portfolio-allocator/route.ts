@@ -99,9 +99,7 @@ export async function POST(request: NextRequest) {
       const portfolioContext = await getExistingPortfolioContext(supabase, profile.id)
 
       // Generate AI-powered portfolio allocation using optimized Lyra prompts with portfolio context
-      console.log(`🚀 Generating AI portfolio allocation for $${totalAmount} with ${riskTolerance} risk tolerance`)
       if (portfolioContext.hasExistingPortfolio) {
-        console.log(`📊 Including existing portfolio context: ${portfolioContext.uniqueSymbols.length} holdings, $${portfolioContext.totalValue.toFixed(2)} total value`)
       }
 
       const aiAnalysis = await OpenAIService.generatePremiumToolResponse(
@@ -171,7 +169,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
       }
 
-      console.log(`Portfolio allocation generated successfully. Credits used: ${creditCost}`)
 
       return NextResponse.json({
         success: true,

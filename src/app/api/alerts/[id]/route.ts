@@ -37,7 +37,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // TODO: Replace with MCP query
     const { data: alert, error } = await supabase
       .from('user_alerts')
       .select('*')
@@ -123,7 +122,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'No valid updates provided' }, { status: 400 })
     }
 
-    // TODO: Replace with MCP query
     const { data: updatedAlert, error } = await supabase
       .from('user_alerts')
       .update(updates)
@@ -186,7 +184,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Alert not found' }, { status: 404 })
     }
 
-    // TODO: Replace with MCP query
     const { error } = await supabase
       .from('user_alerts')
       .delete()

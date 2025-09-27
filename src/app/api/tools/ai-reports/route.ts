@@ -88,8 +88,6 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
-    console.log(`Generating AI report for user: ${profile.id}`)
-    console.log(`Report type: ${reportType}, Premium: ${isPremium}, Credits: ${creditCost}`)
 
     // Generate the AI report using database function
     const { data: reportData, error: reportError } = await supabase
@@ -153,7 +151,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`AI report generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,

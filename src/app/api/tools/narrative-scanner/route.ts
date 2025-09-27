@@ -104,8 +104,6 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    console.log(`Generating narrative scan for user: ${profile.id}`)
-    console.log(`Scan: ${scanName}, Type: ${scanType}, Timeframe: ${timeframe}`)
 
     // Generate the narrative scan using our database function
     const { data: scanData, error: scanError } = await supabase
@@ -154,7 +152,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    console.log(`Narrative scan generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,

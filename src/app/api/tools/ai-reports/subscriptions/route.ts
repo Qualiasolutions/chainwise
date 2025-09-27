@@ -138,7 +138,6 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
-    console.log(`AI report subscription updated: ${reportType} for user ${profile.id}`)
 
     return NextResponse.json({
       success: true,
@@ -214,7 +213,6 @@ export async function PUT(request: NextRequest) {
       }, { status: 404 })
     }
 
-    console.log(`AI report subscription settings updated: ${id} for user ${profile.id}`)
 
     return NextResponse.json({
       success: true,

@@ -38,7 +38,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // TODO: Replace with MCP query for better performance
     // const portfolioData = await useMCPQuery(
     //   'SELECT p.*, ph.* FROM portfolios p LEFT JOIN portfolio_holdings ph ON p.id = ph.portfolio_id WHERE p.id = $1 AND p.user_id = $2',
     //   [portfolioId, profile.id]
@@ -203,7 +202,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Portfolio name is required' }, { status: 400 })
     }
 
-    // TODO: Replace with MCP query
     const { data: updatedPortfolio, error } = await supabase
       .from('portfolios')
       .update({
@@ -269,7 +267,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       }, { status: 400 })
     }
 
-    // TODO: Replace with MCP query
     const { error } = await supabase
       .from('portfolios')
       .delete()

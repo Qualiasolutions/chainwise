@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
       query = query.eq('type', type)
     }
 
-    // TODO: Replace with MCP query
     const { data: notifications, error } = await query
 
     if (error) {

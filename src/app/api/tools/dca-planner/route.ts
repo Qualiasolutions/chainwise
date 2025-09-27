@@ -100,8 +100,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      console.log(`Generating DCA plan for user: ${profile.id}`)
-      console.log(`Plan: ${planName}, ${coinSymbol}, $${totalInvestment}, ${investmentFrequency} for ${investmentPeriodMonths} months`)
 
       // Get user's portfolio context for enhanced DCA planning
       const portfolioContext = await getUserPortfolioContext(supabase, profile.id)
@@ -180,7 +178,6 @@ export async function POST(request: NextRequest) {
         generatedAt: new Date().toISOString()
       }
 
-      console.log(`DCA plan generated successfully. Credits used: ${creditCost}`)
 
       return NextResponse.json({
         success: true,

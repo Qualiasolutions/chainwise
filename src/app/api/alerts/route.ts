@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
       query = query.eq('symbol', symbol.toLowerCase())
     }
 
-    // TODO: Replace with MCP query
     const { data: alerts, error } = await query
 
     if (error) {
@@ -178,7 +177,6 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // TODO: Replace with MCP query
     const { data: newAlert, error } = await supabase
       .from('user_alerts')
       .insert({

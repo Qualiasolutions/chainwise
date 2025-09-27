@@ -75,8 +75,6 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    console.log(`Generating whale tracker report for user: ${profile.id}`)
-    console.log(`Wallets: ${walletAddresses.length}, Period: ${timePeriod}, Type: ${reportType}`)
 
     // Generate the whale tracker report using database function
     const { data: reportData, error: reportError } = await supabase
@@ -138,7 +136,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`Whale tracker report generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,

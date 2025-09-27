@@ -140,7 +140,6 @@ export async function PUT(
       }, { status: 400 })
     }
 
-    console.log(`Updating alert ${alertId} for user: ${profile.id}`)
 
     // Update the alert
     const { data: alert, error } = await supabase
@@ -162,7 +161,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Alert not found' }, { status: 404 })
     }
 
-    console.log(`Alert updated successfully: ${alertId}`)
 
     return NextResponse.json({
       success: true,
@@ -202,7 +200,6 @@ export async function DELETE(
 
     const alertId = params.id
 
-    console.log(`Deleting alert ${alertId} for user: ${profile.id}`)
 
     // Delete the alert (triggers will be deleted by CASCADE)
     const { data: alert, error } = await supabase
@@ -224,7 +221,6 @@ export async function DELETE(
       return NextResponse.json({ error: 'Alert not found' }, { status: 404 })
     }
 
-    console.log(`Alert deleted successfully: ${alertId}`)
 
     return NextResponse.json({
       success: true,

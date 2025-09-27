@@ -40,7 +40,6 @@ export async function GET(request: NextRequest) {
 
       // If profile doesn't exist, try to create one
       if (profileError.code === 'PGRST116') {
-        console.log('🔨 Creating new profile for user:', session.user.id)
 
         try {
           const newProfileData = {
@@ -70,7 +69,6 @@ export async function GET(request: NextRequest) {
             }, { status: 500 })
           }
 
-          console.log('✅ Profile created:', createdProfile.id)
 
           // Return empty portfolios for new user
           return NextResponse.json({
@@ -94,21 +92,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (!profile) {
-      console.log('❌ Profile not found after successful query')
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    console.log('📊 Fetching portfolios for user:', profile.id)
 
     // Use MCP client to get portfolios
     try {
       const portfolios = await mcpClient.getUserPortfolios(profile.id)
-      console.log('📈 Portfolios fetched via MCP:', portfolios.length)
 
       // Get all unique crypto symbols for live price fetching
       const allHoldings = portfolios.flatMap(p => p.portfolio_holdings || [])
       const uniqueSymbols = [...new Set(allHoldings.map(h => h.symbol.toLowerCase()))]
-      console.log('🪙 Unique crypto symbols found:', uniqueSymbols)
 
       // Fetch live prices for all holdings
       let livePrices: Record<string, Record<string, number>> = {}
@@ -133,11 +127,9 @@ export async function GET(request: NextRequest) {
           }
 
           const coinIds = uniqueSymbols.map(symbol => symbolToId[symbol] || symbol).filter(Boolean)
-          console.log('🔄 Fetching live prices for coins:', coinIds)
 
           if (coinIds.length > 0) {
             livePrices = await cryptoAPI.getSimplePrice(coinIds, ['usd'])
-            console.log('💰 Live prices fetched:', Object.keys(livePrices).length)
           }
         }
       } catch (priceError) {
@@ -147,7 +139,6 @@ export async function GET(request: NextRequest) {
       // Calculate portfolio metrics with live prices
       const portfoliosWithMetrics = await Promise.all(portfolios.map(async portfolio => {
         const holdings = portfolio.portfolio_holdings || []
-        console.log(`📊 Processing portfolio "${portfolio.name}" with ${holdings.length} holdings`)
 
         let totalValue = 0
         let totalInvested = 0
@@ -196,7 +187,6 @@ export async function GET(request: NextRequest) {
         const totalPnL = totalValue - totalInvested
         const totalPnLPercentage = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0
 
-        console.log(`💎 Portfolio "${portfolio.name}" metrics:`, {
           totalValue: totalValue.toFixed(2),
           totalInvested: totalInvested.toFixed(2),
           totalPnL: totalPnL.toFixed(2),
@@ -230,7 +220,6 @@ export async function GET(request: NextRequest) {
         }
       }))
 
-      console.log('✅ Portfolio data processing complete')
 
       return NextResponse.json({
         portfolios: portfoliosWithMetrics,
@@ -247,7 +236,6 @@ export async function GET(request: NextRequest) {
       console.error('❌ MCP Portfolio fetch error:', mcpError)
 
       // Fallback to direct Supabase query if MCP fails
-      console.log('🔄 Falling back to direct Supabase query')
 
       const { data: portfolios, error: directError } = await supabase
         .from('portfolios')
@@ -275,7 +263,6 @@ export async function GET(request: NextRequest) {
         }, { status: 500 })
       }
 
-      console.log('✅ Direct Supabase fallback successful:', portfolios?.length || 0)
 
       // Return portfolios with basic metrics (without live prices for now)
       const portfoliosWithBasicMetrics = (portfolios || []).map(portfolio => {
@@ -319,7 +306,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  console.log('🔍 Portfolio API POST request started')
 
   try {
     const cookieStore = await cookies()
@@ -327,7 +313,6 @@ export async function POST(request: NextRequest) {
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
-    console.log('🔐 Auth session check:', { hasSession: !!session })
 
     if (authError || !session) {
       console.error('❌ Authentication failed:', authError?.message)
@@ -348,7 +333,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { name, description } = body
-    console.log('📝 Creating portfolio:', { name, description, profileId: profile.id })
 
     if (!name || name.trim().length === 0) {
       return NextResponse.json({ error: 'Portfolio name is required' }, { status: 400 })
@@ -356,7 +340,6 @@ export async function POST(request: NextRequest) {
 
     // Check portfolio limits based on tier
     const existingPortfolios = await mcpClient.getUserPortfolios(profile.id)
-    console.log('📊 Existing portfolios count:', existingPortfolios.length)
 
     const portfolioLimits = {
       free: 1,
@@ -367,7 +350,6 @@ export async function POST(request: NextRequest) {
     const userLimit = portfolioLimits[profile.tier as keyof typeof portfolioLimits] || 1
 
     if (existingPortfolios.length >= userLimit) {
-      console.log('❌ Portfolio limit reached:', { count: existingPortfolios.length, limit: userLimit })
       return NextResponse.json({
         error: `Portfolio limit reached. ${profile.tier} tier allows ${userLimit} portfolio(s).`
       }, { status: 400 })
@@ -382,7 +364,6 @@ export async function POST(request: NextRequest) {
         is_default: existingPortfolios.length === 0 // First portfolio is default
       })
 
-      console.log('✅ Portfolio created successfully:', newPortfolio.id)
 
       return NextResponse.json({
         portfolio: newPortfolio,
@@ -412,7 +393,6 @@ export async function POST(request: NextRequest) {
         }, { status: 500 })
       }
 
-      console.log('✅ Portfolio created via fallback:', newPortfolio.id)
       return NextResponse.json({
         portfolio: newPortfolio,
         success: true,

@@ -74,8 +74,6 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    console.log(`Generating portfolio analytics for user: ${profile.id}`)
-    console.log(`Portfolio: ${portfolioAllocations.length} assets, Confidence: ${confidenceLevel}`)
 
     // Generate portfolio analytics using database function
     const { data: analyticsData, error: analyticsError } = await supabase
@@ -146,7 +144,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`Portfolio analytics generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,

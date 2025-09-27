@@ -39,7 +39,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // TODO: Replace with MCP query for better security and performance
     const { data: holding, error } = await supabase
       .from('portfolio_holdings')
       .select(`
@@ -191,7 +190,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (purchasePrice !== undefined) updates.purchase_price = parseFloat(purchasePrice)
     if (purchaseDate !== undefined) updates.purchase_date = new Date(purchaseDate).toISOString()
 
-    // TODO: Replace with MCP query
     const { data: updatedHolding, error } = await supabase
       .from('portfolio_holdings')
       .update(updates)
@@ -279,7 +277,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Holding not found' }, { status: 404 })
     }
 
-    // TODO: Replace with MCP query
     const { error } = await supabase
       .from('portfolio_holdings')
       .delete()

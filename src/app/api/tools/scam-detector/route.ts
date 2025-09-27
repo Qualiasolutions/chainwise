@@ -85,8 +85,6 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      console.log(`Generating scam analysis for user: ${profile.id}`)
-      console.log(`Analysis: ${analysisName}, ${coinSymbol || 'N/A'}, Contract: ${contractAddress || 'N/A'}`)
 
       // Get user's portfolio context for enhanced analysis
       const portfolioContext = await getUserPortfolioContext(supabase, profile.id)
@@ -165,7 +163,6 @@ export async function POST(request: NextRequest) {
         generatedAt: new Date().toISOString()
       }
 
-      console.log(`Scam analysis generated successfully. Risk Score: ${analysis.risk_score}, Credits used: ${creditCost}`)
 
       return NextResponse.json({
         success: true,

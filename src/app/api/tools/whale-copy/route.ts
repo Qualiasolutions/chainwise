@@ -61,7 +61,6 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    console.log(`Generating whale copy signal for user: ${profile.id}, whale: ${whaleAddress}`)
 
     // Generate whale copy signal using database function
     const { data: signalData, error: signalError } = await supabase
@@ -125,7 +124,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`Whale copy signal generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,

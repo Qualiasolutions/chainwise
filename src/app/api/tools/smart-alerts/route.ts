@@ -74,8 +74,6 @@ export async function POST(request: NextRequest) {
       }, { status: 402 })
     }
 
-    console.log(`Creating smart alert for user: ${profile.id}`)
-    console.log(`Alert: ${alertName}, Type: ${alertType}, Symbol: ${coinSymbol}`)
 
     // Create the smart alert using our database function
     const { data: alertData, error: alertError } = await supabase
@@ -128,8 +126,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    console.log(`Smart alert created successfully: ${result.alert_id}`)
-    console.log(`Credits charged: ${creditCost}`)
 
     return NextResponse.json({
       success: true,
