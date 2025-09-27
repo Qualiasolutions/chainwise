@@ -747,6 +747,187 @@ class CryptoAPI {
 
     return timePoints
   }
+
+  // Get comprehensive list of all available cryptocurrencies
+  async getAllCoins(includePlatform: boolean = false): Promise<Array<{id: string, symbol: string, name: string}>> {
+    try {
+      const endpoint = isBrowser
+        ? `/api/crypto/coins?include_platform=${includePlatform}&status=active`
+        : `/coins/list?include_platform=${includePlatform}&status=active`
+
+      const data = await this.fetchAPI(endpoint)
+      return data || []
+    } catch (error) {
+      console.error('Error fetching all coins:', error)
+      // Return a comprehensive fallback list
+      return [
+        { id: "bitcoin", symbol: "btc", name: "Bitcoin" },
+        { id: "ethereum", symbol: "eth", name: "Ethereum" },
+        { id: "binancecoin", symbol: "bnb", name: "BNB" },
+        { id: "cardano", symbol: "ada", name: "Cardano" },
+        { id: "ripple", symbol: "xrp", name: "XRP" },
+        { id: "solana", symbol: "sol", name: "Solana" },
+        { id: "polkadot", symbol: "dot", name: "Polkadot" },
+        { id: "dogecoin", symbol: "doge", name: "Dogecoin" },
+        { id: "polygon", symbol: "matic", name: "Polygon" },
+        { id: "avalanche-2", symbol: "avax", name: "Avalanche" },
+        { id: "chainlink", symbol: "link", name: "Chainlink" },
+        { id: "uniswap", symbol: "uni", name: "Uniswap" },
+        { id: "litecoin", symbol: "ltc", name: "Litecoin" },
+        { id: "cosmos", symbol: "atom", name: "Cosmos Hub" },
+        { id: "algorand", symbol: "algo", name: "Algorand" }
+      ]
+    }
+  }
+
+  // Get live prices for multiple cryptocurrencies with optimized batching
+  async getLivePrices(coinIds: string[], vsCurrency: string = 'usd'): Promise<Record<string, Record<string, number>>> {
+    try {
+      // Split large requests into batches to avoid URL length limits
+      const BATCH_SIZE = 50
+      const batches = []
+
+      for (let i = 0; i < coinIds.length; i += BATCH_SIZE) {
+        batches.push(coinIds.slice(i, i + BATCH_SIZE))
+      }
+
+      const results = await Promise.all(
+        batches.map(async (batch) => {
+          const ids = batch.join(',')
+          const endpoint = isBrowser
+            ? `/api/crypto/simple/price?ids=${ids}&vs_currencies=${vsCurrency}&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`
+            : `/simple/price?ids=${ids}&vs_currencies=${vsCurrency}&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`
+
+          return await this.fetchAPI(endpoint)
+        })
+      )
+
+      // Merge all batch results
+      return results.reduce((acc, result) => ({ ...acc, ...result }), {})
+    } catch (error) {
+      console.error('Error fetching live prices:', error)
+      return {}
+    }
+  }
+
+  // Get comprehensive market data for all top cryptocurrencies
+  async getLiveMarketData(limit: number = 250, page: number = 1): Promise<CryptoData[]> {
+    try {
+      const endpoint = isBrowser
+        ? `/api/crypto/markets?limit=${limit}&page=${page}`
+        : `/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=${page}&sparkline=false&price_change_percentage=24h,7d,30d`
+
+      const data = await this.fetchAPI(endpoint)
+      return data || []
+    } catch (error) {
+      console.error('Error fetching live market data:', error)
+      return []
+    }
+  }
+
+  // Real-time price monitoring with WebSocket-like polling
+  private intervalId: NodeJS.Timeout | null = null
+  private subscribers: Map<string, Array<(data: any) => void>> = new Map()
+
+  startLivePriceMonitoring(coinIds: string[], intervalMs: number = 30000) {
+    if (this.intervalId) {
+      this.stopLivePriceMonitoring()
+    }
+
+    const updatePrices = async () => {
+      try {
+        const prices = await this.getLivePrices(coinIds)
+
+        // Notify all subscribers
+        for (const [coinId, callbacks] of this.subscribers.entries()) {
+          if (prices[coinId]) {
+            callbacks.forEach(callback => callback(prices[coinId]))
+          }
+        }
+      } catch (error) {
+        console.error('Error in live price monitoring:', error)
+      }
+    }
+
+    // Initial fetch
+    updatePrices()
+
+    // Set up interval
+    this.intervalId = setInterval(updatePrices, intervalMs)
+  }
+
+  stopLivePriceMonitoring() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId)
+      this.intervalId = null
+    }
+  }
+
+  subscribeToPriceUpdates(coinId: string, callback: (data: any) => void) {
+    if (!this.subscribers.has(coinId)) {
+      this.subscribers.set(coinId, [])
+    }
+    this.subscribers.get(coinId)!.push(callback)
+  }
+
+  unsubscribeFromPriceUpdates(coinId: string, callback: (data: any) => void) {
+    const callbacks = this.subscribers.get(coinId)
+    if (callbacks) {
+      const index = callbacks.indexOf(callback)
+      if (index > -1) {
+        callbacks.splice(index, 1)
+      }
+    }
+  }
+
+  // Advanced search with fuzzy matching
+  async searchCryptos(query: string, limit: number = 20): Promise<any[]> {
+    try {
+      const endpoint = isBrowser
+        ? `/api/crypto/search?q=${encodeURIComponent(query)}&limit=${limit}`
+        : `/search?query=${encodeURIComponent(query)}`
+
+      const data = await this.fetchAPI(endpoint)
+      return data?.coins || []
+    } catch (error) {
+      console.error('Error searching cryptos:', error)
+      return []
+    }
+  }
+
+  // Bulk data optimization - get essential data for dashboard
+  async getDashboardData(): Promise<{
+    topCoins: CryptoData[]
+    globalData: MarketData
+    trending: any[]
+    totalMarketCap: number
+    btcDominance: number
+  }> {
+    try {
+      const [topCoins, globalData, trending] = await Promise.all([
+        this.getLiveMarketData(50), // Top 50 coins
+        this.getGlobalData(),
+        this.getTrendingCryptos()
+      ])
+
+      return {
+        topCoins,
+        globalData,
+        trending,
+        totalMarketCap: globalData?.total_market_cap?.usd || 0,
+        btcDominance: globalData?.market_cap_percentage?.btc || 0
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      return {
+        topCoins: [],
+        globalData: {} as MarketData,
+        trending: [],
+        totalMarketCap: 0,
+        btcDominance: 0
+      }
+    }
+  }
 }
 
 export const cryptoAPI = new CryptoAPI()

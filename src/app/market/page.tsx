@@ -629,7 +629,7 @@ export default function MarketPage() {
                                   <div className="flex items-center space-x-1">
                                     <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
                                     <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                                      {article.source}
+                                      {article.source?.name || 'Unknown Source'}
                                     </span>
                                   </div>
                                   {article.publishedAt && (
