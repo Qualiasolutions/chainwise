@@ -1,11 +1,44 @@
 // Scam Detector API Route
 // POST /api/tools/scam-detector - Analyze project for scam indicators
+// GET /api/tools/scam-detector - Get user's scam analysis reports
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
+
+// Helper function to get user's portfolio holdings for contextual analysis
+async function getUserPortfolioContext(supabase: any, userId: string) {
+  try {
+    const { data: portfolios } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .limit(1)
+
+    if (!portfolios || portfolios.length === 0) {
+      return { holdings: [], portfolioSymbols: [], hasPortfolio: false }
+    }
+
+    const { data: holdings } = await supabase
+      .from('portfolio_holdings')
+      .select('symbol, name, amount, current_price, purchase_price')
+      .eq('portfolio_id', portfolios[0].id)
+
+    const portfolioSymbols = holdings?.map(h => h.symbol.toUpperCase()) || []
+
+    return {
+      holdings: holdings || [],
+      portfolioSymbols,
+      hasPortfolio: holdings && holdings.length > 0
+    }
+  } catch (error) {
+    console.warn('Failed to get portfolio context:', error)
+    return { holdings: [], portfolioSymbols: [], hasPortfolio: false }
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,17 +60,17 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const {
+      analysisName,
       coinSymbol,
       coinName,
       contractAddress,
-      website,
-      socialLinks,
-      additionalInfo
+      websiteUrl,
+      socialLinks = {}
     } = body
 
-    if (!coinSymbol && !contractAddress && !website) {
+    if (!analysisName || (!coinSymbol && !contractAddress && !websiteUrl)) {
       return NextResponse.json({
-        error: 'At least one of coinSymbol, contractAddress, or website is required'
+        error: 'Analysis name is required and at least one of coinSymbol, contractAddress, or websiteUrl must be provided'
       }, { status: 400 })
     }
 
@@ -52,127 +85,99 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // TODO: Integrate with OpenAI API and web scraping for actual scam detection
-      // For now, return a mock response based on analysis patterns
+      console.log(`Generating scam analysis for user: ${profile.id}`)
+      console.log(`Analysis: ${analysisName}, ${coinSymbol || 'N/A'}, Contract: ${contractAddress || 'N/A'}`)
 
-      // Simulate risk factors based on inputs
-      const riskFactors = []
-      let riskScore = 0
+      // Get user's portfolio context for enhanced analysis
+      const portfolioContext = await getUserPortfolioContext(supabase, profile.id)
 
-      // Basic analysis based on provided data
-      if (coinSymbol && coinSymbol.length > 10) {
-        riskFactors.push('Unusually long token symbol')
-        riskScore += 2
+      // Generate comprehensive scam analysis using database function
+      const { data: analysisData, error: analysisError } = await supabase
+        .rpc('generate_scam_analysis', {
+          p_user_id: profile.id,
+          p_analysis_name: analysisName,
+          p_coin_symbol: coinSymbol || null,
+          p_coin_name: coinName || null,
+          p_contract_address: contractAddress || null,
+          p_website_url: websiteUrl || null,
+          p_social_links: socialLinks
+        })
+
+      if (analysisError) {
+        console.error('Scam analysis generation error:', analysisError)
+        return NextResponse.json({
+          error: 'Failed to generate scam analysis'
+        }, { status: 500 })
       }
 
-      if (coinName && coinName.toLowerCase().includes('safe')) {
-        riskFactors.push('Token name contains "safe" - common scam pattern')
-        riskScore += 3
+      const analysis = analysisData[0]
+      if (!analysis) {
+        return NextResponse.json({
+          error: 'No analysis data generated'
+        }, { status: 500 })
       }
 
-      if (website && !website.includes('https://')) {
-        riskFactors.push('Website does not use HTTPS')
-        riskScore += 2
+      // Deduct credits and record transaction
+      const creditSuccess = await mcpSupabase.recordCreditUsage(
+        profile.id,
+        creditCost,
+        `Scam Analysis: ${analysisName}`,
+        'scam_analysis',
+        analysis.analysis_id
+      )
+
+      if (!creditSuccess) {
+        console.warn('Credit usage recording failed, but continuing with analysis')
       }
 
-      if (!socialLinks?.twitter && !socialLinks?.telegram) {
-        riskFactors.push('Limited social media presence')
-        riskScore += 1
+      // Update user credits
+      try {
+        await mcpSupabase.updateUser(profile.id, {
+          credits: profile.credits - creditCost
+        })
+      } catch (error) {
+        console.error('Failed to update user credits:', error)
+        return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
       }
 
-      // Add some random realistic risk factors for demo
-      const commonScamIndicators = [
-        'Promises unrealistic returns',
-        'Lack of transparent tokenomics',
-        'Anonymous team members',
-        'No clear use case',
-        'Copied whitepaper content'
-      ]
-
-      // Randomly add 1-2 more factors for demonstration
-      const randomFactors = commonScamIndicators.slice(0, Math.floor(Math.random() * 2) + 1)
-      riskFactors.push(...randomFactors)
-      riskScore += randomFactors.length * 2
-
-      // Calculate final risk level
-      let riskLevel = 'LOW'
-      let riskColor = 'green'
-      let recommendation = 'Proceed with caution and due diligence'
-
-      if (riskScore > 8) {
-        riskLevel = 'HIGH'
-        riskColor = 'red'
-        recommendation = 'High risk - avoid investment'
-      } else if (riskScore > 4) {
-        riskLevel = 'MEDIUM'
-        riskColor = 'yellow'
-        recommendation = 'Medium risk - conduct thorough research'
-      }
-
-      const mockDetection = {
-        projectInfo: {
-          coinSymbol,
-          coinName,
-          contractAddress,
-          website,
-          analysisDate: new Date().toISOString()
+      // Enhance analysis data with portfolio context
+      const enhancedAnalysis = {
+        analysisId: analysis.analysis_id,
+        riskScore: analysis.risk_score,
+        riskLevel: analysis.risk_level,
+        analysisResults: analysis.analysis_results,
+        warningFlags: analysis.warning_flags,
+        overallAssessment: analysis.overall_assessment,
+        creditsUsed: analysis.credits_charged,
+        portfolioInsights: portfolioContext.hasPortfolio ? {
+          isInPortfolio: portfolioContext.portfolioSymbols.includes((coinSymbol || '').toUpperCase()),
+          portfolioRisk: portfolioContext.portfolioSymbols.includes((coinSymbol || '').toUpperCase()) ?
+            'HIGH - This asset is already in your portfolio!' :
+            'Analysis for potential new investment',
+          recommendation: portfolioContext.portfolioSymbols.includes((coinSymbol || '').toUpperCase()) ?
+            'Consider reviewing your existing position based on this analysis' :
+            'Use this analysis to inform your investment decision'
+        } : {
+          isInPortfolio: false,
+          portfolioRisk: 'No existing portfolio found',
+          recommendation: 'Complete analysis for potential investment'
         },
-        riskAssessment: {
-          overallRiskScore: Math.min(riskScore, 10),
-          riskLevel,
-          riskColor,
-          confidence: 85 + Math.floor(Math.random() * 10) // 85-95%
-        },
-        scamIndicators: {
-          identified: riskFactors,
-          count: riskFactors.length,
-          severity: riskLevel
-        },
-        recommendation: {
-          action: recommendation,
-          reasoning: `Based on ${riskFactors.length} identified risk factors, this project shows ${riskLevel.toLowerCase()} risk characteristics.`,
-          additionalSteps: [
-            'Verify team credentials and backgrounds',
-            'Check smart contract audit reports',
-            'Research community sentiment and reviews',
-            'Analyze tokenomics and distribution',
-            'Look for regulatory compliance information'
-          ]
-        },
-        technicalAnalysis: {
-          contractVerified: contractAddress ? Math.random() > 0.3 : null,
-          liquidityScore: Math.floor(Math.random() * 10) + 1,
-          holderDistribution: Math.random() > 0.5 ? 'Centralized' : 'Distributed',
-          tradingVolume: Math.random() > 0.4 ? 'Normal' : 'Suspicious'
-        }
+        generatedAt: new Date().toISOString()
       }
 
-      // Deduct credits using MCP helper
-      await mcpSupabase.deductCredits(profile.id, creditCost, 'Scam Detector', {
-        coinSymbol,
-        contractAddress,
-        website,
-        riskScore,
-        riskLevel
-      })
-
-      // Log the usage
-      await mcpSupabase.logCreditTransaction(profile.id, creditCost, 'debit', 'Scam Detector usage')
-
-      const updatedProfile = await mcpSupabase.getUserById(profile.id)
+      console.log(`Scam analysis generated successfully. Risk Score: ${analysis.risk_score}, Credits used: ${creditCost}`)
 
       return NextResponse.json({
         success: true,
-        detection: mockDetection,
-        credits_remaining: updatedProfile?.credits || 0,
-        credits_used: creditCost,
-        ai_analysis: `Analyzed ${coinSymbol || 'project'} and identified ${riskFactors.length} risk factors. Overall risk level: ${riskLevel}.`
+        analysis: enhancedAnalysis,
+        creditsRemaining: profile.credits - creditCost,
+        creditsUsed: creditCost
       })
 
     } catch (error: any) {
       console.error('Scam Detector error:', error)
       return NextResponse.json({
-        error: 'Failed to analyze project',
+        error: 'Failed to generate scam analysis',
         details: error.message
       }, { status: 500 })
     }
@@ -183,5 +188,53 @@ export async function POST(request: NextRequest) {
       error: 'Internal server error',
       details: error.message
     }, { status: 500 })
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const supabase = createRouteHandlerClient<Database>({ cookies })
+
+    // Get current user
+    const { data: { session }, error: authError } = await supabase.auth.getSession()
+
+    if (authError || !session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Get user profile
+    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+
+    if (!profile) {
+      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+    }
+
+    // Get user's scam analysis reports
+    const { data: analyses, error } = await supabase
+      .rpc('get_user_scam_analyses', {
+        p_user_id: profile.id
+      })
+
+    if (error) {
+      console.error('Failed to fetch scam analyses:', error)
+      return NextResponse.json({
+        error: 'Failed to fetch scam analyses'
+      }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      analyses: analyses || [],
+      userTier: profile.tier,
+      creditsRemaining: profile.credits,
+      creditCost: 5
+    })
+
+  } catch (error) {
+    console.error('Scam Detector GET API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
