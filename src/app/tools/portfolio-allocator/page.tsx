@@ -469,7 +469,6 @@ export default function PortfolioAllocator() {
             </CardContent>
           </Card>
         </motion.div>
-            </div>
           </TabsContent>
 
           <TabsContent value="history">
