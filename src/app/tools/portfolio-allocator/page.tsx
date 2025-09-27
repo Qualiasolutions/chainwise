@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { Target, DollarSign, PieChart, TrendingUp, Shield, Clock, AlertTriangle, ArrowLeft } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Target, DollarSign, PieChart, TrendingUp, Shield, Clock, AlertTriangle, ArrowLeft, History } from 'lucide-react'
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { useToast } from '@/hooks/use-toast'
 import { motion } from 'framer-motion'
@@ -38,6 +39,8 @@ interface AllocationResponse {
 export default function PortfolioAllocator() {
   const [loading, setLoading] = useState(false)
   const [analysis, setAnalysis] = useState<any>(null)
+  const [previousAllocations, setPreviousAllocations] = useState<any[]>([])
+  const [historyLoading, setHistoryLoading] = useState(true)
   const [formData, setFormData] = useState<AllocationRequest>({
     totalAmount: 10000,
     riskTolerance: 'moderate',
@@ -52,6 +55,35 @@ export default function PortfolioAllocator() {
 
   const { user, profile } = useSupabaseAuth()
   const { toast } = useToast()
+
+  // Fetch allocation history when component loads
+  useEffect(() => {
+    if (user) {
+      fetchAllocationHistory()
+    }
+  }, [user])
+
+  const fetchAllocationHistory = async () => {
+    try {
+      setHistoryLoading(true)
+      const response = await fetch('/api/tools/portfolio-allocator')
+      if (!response.ok) throw new Error('Failed to fetch allocation history')
+
+      const data = await response.json()
+      if (data.success) {
+        setPreviousAllocations(data.allocations || [])
+      }
+    } catch (error) {
+      console.error('Error fetching allocation history:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load allocation history",
+        variant: "destructive",
+      })
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
 
   const handleGenerateAllocation = async () => {
     if (!user) {
@@ -85,6 +117,8 @@ export default function PortfolioAllocator() {
 
       if (data.success) {
         setAnalysis(data.analysis)
+        // Refresh history to show the new allocation
+        fetchAllocationHistory()
         toast({
           title: "Portfolio Analysis Complete!",
           description: `Allocation generated successfully. ${data.credits_remaining} credits remaining.`
@@ -159,7 +193,14 @@ export default function PortfolioAllocator() {
           )}
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Tabs defaultValue="allocator" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="allocator">Portfolio Allocator</TabsTrigger>
+            <TabsTrigger value="history">Allocation History</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="allocator">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form Section */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -428,6 +469,79 @@ export default function PortfolioAllocator() {
             </CardContent>
           </Card>
         </motion.div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {historyLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+                  <p className="text-muted-foreground mt-4">Loading allocation history...</p>
+                </div>
+              ) : previousAllocations.length > 0 ? (
+                <div className="space-y-4">
+                  {previousAllocations.map((allocation) => (
+                    <Card key={allocation.id} className="border-border/40 bg-card/40 backdrop-blur-xl">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="font-semibold text-lg">
+                              ${allocation.total_amount?.toLocaleString()} Allocation
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(allocation.created_at).toLocaleDateString()} •
+                              {allocation.risk_tolerance} risk • {allocation.investment_horizon} horizon
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant="outline" className="text-purple-400 border-purple-400/30">
+                              {allocation.credits_used} credits
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {allocation.allocation_result && (
+                          <div className="space-y-3">
+                            <div className="text-sm">
+                              <span className="font-medium">Goals:</span> {allocation.goals || 'Not specified'}
+                            </div>
+                            {allocation.ai_analysis && (
+                              <div className="p-4 bg-muted/30 rounded-lg">
+                                <h4 className="font-medium mb-2">AI Analysis:</h4>
+                                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                  {allocation.ai_analysis}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <History className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No allocation history yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Generate your first portfolio allocation to see it here
+                  </p>
+                  <Button
+                    onClick={() => document.querySelector('[value="allocator"]')?.click()}
+                    variant="outline"
+                  >
+                    Create Allocation
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

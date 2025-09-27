@@ -16,8 +16,7 @@ interface WhaleCopyRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    const supabase = createRouteHandlerClient<Database>({ cookies })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -146,8 +145,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    const supabase = createRouteHandlerClient<Database>({ cookies })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
