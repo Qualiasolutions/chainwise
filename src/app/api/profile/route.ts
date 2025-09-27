@@ -20,7 +20,7 @@ export async function PUT(request: NextRequest) {
 
     // Get user profile from profiles table
     const { data: profile, error: profileError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest) {
 
     // Update user profile using direct Supabase call
     const { data: updatedProfile, error: updateError } = await supabase
-      .from('users')
+      .from('profiles')
       .update(updateData)
       .eq('id', profile.id)
       .select()

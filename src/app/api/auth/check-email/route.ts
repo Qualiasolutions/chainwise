@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
       auth: { autoRefreshToken: false, persistSession: false }
     })
 
-    // Check custom users table - this is the most reliable approach
+    // Check custom profiles table - this is the most reliable approach
     const { data: customUsers, error: customError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('email')
       .eq('email', email.toLowerCase())
       .limit(1)

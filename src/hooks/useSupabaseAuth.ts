@@ -41,7 +41,7 @@ export const useSupabaseAuth = () => {
 
       // Try to get existing profile using direct Supabase call
       const { data: profile, error: profileError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('auth_id', authUser.id)
         .single()
@@ -67,7 +67,7 @@ export const useSupabaseAuth = () => {
 
           try {
             const { data: createdProfile, error: createError } = await supabase
-              .from('users')
+              .from('profiles')
               .insert(newProfileData)
               .select()
               .single()
@@ -89,7 +89,7 @@ export const useSupabaseAuth = () => {
               // Wait a bit and try to fetch the existing profile
               await new Promise(resolve => setTimeout(resolve, 1000))
               const { data: existingProfile } = await supabase
-                .from('users')
+                .from('profiles')
                 .select('*')
                 .eq('auth_id', authUser.id)
                 .single()

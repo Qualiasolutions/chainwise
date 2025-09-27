@@ -53,7 +53,7 @@ export async function DELETE(request: NextRequest) {
     try {
       // Delete user from users table (CASCADE will handle related tables)
       const { error: userDeleteError } = await supabase
-        .from('users')
+        .from('profiles')
         .delete()
         .eq('id', profile.id)
 

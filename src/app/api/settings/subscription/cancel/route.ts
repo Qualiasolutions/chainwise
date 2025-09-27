@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     try {
       // Update user to free tier
       const { error: updateError } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           tier: 'free',
           monthly_credits: 5, // Free tier gets 5 credits

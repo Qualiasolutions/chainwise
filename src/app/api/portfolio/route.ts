@@ -336,7 +336,7 @@ export async function POST(request: NextRequest) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, tier')
       .eq('auth_id', session.user.id)
       .single()
