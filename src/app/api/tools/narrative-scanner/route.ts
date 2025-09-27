@@ -43,14 +43,15 @@ async function getUserPortfolioContext(supabase: any, userId: string) {
 
 interface NarrativeScanRequest {
   scanName: string
-  scanType: 'comprehensive' | 'targeted' | 'trending'
-  targetKeywords?: string[]
-  timePeriod: '1h' | '6h' | '24h' | '7d'
+  scanType: 'market_wide' | 'sector_specific' | 'social_momentum' | 'news_driven' | 'whale_narrative'
+  targetSectors?: string[]
+  timeframe: '24h' | '7d' | '30d' | '90d'
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -67,16 +68,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body: NarrativeScanRequest = await request.json()
-    const { scanName, scanType, targetKeywords, timePeriod } = body
+    const { scanName, scanType, targetSectors, timeframe } = body
 
-    if (!scanName || !scanType || !timePeriod) {
+    if (!scanName || !scanType || !timeframe) {
       return NextResponse.json({
-        error: 'Scan name, type, and time period are required'
+        error: 'Scan name, type, and timeframe are required'
       }, { status: 400 })
     }
 
     // Validate scan type
-    const validScanTypes = ['comprehensive', 'targeted', 'trending']
+    const validScanTypes = ['market_wide', 'sector_specific', 'social_momentum', 'news_driven', 'whale_narrative']
     if (!validScanTypes.includes(scanType)) {
       return NextResponse.json({
         error: 'Invalid scan type'
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine credit cost
-    const creditCost = CREDIT_COSTS.narrative_deep_scan // 40 credits
+    const creditCost = 4 // Narrative Scanner costs 4 credits
 
     // Check if user has enough credits
     if (profile.credits < creditCost) {
@@ -104,25 +105,16 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Generating narrative scan for user: ${profile.id}`)
-    console.log(`Scan: ${scanName}, Type: ${scanType}, Period: ${timePeriod}`)
+    console.log(`Scan: ${scanName}, Type: ${scanType}, Timeframe: ${timeframe}`)
 
-    // Get user's portfolio context for enhanced scanning
-    const portfolioContext = await getUserPortfolioContext(supabase, profile.id)
-
-    // Combine target keywords with portfolio symbols for enhanced relevance
-    const enhancedKeywords = [
-      ...(targetKeywords || []),
-      ...portfolioContext.portfolioSymbols
-    ].filter((keyword, index, array) => array.indexOf(keyword) === index) // Remove duplicates
-
-    // Generate the narrative scan using database function with portfolio context
+    // Generate the narrative scan using our database function
     const { data: scanData, error: scanError } = await supabase
       .rpc('generate_narrative_scan', {
         p_user_id: profile.id,
         p_scan_name: scanName,
         p_scan_type: scanType,
-        p_target_keywords: enhancedKeywords.length > 0 ? enhancedKeywords : null,
-        p_time_period: timePeriod
+        p_target_sectors: targetSectors || [],
+        p_timeframe: timeframe
       })
 
     if (scanError) {
@@ -162,37 +154,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    // Enhance scan data with additional metadata including portfolio context
-    const enhancedScan = {
-      ...scan.scan_results,
-      metadata: {
-        scanId: scan.scan_id,
-        creditsUsed: creditCost,
-        generatedAt: new Date().toISOString(),
-        requestedBy: profile.email,
-        scanType,
-        timePeriod,
-        targetKeywords: targetKeywords || [],
-        portfolioSymbols: portfolioContext.portfolioSymbols,
-        portfolioContextApplied: portfolioContext.hasPortfolio,
-        userTier: profile.tier
-      },
-      portfolioInsights: portfolioContext.hasPortfolio ? {
-        relevantHoldings: portfolioContext.holdings.filter(h =>
-          enhancedKeywords.includes(h.symbol.toUpperCase())
-        ),
-        totalHoldingsScanned: portfolioContext.holdings.length,
-        portfolioRelevanceScore: Math.round(
-          (portfolioContext.portfolioSymbols.length / Math.max(enhancedKeywords.length, 1)) * 100
-        )
-      } : null
-    }
-
     console.log(`Narrative scan generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,
-      scan: enhancedScan,
+      scanId: scan.scan_id,
+      narrativeAnalysis: scan.narrative_analysis,
+      trendingNarratives: scan.trending_narratives,
+      sentimentAnalysis: scan.sentiment_analysis,
+      opportunityMatrix: scan.opportunity_matrix,
+      riskFactors: scan.risk_factors,
+      actionableInsights: scan.actionable_insights,
       creditsRemaining: profile.credits - creditCost,
       creditsUsed: creditCost
     })
@@ -208,7 +180,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -224,24 +197,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // Get user's narrative scans
+    // Get user's narrative scans using our database function
     const { data: scans, error } = await supabase
-      .from('narrative_scans')
-      .select(`
-        id,
-        scan_name,
-        scan_type,
-        target_keywords,
-        time_period,
-        scan_results,
-        narrative_summary,
-        confidence_score,
-        credits_used,
-        created_at
-      `)
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
+      .rpc('get_user_narrative_scans', {
+        p_user_id: profile.id
+      })
 
     if (error) {
       console.error('Failed to fetch narrative scans:', error)
@@ -250,45 +210,12 @@ export async function GET(request: NextRequest) {
       }, { status: 500 })
     }
 
-    // Get current narrative trends for suggestions
-    const { data: trends, error: trendsError } = await supabase
-      .from('narrative_trends')
-      .select(`
-        trend_keyword,
-        trend_category,
-        social_volume,
-        sentiment_score,
-        volume_change_24h,
-        sentiment_change_24h,
-        related_tokens
-      `)
-      .gte('detected_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-      .order('social_volume', { ascending: false })
-      .limit(20)
-
-    if (trendsError) {
-      console.error('Failed to fetch narrative trends:', trendsError)
-    }
-
-    // Get available narrative keywords for targeting
-    const { data: keywords, error: keywordsError } = await supabase
-      .from('narrative_keywords')
-      .select('keyword, category, description, related_tokens')
-      .eq('is_active', true)
-      .order('tracking_priority', { ascending: false })
-
-    if (keywordsError) {
-      console.error('Failed to fetch narrative keywords:', keywordsError)
-    }
-
     return NextResponse.json({
       success: true,
       scans: scans || [],
-      trends: trends || [],
-      keywords: keywords || [],
       userTier: profile.tier,
       creditsRemaining: profile.credits,
-      creditCost: CREDIT_COSTS.narrative_deep_scan
+      creditCost: 4
     })
 
   } catch (error) {
@@ -300,76 +227,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PATCH(request: NextRequest) {
-  try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
-
-    // Get current user
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { tokenSymbol } = await request.json()
-
-    if (!tokenSymbol) {
-      return NextResponse.json({
-        error: 'Token symbol is required'
-      }, { status: 400 })
-    }
-
-    // Get token-specific narrative insights
-    const { data: insightsData, error: insightsError } = await supabase
-      .rpc('get_token_narrative_insights', {
-        p_token_symbol: tokenSymbol.toLowerCase()
-      })
-
-    if (insightsError) {
-      console.error('Token narrative insights error:', insightsError)
-      return NextResponse.json({
-        error: 'Failed to get token insights'
-      }, { status: 500 })
-    }
-
-    const insights = insightsData[0]
-    if (!insights) {
-      return NextResponse.json({
-        error: 'No insights available for this token'
-      }, { status: 404 })
-    }
-
-    // Analyze current narrative trends
-    const { data: trendsData, error: trendsError } = await supabase
-      .rpc('analyze_narrative_trends')
-
-    if (trendsError) {
-      console.error('Narrative trends analysis error:', trendsError)
-    }
-
-    const trendsAnalysis = trendsData?.[0] || {
-      trends_updated: 0,
-      new_keywords_detected: 0,
-      narrative_shifts_detected: 0
-    }
-
-    return NextResponse.json({
-      success: true,
-      tokenSymbol: tokenSymbol.toUpperCase(),
-      narrativeThemes: insights.narrative_themes,
-      sentimentAnalysis: insights.sentiment_analysis,
-      socialMetrics: insights.social_metrics,
-      riskFactors: insights.risk_factors,
-      trendsAnalysis,
-      analysisTimestamp: new Date().toISOString()
-    })
-
-  } catch (error) {
-    console.error('Narrative scanner PATCH API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}

@@ -1,64 +1,24 @@
-// Altcoin Early Detector API Route
-// POST /api/tools/altcoin-detector - Generate altcoin scan
-// GET /api/tools/altcoin-detector - Get user's scans and discovered tokens
+// Altcoin Detector API Route
+// POST /api/tools/altcoin-detector - Generate altcoin detection
+// GET /api/tools/altcoin-detector - Get user's altcoin detections
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
-import { CREDIT_COSTS } from '@/lib/openai/personas'
 
-// Helper function to get user's portfolio holdings for contextual analysis
-async function getUserPortfolioContext(supabase: any, userId: string) {
-  try {
-    const { data: portfolios } = await supabase
-      .from('portfolios')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('is_active', true)
-      .limit(1)
-
-    if (!portfolios || portfolios.length === 0) {
-      return { holdings: [], portfolioSymbols: [], totalValue: 0 }
-    }
-
-    const { data: holdings } = await supabase
-      .from('portfolio_holdings')
-      .select('symbol, name, amount, current_price, purchase_price')
-      .eq('portfolio_id', portfolios[0].id)
-
-    const portfolioSymbols = holdings?.map(h => h.symbol.toUpperCase()) || []
-    const totalValue = holdings?.reduce((sum, h) => sum + (h.amount * (h.current_price || h.purchase_price)), 0) || 0
-
-    return {
-      holdings: holdings || [],
-      portfolioSymbols,
-      totalValue,
-      hasPortfolio: holdings && holdings.length > 0
-    }
-  } catch (error) {
-    console.warn('Failed to get portfolio context:', error)
-    return { holdings: [], portfolioSymbols: [], totalValue: 0 }
-  }
-}
-
-interface AltcoinScanRequest {
-  scanName: string
-  criteriaConfig: {
-    max_market_cap?: number
-    min_volume_24h?: number
-    min_holders?: number
-    max_age_days?: number
-    max_risk_score?: number
-    min_gem_score?: number
-    blockchain?: string[]
-  }
+interface AltcoinDetectionRequest {
+  detectionName: string
+  marketCapRange: 'micro_cap' | 'small_cap' | 'mid_cap' | 'low_cap_all'
+  sectorFilter?: string[]
+  riskTolerance: 'conservative' | 'moderate' | 'aggressive' | 'degen'
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -67,82 +27,61 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile
+    // Get user profile using MCP helper
     const profile = await mcpSupabase.getUserByAuthId(session.user.id)
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    const body: AltcoinScanRequest = await request.json()
-    const { scanName, criteriaConfig } = body
+    const body: AltcoinDetectionRequest = await request.json()
+    const {
+      detectionName,
+      marketCapRange,
+      sectorFilter,
+      riskTolerance
+    } = body
 
-    if (!scanName || !criteriaConfig) {
+    if (!detectionName || !marketCapRange || !riskTolerance) {
       return NextResponse.json({
-        error: 'Scan name and criteria configuration are required'
+        error: 'Detection name, market cap range, and risk tolerance are required'
       }, { status: 400 })
     }
 
-    // Determine credit cost
-    const creditCost = CREDIT_COSTS.altcoin_detector // 5 credits
-
-    // Check if user has enough credits
+    // Check if user has sufficient credits
+    const creditCost = 4 // Altcoin Detector costs 4 credits
     if (profile.credits < creditCost) {
       return NextResponse.json({
-        error: `Insufficient credits. Altcoin scan requires ${creditCost} credits.`
+        error: 'Insufficient credits',
+        credits_required: creditCost,
+        credits_available: profile.credits
       }, { status: 402 })
     }
 
-    // Check tier access (Free tier gets basic access, Pro+ gets advanced)
-    const tierHierarchy = { free: 0, pro: 1, elite: 2 }
-    const userTierLevel = tierHierarchy[profile.tier as keyof typeof tierHierarchy] || 0
+    console.log(`Generating altcoin detection for user: ${profile.id}`)
+    console.log(`Detection: ${detectionName}, Market Cap: ${marketCapRange}, Risk: ${riskTolerance}`)
 
-    // Free tier limitations
-    if (userTierLevel === 0) {
-      // Limit scan parameters for free tier
-      criteriaConfig.max_market_cap = Math.min(criteriaConfig.max_market_cap || 1000000, 1000000)
-      criteriaConfig.max_age_days = Math.min(criteriaConfig.max_age_days || 30, 30)
-    }
-
-    console.log(`Generating altcoin scan for user: ${profile.id}`)
-    console.log(`Scan: ${scanName}, Criteria:`, criteriaConfig)
-
-    // Get user's portfolio context for enhanced scanning
-    const portfolioContext = await getUserPortfolioContext(supabase, profile.id)
-
-    // Enhance criteria config with portfolio context for better recommendations
-    const enhancedCriteria = {
-      ...criteriaConfig,
-      excluded_symbols: [
-        ...(criteriaConfig.excluded_symbols || []),
-        ...portfolioContext.portfolioSymbols.filter(symbol =>
-          !['BTC', 'ETH'].includes(symbol) // Don't exclude majors
-        )
-      ].filter((symbol, index, array) => array.indexOf(symbol) === index),
-      portfolio_size_context: portfolioContext.totalValue > 0 ?
-        portfolioContext.totalValue > 10000 ? 'large' :
-        portfolioContext.totalValue > 1000 ? 'medium' : 'small' : 'unknown'
-    }
-
-    // Generate the altcoin scan using database function with portfolio context
-    const { data: scanData, error: scanError } = await supabase
-      .rpc('generate_altcoin_scan', {
+    // Generate altcoin detection using database function
+    const { data: detectionData, error: detectionError } = await supabase
+      .rpc('generate_altcoin_detection', {
         p_user_id: profile.id,
-        p_scan_name: scanName,
-        p_criteria_config: enhancedCriteria
+        p_detection_name: detectionName,
+        p_market_cap_range: marketCapRange,
+        p_sector_filter: sectorFilter || [],
+        p_risk_tolerance: riskTolerance
       })
 
-    if (scanError) {
-      console.error('Altcoin scan generation error:', scanError)
+    if (detectionError) {
+      console.error('Altcoin detection generation error:', detectionError)
       return NextResponse.json({
-        error: 'Failed to generate altcoin scan'
+        error: 'Failed to generate altcoin detection'
       }, { status: 500 })
     }
 
-    const scan = scanData[0]
-    if (!scan) {
+    const detection = detectionData[0]
+    if (!detection) {
       return NextResponse.json({
-        error: 'No scan data generated'
+        error: 'No detection data generated'
       }, { status: 500 })
     }
 
@@ -150,13 +89,13 @@ export async function POST(request: NextRequest) {
     const creditSuccess = await mcpSupabase.recordCreditUsage(
       profile.id,
       creditCost,
-      `Altcoin Early Detector Scan`,
-      'altcoin_scan',
-      scan.scan_id
+      `Altcoin Detection: ${detectionName}`,
+      'altcoin_detection',
+      detection.detection_id
     )
 
     if (!creditSuccess) {
-      console.warn('Credit usage recording failed, but continuing with scan')
+      console.warn('Credit usage recording failed, but continuing with detection')
     }
 
     // Update user credits
@@ -169,60 +108,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    // Enhance scan data with additional metadata including portfolio context
-    const enhancedScan = {
-      scanId: scan.scan_id,
-      discoveredTokens: scan.discovered_tokens,
-      totalDiscovered: scan.total_discovered,
-      creditsUsed: creditCost,
-      generatedAt: new Date().toISOString(),
-      requestedBy: profile.email,
-      portfolioInsights: portfolioContext.hasPortfolio ? {
-        excludedFromPortfolio: portfolioContext.portfolioSymbols.filter(symbol =>
-          !['BTC', 'ETH'].includes(symbol)
-        ).length,
-        portfolioSize: enhancedCriteria.portfolio_size_context,
-        recommendationsFiltered: true,
-        diversificationOpportunity: scan.discovered_tokens?.filter((token: any) =>
-          !portfolioContext.portfolioSymbols.includes(token.symbol?.toUpperCase())
-        ).length || 0
-      } : {
-        excludedFromPortfolio: 0,
-        portfolioSize: 'unknown',
-        recommendationsFiltered: false,
-        diversificationOpportunity: scan.total_discovered
-      },
-      criteriaConfig,
-      userTier: profile.tier,
-      metadata: {
-        scanName,
-        totalTokensFound: scan.total_discovered,
-        criteriaApplied: criteriaConfig,
-        scanTimestamp: new Date().toISOString()
-      }
-    }
-
-    console.log(`Altcoin scan generated successfully. Credits used: ${creditCost}`)
+    console.log(`Altcoin detection generated successfully. Credits used: ${creditCost}`)
 
     return NextResponse.json({
       success: true,
-      scan: enhancedScan,
+      detectionId: detection.detection_id,
+      gemAnalysis: detection.gem_analysis,
+      discoveredGems: detection.discovered_gems,
+      riskAssessment: detection.risk_assessment,
+      timingAnalysis: detection.timing_analysis,
+      portfolioFit: detection.portfolio_fit,
+      actionPlan: detection.action_plan,
       creditsRemaining: profile.credits - creditCost,
       creditsUsed: creditCost
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Altcoin detector API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: error.message
+    }, { status: 500 })
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -238,192 +151,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
     }
 
-    // Get user's altcoin scans
-    const { data: scans, error } = await supabase
-      .from('altcoin_scans')
-      .select(`
-        id,
-        scan_name,
-        scan_criteria,
-        discovered_tokens,
-        total_discovered,
-        scan_summary,
-        credits_used,
-        created_at
-      `)
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(20)
+    // Get user's altcoin detections
+    const { data: detections, error } = await supabase
+      .rpc('get_user_altcoin_detections', {
+        p_user_id: profile.id
+      })
 
     if (error) {
-      console.error('Failed to fetch altcoin scans:', error)
+      console.error('Failed to fetch altcoin detections:', error)
       return NextResponse.json({
-        error: 'Failed to fetch scans'
+        error: 'Failed to fetch detections'
       }, { status: 500 })
-    }
-
-    // Get recently discovered altcoins for suggestions
-    const { data: recentDiscoveries, error: discoveriesError } = await supabase
-      .from('discovered_altcoins')
-      .select(`
-        id,
-        token_symbol,
-        token_name,
-        contract_address,
-        blockchain,
-        market_cap,
-        price_usd,
-        volume_24h,
-        holders_count,
-        age_days,
-        risk_score,
-        gem_score,
-        discovery_timestamp
-      `)
-      .eq('is_active', true)
-      .order('gem_score', { ascending: false })
-      .limit(10)
-
-    if (discoveriesError) {
-      console.error('Failed to fetch recent discoveries:', discoveriesError)
-    }
-
-    // Get available detection criteria
-    const { data: criteria, error: criteriaError } = await supabase
-      .from('detection_criteria')
-      .select('criteria_name, description, criteria_config, success_rate')
-      .eq('is_active', true)
-      .order('success_rate', { ascending: false })
-
-    if (criteriaError) {
-      console.error('Failed to fetch detection criteria:', criteriaError)
-    }
-
-    // Get user's watchlist
-    const { data: watchlist, error: watchlistError } = await supabase
-      .from('altcoin_watchlist')
-      .select(`
-        id,
-        added_at,
-        notes,
-        target_price,
-        stop_loss,
-        altcoin:altcoin_id (
-          id,
-          token_symbol,
-          token_name,
-          contract_address,
-          blockchain,
-          market_cap,
-          price_usd,
-          gem_score,
-          risk_score
-        )
-      `)
-      .eq('user_id', profile.id)
-      .order('added_at', { ascending: false })
-
-    if (watchlistError) {
-      console.error('Failed to fetch watchlist:', watchlistError)
     }
 
     return NextResponse.json({
       success: true,
-      scans: scans || [],
-      recentDiscoveries: recentDiscoveries || [],
-      criteria: criteria || [],
-      watchlist: watchlist || [],
+      detections: detections || [],
       userTier: profile.tier,
       creditsRemaining: profile.credits,
-      creditCost: CREDIT_COSTS.altcoin_detector
+      creditCost: 4
     })
 
   } catch (error) {
     console.error('Altcoin detector GET API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
-
-    // Get current user
-    const { data: { session }, error: authError } = await supabase.auth.getSession()
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { action } = await request.json()
-
-    if (action === 'update_market_data') {
-      // Update altcoin market data
-      const { data: updateData, error: updateError } = await supabase
-        .rpc('update_altcoin_market_data')
-
-      if (updateError) {
-        console.error('Market data update error:', updateError)
-        return NextResponse.json({
-          error: 'Failed to update market data'
-        }, { status: 500 })
-      }
-
-      // Get trending opportunities
-      const { data: trendsData, error: trendsError } = await supabase
-        .rpc('get_trending_altcoin_opportunities')
-
-      if (trendsError) {
-        console.error('Trending opportunities error:', trendsError)
-      }
-
-      const update = updateData?.[0] || {
-        updated_tokens: 0,
-        price_changes_detected: 0,
-        new_opportunities: 0
-      }
-
-      console.log(`Market data update complete: ${update.updated_tokens} tokens updated`)
-
-      return NextResponse.json({
-        success: true,
-        updateSummary: update,
-        trendingOpportunities: trendsData || [],
-        lastUpdated: new Date().toISOString(),
-        message: 'Market data refresh completed successfully'
-      })
-
-    } else if (action === 'get_opportunities') {
-      // Get trending opportunities only
-      const { data: opportunitiesData, error: opportunitiesError } = await supabase
-        .rpc('get_trending_altcoin_opportunities')
-
-      if (opportunitiesError) {
-        console.error('Opportunities fetch error:', opportunitiesError)
-        return NextResponse.json({
-          error: 'Failed to fetch opportunities'
-        }, { status: 500 })
-      }
-
-      return NextResponse.json({
-        success: true,
-        opportunities: opportunitiesData || [],
-        totalOpportunities: opportunitiesData?.length || 0,
-        generatedAt: new Date().toISOString()
-      })
-
-    } else {
-      return NextResponse.json({
-        error: 'Invalid action. Supported actions: update_market_data, get_opportunities'
-      }, { status: 400 })
-    }
-
-  } catch (error) {
-    console.error('Altcoin detector PATCH API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

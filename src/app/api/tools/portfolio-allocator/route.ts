@@ -52,7 +52,8 @@ async function getExistingPortfolioContext(supabase: any, userId: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has sufficient credits
-    const creditCost = 4 // Portfolio Allocator costs 4 credits
+    const creditCost = 3 // Portfolio Allocator costs 3 credits
     if (profile.credits < creditCost) {
       return NextResponse.json({
         error: 'Insufficient credits',
@@ -123,17 +124,14 @@ export async function POST(request: NextRequest) {
       )
 
       // Generate portfolio allocation using enhanced database function
-      const cookieStore = await cookies()
-      const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
-
       const { data: allocationData, error: allocationError } = await supabase
         .rpc('generate_portfolio_allocation', {
           p_user_id: profile.id,
-          p_total_amount: totalAmount,
+          p_allocation_name: `Portfolio Allocation ${new Date().toISOString().split('T')[0]}`,
+          p_portfolio_size: totalAmount,
           p_risk_tolerance: riskTolerance,
-          p_investment_horizon: investmentHorizon,
-          p_goals: goals || null,
-          p_preferences: preferences || {}
+          p_investment_timeframe: investmentHorizon,
+          p_strategy_type: 'balanced'
         })
 
       if (allocationError) {
@@ -150,69 +148,42 @@ export async function POST(request: NextRequest) {
         }, { status: 500 })
       }
 
-      // Combine database allocation with AI analysis and portfolio context
-      const enhancedAnalysis = {
-        allocations: allocation.allocations,
-        analysisResults: allocation.analysis_results,
-        totalAmount,
-        riskTolerance,
-        investmentHorizon,
-        goals,
-        preferences,
-        allocationId: allocation.allocation_id,
-        creditsCharged: allocation.credits_charged,
-        aiAnalysis, // Include the detailed AI analysis from OpenAI
-        enhanced: true, // Flag indicating AI enhancement
-        lyraOptimized: true, // Indicates Lyra optimization
-        portfolioInsights: portfolioContext.hasExistingPortfolio ? {
-          existingPortfolioValue: portfolioContext.totalValue,
-          existingHoldings: portfolioContext.uniqueSymbols.length,
-          portfolioCount: portfolioContext.portfolios.length,
-          allocationComparison: {
-            newVsExisting: totalAmount / Math.max(portfolioContext.totalValue, 1),
-            diversificationScore: allocation.allocations ?
-              allocation.allocations.filter((alloc: any) =>
-                !portfolioContext.uniqueSymbols.includes(alloc.symbol?.toUpperCase())
-              ).length : 0,
-            overlapWithExisting: allocation.allocations ?
-              allocation.allocations.filter((alloc: any) =>
-                portfolioContext.uniqueSymbols.includes(alloc.symbol?.toUpperCase())
-              ).length : 0
-          },
-          recommendations: {
-            isRebalancing: totalAmount <= portfolioContext.totalValue * 1.5,
-            isDiversification: totalAmount > portfolioContext.totalValue * 0.1,
-            suggestedAction: totalAmount > portfolioContext.totalValue ? 'expansion' : 'rebalancing'
-          }
-        } : {
-          existingPortfolioValue: 0,
-          existingHoldings: 0,
-          isFirstPortfolio: true
-        },
-        generatedAt: new Date().toISOString()
+      // Deduct credits and record transaction
+      const creditSuccess = await mcpSupabase.recordCreditUsage(
+        profile.id,
+        creditCost,
+        `Portfolio Allocation: $${totalAmount}`,
+        'portfolio_allocation',
+        allocation.allocation_id
+      )
+
+      if (!creditSuccess) {
+        console.warn('Credit usage recording failed, but continuing with allocation')
       }
 
-      // Deduct credits using MCP helper
-      await mcpSupabase.deductCredits(profile.id, creditCost, 'Portfolio Allocator', {
-        totalAmount,
-        riskTolerance,
-        investmentHorizon,
-        allocationsCount: mockAllocation.allocations.length
-      })
+      // Update user credits
+      try {
+        await mcpSupabase.updateUser(profile.id, {
+          credits: profile.credits - creditCost
+        })
+      } catch (error) {
+        console.error('Failed to update user credits:', error)
+        return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
+      }
 
-      // Log the usage
-      await mcpSupabase.logCreditTransaction(profile.id, creditCost, 'debit', 'Portfolio Allocator usage')
-
-      const updatedProfile = await mcpSupabase.getUserById(profile.id)
+      console.log(`Portfolio allocation generated successfully. Credits used: ${creditCost}`)
 
       return NextResponse.json({
         success: true,
-        analysis: enhancedAnalysis,
-        credits_remaining: updatedProfile?.credits || 0,
-        credits_used: creditCost,
-        ai_powered: true,
-        lyra_optimized: true, // Indicates Lyra optimization
-        message: `AI-enhanced portfolio allocation generated for $${totalAmount} with ${riskTolerance} risk tolerance using live market data.`
+        allocationId: allocation.allocation_id,
+        allocationAnalysis: allocation.allocation_analysis,
+        recommendedAllocation: allocation.recommended_allocation,
+        rebalancingPlan: allocation.rebalancing_plan,
+        riskAnalysis: allocation.risk_analysis,
+        performanceProjections: allocation.performance_projections,
+        actionItems: allocation.action_items,
+        creditsRemaining: profile.credits - creditCost,
+        creditsUsed: creditCost
       })
 
     } catch (error: any) {
@@ -234,7 +205,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -294,7 +266,7 @@ export async function GET(request: NextRequest) {
       allocationTemplates,
       userTier: profile.tier,
       creditsRemaining: profile.credits,
-      creditCost: 4,
+      creditCost: 3,
       totalAllocations: allocationsData?.length || 0
     })
 
