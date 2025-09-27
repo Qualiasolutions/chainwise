@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()
@@ -187,7 +187,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()
@@ -248,7 +248,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     // Get user profile
     const { data: profile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
       .eq('auth_id', session.user.id)
       .single()

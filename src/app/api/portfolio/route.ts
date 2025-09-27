@@ -27,9 +27,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No active session' }, { status: 401 })
     }
 
-    // Get user profile from users table with enhanced error handling
+    // Get user profile from profiles table (portfolios reference profiles, not users)
     const { data: profile, error: profileError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, auth_id, email, tier, credits')
       .eq('auth_id', session.user.id)
       .single()
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
           }
 
           const { data: createdProfile, error: createError } = await supabase
-            .from('users')
+            .from('profiles')
             .insert(newProfileData)
             .select('id, auth_id, email, tier, credits')
             .single()
