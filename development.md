@@ -413,6 +413,13 @@ This is not just another crypto app - it's a **professional-grade platform** now
 - ✅ `generate_ai_report()` - 0-10 credits based on report type & user tier
 - ✅ Schema fixes and constraint alignment completed
 
+**🔧 CRITICAL DATABASE FIX COMPLETED (September 27, 2025):**
+- ✅ **Fixed all foreign key violations** - Resolved 409 errors for portfolio creation
+- ✅ **Unified user references** - All 27 tables now consistently reference `profiles.id`
+- ✅ **Data migration successful** - Preserved all existing user data during consolidation
+- ✅ **Schema consistency** - Eliminated duplicate user table references (`users` vs `profiles`)
+- ✅ **Database integrity verified** - Portfolio creation and all operations now work flawlessly
+
 **Critical Issues Resolved:**
 - ✅ Fixed build errors (Whale icon → Wallet icon)
 - ✅ Enhanced API rate limiting with caching and retry logic
