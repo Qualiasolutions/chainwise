@@ -9,6 +9,38 @@ import { Database } from '@/lib/supabase/types'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 import { CREDIT_COSTS } from '@/lib/openai/personas'
 
+// Helper function to get user's portfolio holdings for contextual analysis
+async function getUserPortfolioContext(supabase: any, userId: string) {
+  try {
+    const { data: portfolios } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .limit(1)
+
+    if (!portfolios || portfolios.length === 0) {
+      return { holdings: [], portfolioSymbols: [] }
+    }
+
+    const { data: holdings } = await supabase
+      .from('portfolio_holdings')
+      .select('symbol, name, amount, current_price')
+      .eq('portfolio_id', portfolios[0].id)
+
+    const portfolioSymbols = holdings?.map(h => h.symbol.toUpperCase()) || []
+
+    return {
+      holdings: holdings || [],
+      portfolioSymbols,
+      hasPortfolio: holdings && holdings.length > 0
+    }
+  } catch (error) {
+    console.warn('Failed to get portfolio context:', error)
+    return { holdings: [], portfolioSymbols: [] }
+  }
+}
+
 interface NarrativeScanRequest {
   scanName: string
   scanType: 'comprehensive' | 'targeted' | 'trending'
@@ -74,13 +106,22 @@ export async function POST(request: NextRequest) {
     console.log(`Generating narrative scan for user: ${profile.id}`)
     console.log(`Scan: ${scanName}, Type: ${scanType}, Period: ${timePeriod}`)
 
-    // Generate the narrative scan using database function
+    // Get user's portfolio context for enhanced scanning
+    const portfolioContext = await getUserPortfolioContext(supabase, profile.id)
+
+    // Combine target keywords with portfolio symbols for enhanced relevance
+    const enhancedKeywords = [
+      ...(targetKeywords || []),
+      ...portfolioContext.portfolioSymbols
+    ].filter((keyword, index, array) => array.indexOf(keyword) === index) // Remove duplicates
+
+    // Generate the narrative scan using database function with portfolio context
     const { data: scanData, error: scanError } = await supabase
       .rpc('generate_narrative_scan', {
         p_user_id: profile.id,
         p_scan_name: scanName,
         p_scan_type: scanType,
-        p_target_keywords: targetKeywords || null,
+        p_target_keywords: enhancedKeywords.length > 0 ? enhancedKeywords : null,
         p_time_period: timePeriod
       })
 
@@ -121,7 +162,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    // Enhance scan data with additional metadata
+    // Enhance scan data with additional metadata including portfolio context
     const enhancedScan = {
       ...scan.scan_results,
       metadata: {
@@ -132,8 +173,19 @@ export async function POST(request: NextRequest) {
         scanType,
         timePeriod,
         targetKeywords: targetKeywords || [],
+        portfolioSymbols: portfolioContext.portfolioSymbols,
+        portfolioContextApplied: portfolioContext.hasPortfolio,
         userTier: profile.tier
-      }
+      },
+      portfolioInsights: portfolioContext.hasPortfolio ? {
+        relevantHoldings: portfolioContext.holdings.filter(h =>
+          enhancedKeywords.includes(h.symbol.toUpperCase())
+        ),
+        totalHoldingsScanned: portfolioContext.holdings.length,
+        portfolioRelevanceScore: Math.round(
+          (portfolioContext.portfolioSymbols.length / Math.max(enhancedKeywords.length, 1)) * 100
+        )
+      } : null
     }
 
     console.log(`Narrative scan generated successfully. Credits used: ${creditCost}`)

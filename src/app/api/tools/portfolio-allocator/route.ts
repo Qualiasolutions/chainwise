@@ -8,6 +8,48 @@ import { Database } from '@/lib/supabase/types'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 import { OpenAIService } from '@/lib/openai/service'
 
+// Helper function to get user's existing portfolio for contextual analysis
+async function getExistingPortfolioContext(supabase: any, userId: string) {
+  try {
+    const { data: portfolios } = await supabase
+      .from('portfolios')
+      .select('id, name, description')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+
+    if (!portfolios || portfolios.length === 0) {
+      return { hasExistingPortfolio: false, portfolios: [], totalValue: 0 }
+    }
+
+    // Get holdings for all portfolios
+    let allHoldings: any[] = []
+    let totalValue = 0
+
+    for (const portfolio of portfolios) {
+      const { data: holdings } = await supabase
+        .from('portfolio_holdings')
+        .select('symbol, name, amount, current_price, purchase_price')
+        .eq('portfolio_id', portfolio.id)
+
+      if (holdings) {
+        allHoldings = [...allHoldings, ...holdings.map(h => ({ ...h, portfolioName: portfolio.name }))]
+        totalValue += holdings.reduce((sum, h) => sum + (h.amount * (h.current_price || h.purchase_price)), 0)
+      }
+    }
+
+    return {
+      hasExistingPortfolio: allHoldings.length > 0,
+      portfolios,
+      allHoldings,
+      totalValue,
+      uniqueSymbols: [...new Set(allHoldings.map(h => h.symbol.toUpperCase()))]
+    }
+  } catch (error) {
+    console.warn('Failed to get existing portfolio context:', error)
+    return { hasExistingPortfolio: false, portfolios: [], totalValue: 0 }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createRouteHandlerClient<Database>({ cookies })
@@ -52,8 +94,14 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Generate AI-powered portfolio allocation using optimized Lyra prompts
+      // Get existing portfolio context for enhanced allocation
+      const portfolioContext = await getExistingPortfolioContext(supabase, profile.id)
+
+      // Generate AI-powered portfolio allocation using optimized Lyra prompts with portfolio context
       console.log(`🚀 Generating AI portfolio allocation for $${totalAmount} with ${riskTolerance} risk tolerance`)
+      if (portfolioContext.hasExistingPortfolio) {
+        console.log(`📊 Including existing portfolio context: ${portfolioContext.uniqueSymbols.length} holdings, $${portfolioContext.totalValue.toFixed(2)} total value`)
+      }
 
       const aiAnalysis = await OpenAIService.generatePremiumToolResponse(
         'portfolio_allocator',
@@ -62,7 +110,13 @@ export async function POST(request: NextRequest) {
           riskTolerance,
           investmentHorizon,
           goals,
-          preferences
+          preferences,
+          existingPortfolio: portfolioContext.hasExistingPortfolio ? {
+            holdings: portfolioContext.allHoldings,
+            totalValue: portfolioContext.totalValue,
+            symbols: portfolioContext.uniqueSymbols,
+            portfolioCount: portfolioContext.portfolios.length
+          } : null
         },
         profile.tier,
         800 // Max tokens for detailed analysis
@@ -96,7 +150,7 @@ export async function POST(request: NextRequest) {
         }, { status: 500 })
       }
 
-      // Combine database allocation with AI analysis
+      // Combine database allocation with AI analysis and portfolio context
       const enhancedAnalysis = {
         allocations: allocation.allocations,
         analysisResults: allocation.analysis_results,
@@ -110,6 +164,31 @@ export async function POST(request: NextRequest) {
         aiAnalysis, // Include the detailed AI analysis from OpenAI
         enhanced: true, // Flag indicating AI enhancement
         lyraOptimized: true, // Indicates Lyra optimization
+        portfolioInsights: portfolioContext.hasExistingPortfolio ? {
+          existingPortfolioValue: portfolioContext.totalValue,
+          existingHoldings: portfolioContext.uniqueSymbols.length,
+          portfolioCount: portfolioContext.portfolios.length,
+          allocationComparison: {
+            newVsExisting: totalAmount / Math.max(portfolioContext.totalValue, 1),
+            diversificationScore: allocation.allocations ?
+              allocation.allocations.filter((alloc: any) =>
+                !portfolioContext.uniqueSymbols.includes(alloc.symbol?.toUpperCase())
+              ).length : 0,
+            overlapWithExisting: allocation.allocations ?
+              allocation.allocations.filter((alloc: any) =>
+                portfolioContext.uniqueSymbols.includes(alloc.symbol?.toUpperCase())
+              ).length : 0
+          },
+          recommendations: {
+            isRebalancing: totalAmount <= portfolioContext.totalValue * 1.5,
+            isDiversification: totalAmount > portfolioContext.totalValue * 0.1,
+            suggestedAction: totalAmount > portfolioContext.totalValue ? 'expansion' : 'rebalancing'
+          }
+        } : {
+          existingPortfolioValue: 0,
+          existingHoldings: 0,
+          isFirstPortfolio: true
+        },
         generatedAt: new Date().toISOString()
       }
 

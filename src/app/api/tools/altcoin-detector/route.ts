@@ -9,6 +9,40 @@ import { Database } from '@/lib/supabase/types'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 import { CREDIT_COSTS } from '@/lib/openai/personas'
 
+// Helper function to get user's portfolio holdings for contextual analysis
+async function getUserPortfolioContext(supabase: any, userId: string) {
+  try {
+    const { data: portfolios } = await supabase
+      .from('portfolios')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .limit(1)
+
+    if (!portfolios || portfolios.length === 0) {
+      return { holdings: [], portfolioSymbols: [], totalValue: 0 }
+    }
+
+    const { data: holdings } = await supabase
+      .from('portfolio_holdings')
+      .select('symbol, name, amount, current_price, purchase_price')
+      .eq('portfolio_id', portfolios[0].id)
+
+    const portfolioSymbols = holdings?.map(h => h.symbol.toUpperCase()) || []
+    const totalValue = holdings?.reduce((sum, h) => sum + (h.amount * (h.current_price || h.purchase_price)), 0) || 0
+
+    return {
+      holdings: holdings || [],
+      portfolioSymbols,
+      totalValue,
+      hasPortfolio: holdings && holdings.length > 0
+    }
+  } catch (error) {
+    console.warn('Failed to get portfolio context:', error)
+    return { holdings: [], portfolioSymbols: [], totalValue: 0 }
+  }
+}
+
 interface AltcoinScanRequest {
   scanName: string
   criteriaConfig: {
@@ -73,12 +107,29 @@ export async function POST(request: NextRequest) {
     console.log(`Generating altcoin scan for user: ${profile.id}`)
     console.log(`Scan: ${scanName}, Criteria:`, criteriaConfig)
 
-    // Generate the altcoin scan using database function
+    // Get user's portfolio context for enhanced scanning
+    const portfolioContext = await getUserPortfolioContext(supabase, profile.id)
+
+    // Enhance criteria config with portfolio context for better recommendations
+    const enhancedCriteria = {
+      ...criteriaConfig,
+      excluded_symbols: [
+        ...(criteriaConfig.excluded_symbols || []),
+        ...portfolioContext.portfolioSymbols.filter(symbol =>
+          !['BTC', 'ETH'].includes(symbol) // Don't exclude majors
+        )
+      ].filter((symbol, index, array) => array.indexOf(symbol) === index),
+      portfolio_size_context: portfolioContext.totalValue > 0 ?
+        portfolioContext.totalValue > 10000 ? 'large' :
+        portfolioContext.totalValue > 1000 ? 'medium' : 'small' : 'unknown'
+    }
+
+    // Generate the altcoin scan using database function with portfolio context
     const { data: scanData, error: scanError } = await supabase
       .rpc('generate_altcoin_scan', {
         p_user_id: profile.id,
         p_scan_name: scanName,
-        p_criteria_config: criteriaConfig
+        p_criteria_config: enhancedCriteria
       })
 
     if (scanError) {
@@ -118,7 +169,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
     }
 
-    // Enhance scan data with additional metadata
+    // Enhance scan data with additional metadata including portfolio context
     const enhancedScan = {
       scanId: scan.scan_id,
       discoveredTokens: scan.discovered_tokens,
@@ -126,6 +177,21 @@ export async function POST(request: NextRequest) {
       creditsUsed: creditCost,
       generatedAt: new Date().toISOString(),
       requestedBy: profile.email,
+      portfolioInsights: portfolioContext.hasPortfolio ? {
+        excludedFromPortfolio: portfolioContext.portfolioSymbols.filter(symbol =>
+          !['BTC', 'ETH'].includes(symbol)
+        ).length,
+        portfolioSize: enhancedCriteria.portfolio_size_context,
+        recommendationsFiltered: true,
+        diversificationOpportunity: scan.discovered_tokens?.filter((token: any) =>
+          !portfolioContext.portfolioSymbols.includes(token.symbol?.toUpperCase())
+        ).length || 0
+      } : {
+        excludedFromPortfolio: 0,
+        portfolioSize: 'unknown',
+        recommendationsFiltered: false,
+        diversificationOpportunity: scan.total_discovered
+      },
       criteriaConfig,
       userTier: profile.tier,
       metadata: {
