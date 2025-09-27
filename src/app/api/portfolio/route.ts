@@ -187,12 +187,6 @@ export async function GET(request: NextRequest) {
         const totalPnL = totalValue - totalInvested
         const totalPnLPercentage = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0
 
-          totalValue: totalValue.toFixed(2),
-          totalInvested: totalInvested.toFixed(2),
-          totalPnL: totalPnL.toFixed(2),
-          totalPnLPercentage: totalPnLPercentage.toFixed(2)
-        })
-
         // Update current prices in database (async, don't wait)
         enrichedHoldings.forEach(async holding => {
           if (holding.current_price !== holding.purchase_price) {
