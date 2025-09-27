@@ -10,9 +10,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = searchParams.get('limit') || '100'
     const page = searchParams.get('page') || '1'
+    const ids = searchParams.get('ids')
 
     // Build CoinGecko API URL
-    const apiUrl = `${COINGECKO_API_BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=${page}&sparkline=false&price_change_percentage=24h`
+    let apiUrl
+    if (ids) {
+      // Portfolio performance data - specific coin IDs
+      apiUrl = `${COINGECKO_API_BASE}/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&per_page=250&page=1&sparkline=false`
+    } else {
+      // Top cryptocurrencies by market cap
+      apiUrl = `${COINGECKO_API_BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=${page}&sparkline=false&price_change_percentage=24h`
+    }
 
     // Make server-side request to CoinGecko (no CORS issues)
     const response = await fetch(apiUrl, {

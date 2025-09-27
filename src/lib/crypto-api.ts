@@ -663,9 +663,11 @@ class CryptoAPI {
       // Get current prices first with error handling
       let currentData
       try {
-        currentData = await this.fetchAPI(
-          `/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc&per_page=250&page=1&sparkline=false`
-        )
+        const endpoint = isBrowser
+          ? `/api/crypto/markets?ids=${coinIds}`
+          : `/coins/markets?vs_currency=usd&ids=${coinIds}&order=market_cap_desc&per_page=250&page=1&sparkline=false`
+
+        currentData = await this.fetchAPI(endpoint)
       } catch (apiError) {
         console.warn('CoinGecko API failed, using mock data:', apiError)
         return this.generateMockPortfolioData(holdings, days)
