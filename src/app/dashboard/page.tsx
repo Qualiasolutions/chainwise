@@ -35,6 +35,7 @@ import { usePortfolio } from "@/hooks/usePortfolio"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { cryptoAPI } from "@/lib/crypto-api"
 import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
 import { SmartSkeleton, SkeletonCard, SkeletonCryptoCard, SkeletonChart } from "@/components/ui/smart-skeleton"
 import { AnimatedLoader } from "@/components/ui/animated-loader"
 import { ProfessionalCard, MetricsCard, ChartCard, DataCard } from "@/components/ui/professional-card"
@@ -129,6 +130,7 @@ const chartConfig = {
 export default function DashboardPage() {
   const { user, profile, loading: authLoading } = useSupabaseAuth()
   const { portfolios, loading: portfolioLoading, error, getTotalPortfolioValue, getTotalPortfolioPnL, getTotalPortfolioPnLPercentage, getDefaultPortfolio } = usePortfolio()
+  const { toast } = useToast()
 
   // Overall loading state - show loading if either auth or portfolio is loading
   const loading = authLoading || portfolioLoading
@@ -267,6 +269,48 @@ export default function DashboardPage() {
     })
 
     return chartData
+  }
+
+  // Create quick price alert for a cryptocurrency
+  const createQuickAlert = async (crypto: any) => {
+    try {
+      // Set alert to trigger when price moves 10% up or down from current price
+      const currentPrice = crypto.price
+      const alertConditions = {
+        price_above: currentPrice * 1.1, // 10% above current price
+        price_below: currentPrice * 0.9, // 10% below current price
+      }
+
+      const response = await fetch('/api/tools/smart-alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alertName: `${crypto.symbol} Price Alert`,
+          alertType: 'price_movement',
+          targetSymbol: crypto.symbol,
+          conditions: alertConditions,
+          notificationMethods: { email: true, push: false, sms: false }
+        })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast({
+          title: "Price Alert Created!",
+          description: `You'll be notified when ${crypto.symbol} moves ±10% from $${currentPrice.toLocaleString()}`,
+        })
+      } else {
+        throw new Error(data.error || 'Failed to create alert')
+      }
+    } catch (error) {
+      console.error('Error creating alert:', error)
+      toast({
+        title: "Alert Creation Failed",
+        description: "Could not create price alert. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   if (loading) {
@@ -656,8 +700,8 @@ export default function DashboardPage() {
           </div>
           <div className="space-y-3">
               {topCryptosData.map((crypto, index) => (
-                <Link key={crypto.symbol} href={`/market/${crypto.id}`}>
-                    <div className="flex items-center justify-between p-3 rounded-sm bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600">
+                <div key={crypto.symbol} className="flex items-center justify-between p-3 rounded-sm bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600">
+                  <Link href={`/market/${crypto.id}`} className="flex items-center flex-1 cursor-pointer">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-muted">
                       <img
@@ -677,21 +721,35 @@ export default function DashboardPage() {
                       <p className="text-xs text-muted-foreground">{crypto.name}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">${crypto.price.toLocaleString()}</p>
-                    <div className="flex items-center">
-                      {crypto.change > 0 ? (
-                        <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-                      ) : (
-                        <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-                      )}
-                      <span className={`text-xs ${crypto.change > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {crypto.change > 0 ? '+' : ''}{crypto.change.toFixed(2)}%
-                      </span>
+                    <div className="text-right">
+                      <p className="font-medium">${crypto.price.toLocaleString()}</p>
+                      <div className="flex items-center">
+                        {crypto.change > 0 ? (
+                          <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+                        )}
+                        <span className={`text-xs ${crypto.change > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {crypto.change > 0 ? '+' : ''}{crypto.change.toFixed(2)}%
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                    </div>
-                </Link>
+                  </Link>
+                  <MicroInteraction>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="ml-2 h-8 w-8 p-0 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        createQuickAlert(crypto)
+                      }}
+                    >
+                      <Bell className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                    </Button>
+                  </MicroInteraction>
+                </div>
               ))}
           </div>
         </DataCard>

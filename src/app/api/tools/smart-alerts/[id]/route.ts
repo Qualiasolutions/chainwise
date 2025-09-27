@@ -25,8 +25,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    const supabase = createRouteHandlerClient<Database>({ cookies })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -107,8 +106,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    const supabase = createRouteHandlerClient<Database>({ cookies })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -186,8 +184,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const cookieStore = await cookies()
-    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
+    const supabase = createRouteHandlerClient<Database>({ cookies })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
