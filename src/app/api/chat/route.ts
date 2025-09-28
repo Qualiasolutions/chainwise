@@ -22,8 +22,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user profile using MCP helpers
-    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    // Get user profile using MCP helpers with error handling
+    let profile;
+    try {
+      profile = await mcpSupabase.getUserByAuthId(session.user.id)
+    } catch (error) {
+      console.error('MCP getUserByAuthId error:', error)
+      return NextResponse.json({ error: 'Failed to fetch user profile' }, { status: 500 })
+    }
 
     if (!profile) {
       return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
@@ -95,13 +101,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Deduct credits and record transaction using MCP helpers
-    const creditSuccess = await mcpSupabase.recordCreditUsage(
-      profile.id,
-      personaConfig.creditCost,
-      `AI chat with ${personaConfig.name} (${aiResponse.length} chars)`,
-      persona,
-      sessionId
-    )
+    let creditSuccess = false;
+    try {
+      creditSuccess = await mcpSupabase.recordCreditUsage(
+        profile.id,
+        personaConfig.creditCost,
+        `AI chat with ${personaConfig.name} (${aiResponse.length} chars)`,
+        persona,
+        sessionId
+      )
+    } catch (error) {
+      console.error('Credit usage recording error:', error)
+    }
 
     if (!creditSuccess) {
       console.warn('Credit usage recording failed, but continuing with chat')
@@ -114,87 +125,93 @@ export async function POST(request: NextRequest) {
       })
     } catch (error) {
       console.error('Failed to update user credits:', error)
-      return NextResponse.json({ error: 'Failed to process credits' }, { status: 500 })
+      // Don't return error here - user got their AI response, credit update can be eventually consistent
+      console.warn('Credit update failed but continuing with response delivery')
     }
 
-    // Handle session management
-    let chatSession
-    let updatedMessages
+    // Handle session management with graceful error handling
+    let chatSession = null
+    let updatedMessages = []
 
-    if (sessionId && existingSession) {
-      // Update existing session
-      const currentMessages = Array.isArray(existingSession.messages) ? existingSession.messages : []
-      updatedMessages = [
-        ...currentMessages,
-        {
-          id: crypto.randomUUID(),
-          content: message,
-          sender: 'user',
-          timestamp: new Date().toISOString()
-        },
-        {
-          id: crypto.randomUUID(),
-          content: aiResponse,
-          sender: 'ai',
-          persona,
-          timestamp: new Date().toISOString()
+    try {
+      if (sessionId && existingSession) {
+        // Update existing session
+        const currentMessages = Array.isArray(existingSession.messages) ? existingSession.messages : []
+        updatedMessages = [
+          ...currentMessages,
+          {
+            id: crypto.randomUUID(),
+            content: message,
+            sender: 'user',
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: crypto.randomUUID(),
+            content: aiResponse,
+            sender: 'ai',
+            persona,
+            timestamp: new Date().toISOString()
+          }
+        ]
+
+        const { data: updatedSession, error: updateError } = await supabase
+          .from('ai_chat_sessions')
+          .update({
+            messages: updatedMessages,
+            credits_used: (existingSession.credits_used || 0) + personaConfig.creditCost,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', sessionId)
+          .select()
+          .single()
+
+        if (updateError) {
+          console.error('Session update error:', updateError)
+          // Continue without session update - user still gets AI response
+        } else {
+          chatSession = updatedSession
         }
-      ]
-
-      const { data: updatedSession, error: updateError } = await supabase
-        .from('ai_chat_sessions')
-        .update({
-          messages: updatedMessages,
-          credits_used: (existingSession.credits_used || 0) + personaConfig.creditCost,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', sessionId)
-        .select()
-        .single()
-
-      if (updateError) {
-        console.error('Session update error:', updateError)
-        return NextResponse.json({ error: 'Failed to update chat session' }, { status: 500 })
       }
 
-      chatSession = updatedSession
-    }
+      if (!chatSession) {
+        // Create new session
+        updatedMessages = [
+          {
+            id: crypto.randomUUID(),
+            content: message,
+            sender: 'user',
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: crypto.randomUUID(),
+            content: aiResponse,
+            sender: 'ai',
+            persona,
+            timestamp: new Date().toISOString()
+          }
+        ]
 
-    if (!chatSession) {
-      // Create new session
-      updatedMessages = [
-        {
-          id: crypto.randomUUID(),
-          content: message,
-          sender: 'user',
-          timestamp: new Date().toISOString()
-        },
-        {
-          id: crypto.randomUUID(),
-          content: aiResponse,
-          sender: 'ai',
-          persona,
-          timestamp: new Date().toISOString()
+        const { data: newSession, error: createError } = await supabase
+          .from('ai_chat_sessions')
+          .insert({
+            user_id: session.user.id,
+            persona: persona as any,
+            messages: updatedMessages as any,
+            credits_used: personaConfig.creditCost
+          })
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('Session creation error:', createError)
+          // Continue without session creation - user still gets AI response
+        } else {
+          chatSession = newSession
         }
-      ]
-
-      const { data: newSession, error: createError } = await supabase
-        .from('ai_chat_sessions')
-        .insert({
-          user_id: session.user.id,
-          persona: persona as any,
-          messages: updatedMessages as any,
-          credits_used: personaConfig.creditCost
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error('Session creation error:', createError)
-        return NextResponse.json({ error: 'Failed to create chat session' }, { status: 500 })
       }
-
-      chatSession = newSession
+    } catch (error) {
+      console.error('Session management error:', error)
+      // Continue gracefully - session management failure shouldn't block AI response
     }
 
     return NextResponse.json({
