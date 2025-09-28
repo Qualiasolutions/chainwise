@@ -128,19 +128,30 @@ class CryptoAPI {
       })
 
       if (response.status === 429) {
-        // Rate limited - wait and retry once
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        const retryResponse = await fetch(`${COINGECKO_API_BASE}${endpoint}`, {
+        // Rate limited - wait with exponential backoff and retry
+        const backoffTime = 2000 + Math.random() * 1000 // 2-3 seconds with jitter
+        await new Promise(resolve => setTimeout(resolve, backoffTime))
+
+        // Construct proper retry URL based on environment (FIX: Don't double the path!)
+        const retryUrl = isBrowser
+          ? endpoint.startsWith('/') ? endpoint : `/${endpoint}`
+          : `${COINGECKO_API_BASE}${endpoint}`
+
+        const retryResponse = await fetch(retryUrl, {
           headers: {
             'Accept': 'application/json',
           },
-          mode: 'cors',
+          mode: isBrowser ? 'cors' : undefined,
         })
 
         if (!retryResponse.ok) {
           throw new Error(`API request failed after retry: ${retryResponse.status}`)
         }
-        return await retryResponse.json()
+
+        const retryData = await retryResponse.json()
+        // Cache successful retry
+        this.cache.set(endpoint, { data: retryData, timestamp: Date.now() })
+        return retryData
       }
 
       if (!response.ok) {

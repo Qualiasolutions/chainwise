@@ -12,7 +12,8 @@ import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies: await cookies() })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -66,16 +67,16 @@ export async function POST(request: NextRequest) {
     let existingSession: any = null
     if (sessionId) {
       // For now, use direct Supabase until session management is fully migrated to MCP
-      const { data: session } = await supabase
+      const { data: chatSession } = await supabase
         .from('ai_chat_sessions')
         .select('messages')
         .eq('id', sessionId)
-        .eq('user_id', profile.id)
+        .eq('user_id', session.user.id)
         .single()
 
-      existingSession = session
-      if (session?.messages) {
-        conversationHistory = Array.isArray(session.messages) ? session.messages : []
+      existingSession = chatSession
+      if (chatSession?.messages) {
+        conversationHistory = Array.isArray(chatSession.messages) ? chatSession.messages : []
         // Convert to OpenAI format (last 10 messages for context)
         conversationHistory = conversationHistory.slice(-10).map((msg: any) => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
@@ -180,7 +181,7 @@ export async function POST(request: NextRequest) {
       const { data: newSession, error: createError } = await supabase
         .from('ai_chat_sessions')
         .insert({
-          user_id: profile.id,
+          user_id: session.user.id,
           persona: persona as any,
           messages: updatedMessages as any,
           credits_used: personaConfig.creditCost
@@ -215,7 +216,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies: await cookies() })
+    const cookieStore = await cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
@@ -238,7 +240,7 @@ export async function GET() {
     const { data: sessions, error } = await supabase
       .from('ai_chat_sessions')
       .select('*')
-      .eq('user_id', profile.id)
+      .eq('user_id', session.user.id)
       .order('updated_at', { ascending: false })
       .limit(20)
 

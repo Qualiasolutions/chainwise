@@ -53,7 +53,8 @@ export class MCPSupabaseClient {
         // Server-side: use route handler client for API routes
         const { cookies } = await import('next/headers')
         const { createRouteHandlerClient } = await import('@supabase/auth-helpers-nextjs')
-        return createRouteHandlerClient({ cookies })
+        const cookieStore = await cookies()
+        return createRouteHandlerClient({ cookies: () => cookieStore })
       } else {
         // Client-side: use browser client
         const { createClientComponentClient } = await import('@supabase/auth-helpers-nextjs')
@@ -608,7 +609,7 @@ export class MCPSupabaseClient {
         .rpc('record_credit_usage', {
           user_uuid: userId,
           credits_spent: creditsSpent,
-          usage_description: description,
+          description_text: description,
           persona_used: persona,
           session_uuid: sessionId
         })
