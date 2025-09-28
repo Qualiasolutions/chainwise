@@ -8,7 +8,7 @@ const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const limit = searchParams.get('limit') || '100'
+    const limit = searchParams.get('limit') || '250'
     const page = searchParams.get('page') || '1'
     const ids = searchParams.get('ids')
 
