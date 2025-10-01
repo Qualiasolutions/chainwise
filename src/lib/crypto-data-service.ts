@@ -282,6 +282,18 @@ Timestamp: ${new Date(data.lastUpdated).toLocaleTimeString()}`
       return null
     }
   }
+
+  // Method to get bulk prices for WebSocket service
+  async getBulkPrices(coinIds: string[]): Promise<Record<string, any>> {
+    try {
+      // Use CoinGecko's simple/price endpoint for bulk fetching
+      const prices = await cryptoAPI.getSimplePrice(coinIds, ['usd'])
+      return prices
+    } catch (error) {
+      console.error('Error fetching bulk prices:', error)
+      return {}
+    }
+  }
 }
 
 export const cryptoDataService = new CryptoDataService()
