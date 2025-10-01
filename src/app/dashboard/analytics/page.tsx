@@ -37,6 +37,7 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { usePortfolio } from "@/hooks/usePortfolio"
 import { cryptoAPI, formatPrice, formatPercentage } from "@/lib/crypto-api"
 import { motion } from "framer-motion"
+import { useRealTimePrices } from "@/hooks/useRealTimePrices"
 
 interface PortfolioAnalytics {
   totalValue: number
@@ -80,6 +81,16 @@ export default function AnalyticsPage() {
     '#ef4444', '#8b5cf6', '#6366f1', '#84cc16'
   ]
 
+  // Extract coin IDs from all portfolios for real-time prices
+  const allHoldings = portfolios?.flatMap(p => p.portfolio_holdings || []) || []
+  const coinIds = Array.from(new Set(allHoldings.map(h => h.symbol.toLowerCase())))
+
+  // Real-time price updates
+  const { prices, isConnected } = useRealTimePrices(coinIds, {
+    updateInterval: 30000,
+    enabled: coinIds.length > 0
+  })
+
   useEffect(() => {
     const generateAnalytics = async () => {
       if (portfoliosLoading) return
@@ -115,9 +126,11 @@ export default function AnalyticsPage() {
         const allHoldings = defaultPortfolio?.portfolio_holdings ||
           portfolios.flatMap(p => p.portfolio_holdings || [])
 
-        // Calculate allocations
+        // Calculate allocations with real-time prices
         const calculatedAllocations: AssetAllocation[] = allHoldings.map((holding, index) => {
-          const currentPrice = holding.current_price || holding.purchase_price
+          const coinId = holding.symbol.toLowerCase()
+          const priceData = prices[coinId]
+          const currentPrice = priceData?.price || holding.current_price || holding.purchase_price
           const value = holding.amount * currentPrice
           const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0
 
@@ -132,12 +145,14 @@ export default function AnalyticsPage() {
 
         setAllocations(calculatedAllocations)
 
-        // Calculate performance metrics
+        // Calculate performance metrics with real-time prices
         let bestPerformer = { symbol: 'N/A', change: -Infinity }
         let worstPerformer = { symbol: 'N/A', change: Infinity }
 
         allHoldings.forEach(holding => {
-          const currentPrice = holding.current_price || holding.purchase_price
+          const coinId = holding.symbol.toLowerCase()
+          const priceData = prices[coinId]
+          const currentPrice = priceData?.price || holding.current_price || holding.purchase_price
           const changePercentage = ((currentPrice - holding.purchase_price) / holding.purchase_price) * 100
 
           if (changePercentage > bestPerformer.change) {
@@ -204,7 +219,7 @@ export default function AnalyticsPage() {
     }
 
     generateAnalytics()
-  }, [portfolios, portfoliosLoading, timeframe])
+  }, [portfolios, portfoliosLoading, timeframe, prices])
 
   if (loading) {
     return (
@@ -266,9 +281,25 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight purple-gradient bg-clip-text text-transparent">
-            Portfolio Analytics
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight purple-gradient bg-clip-text text-transparent">
+              Portfolio Analytics
+            </h1>
+            {coinIds.length > 0 && (
+              <Badge
+                variant={isConnected ? "default" : "secondary"}
+                className={cn(
+                  "flex items-center gap-1 text-xs",
+                  isConnected
+                    ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400"
+                    : "bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400"
+                )}
+              >
+                <Activity className={cn("h-3 w-3", isConnected && "animate-pulse")} />
+                {isConnected ? "Live" : "Connecting..."}
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground">
             Detailed insights into your portfolio performance and risk metrics
           </p>

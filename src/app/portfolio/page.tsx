@@ -60,6 +60,8 @@ import { ColumnDef } from "@tanstack/react-table"
 import { motion } from "framer-motion"
 import { AddAssetModal } from "@/components/AddAssetModal"
 import { toast } from "sonner"
+import { useRealTimePrices } from "@/hooks/useRealTimePrices"
+import { Activity } from "lucide-react"
 
 interface PortfolioHolding {
   id: string
@@ -98,6 +100,15 @@ export default function PortfolioPage() {
   const [allocationData, setAllocationData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Extract coin IDs from holdings for real-time price updates
+  const coinIds = holdings.map(h => h.symbol.toLowerCase())
+
+  // Real-time price updates with 30-second polling
+  const { prices, isConnected, refreshNow } = useRealTimePrices(coinIds, {
+    updateInterval: 30000,
+    enabled: coinIds.length > 0
+  })
 
   // Fetch portfolio data
   const fetchPortfolioData = useCallback(async () => {
@@ -253,6 +264,75 @@ export default function PortfolioPage() {
   useEffect(() => {
     fetchPortfolioData()
   }, [fetchPortfolioData])
+
+  // Update holdings with real-time prices
+  useEffect(() => {
+    if (!prices || Object.keys(prices).length === 0 || holdings.length === 0) return
+
+    const updatedHoldings = holdings.map(holding => {
+      const coinId = holding.symbol.toLowerCase()
+      const priceData = prices[coinId]
+
+      if (priceData) {
+        const newValue = holding.amount * priceData.price
+        const newPnL = newValue - (holding.amount * holding.purchase_price)
+        const newPnLPercentage = ((priceData.price - holding.purchase_price) / holding.purchase_price) * 100
+
+        return {
+          ...holding,
+          current_price: priceData.price,
+          value: newValue,
+          pnl: newPnL,
+          pnlPercentage: newPnLPercentage
+        }
+      }
+      return holding
+    })
+
+    // Recalculate allocations
+    const totalValue = updatedHoldings.reduce((sum, holding) => sum + holding.value, 0)
+    updatedHoldings.forEach(holding => {
+      holding.allocation = totalValue > 0 ? (holding.value / totalValue) * 100 : 0
+    })
+
+    // Recalculate metrics
+    const totalPnL = updatedHoldings.reduce((sum, holding) => sum + holding.pnl, 0)
+    const totalPnLPercentage = totalValue > 0 ? (totalPnL / (totalValue - totalPnL)) * 100 : 0
+
+    const topGainer = updatedHoldings.reduce((max, holding) =>
+      holding.pnlPercentage > (max?.pnlPercentage || -Infinity) ? holding : max,
+      null as PortfolioHolding | null
+    )
+
+    const topLoser = updatedHoldings.reduce((min, holding) =>
+      holding.pnlPercentage < (min?.pnlPercentage || Infinity) ? holding : min,
+      null as PortfolioHolding | null
+    )
+
+    setHoldings(updatedHoldings)
+
+    if (metrics) {
+      setMetrics({
+        ...metrics,
+        totalValue,
+        totalPnL,
+        totalPnLPercentage,
+        topGainer,
+        topLoser
+      })
+    }
+
+    // Update allocation chart data
+    const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#84cc16', '#f97316']
+    const allocationChartData = updatedHoldings.map((holding, index) => ({
+      name: holding.symbol,
+      value: holding.value,
+      percentage: holding.allocation,
+      color: COLORS[index % COLORS.length]
+    }))
+    setAllocationData(allocationChartData)
+
+  }, [prices]) // Only depend on prices, not holdings to avoid infinite loops
 
   // Add holding function with optimistic updates
   const handleAddHolding = useCallback(async (newHoldingData?: any) => {
@@ -616,9 +696,25 @@ export default function PortfolioPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-              My Portfolio
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                My Portfolio
+              </h1>
+              {holdings.length > 0 && (
+                <Badge
+                  variant={isConnected ? "default" : "secondary"}
+                  className={cn(
+                    "flex items-center gap-1 text-xs",
+                    isConnected
+                      ? "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400"
+                      : "bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-400"
+                  )}
+                >
+                  <Activity className={cn("h-3 w-3", isConnected && "animate-pulse")} />
+                  {isConnected ? "Live" : "Connecting..."}
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">
               Track your cryptocurrency investments and performance
             </p>
