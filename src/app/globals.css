@@ -87,6 +87,15 @@
     --sidebar-accent-foreground: oklch(0.3015 0.0572 282.4176);
     --sidebar-border: oklch(0.9115 0.0216 285.9625);
     --sidebar-ring: oklch(0.5417 0.1790 288.0332);
+    /* Semantic Colors */
+    --success: oklch(0.6356 0.1620 145.7764);
+    --success-foreground: oklch(1.0000 0 0);
+    --warning: oklch(0.7719 0.1629 75.8282);
+    --warning-foreground: oklch(0.2000 0.0200 75.8282);
+    --info: oklch(0.6356 0.1922 231.8054);
+    --info-foreground: oklch(1.0000 0 0);
+    --error: oklch(0.6861 0.2061 14.9941);
+    --error-foreground: oklch(1.0000 0 0);
   }
 
   .dark {
@@ -123,6 +132,15 @@
     --sidebar-accent-foreground: oklch(0.95 0.005 280);
     --sidebar-border: oklch(0.25 0.03 280);
     --sidebar-ring: oklch(0.65 0.20 280);
+    /* Semantic Colors - Dark Mode */
+    --success: oklch(0.70 0.18 145);
+    --success-foreground: oklch(0.10 0.02 145);
+    --warning: oklch(0.75 0.18 85);
+    --warning-foreground: oklch(0.15 0.02 85);
+    --info: oklch(0.65 0.20 240);
+    --info-foreground: oklch(1.0 0 0);
+    --error: oklch(0.70 0.22 25);
+    --error-foreground: oklch(1.0 0 0);
   }
 }
 
@@ -136,10 +154,110 @@
     color: var(--foreground);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Typography System - Clear Hierarchy */
+  h1, .h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight;
+  }
+
+  h2, .h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight;
+  }
+
+  h3, .h3 {
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight leading-snug;
+  }
+
+  h4, .h4 {
+    @apply text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight leading-snug;
+  }
+
+  h5, .h5 {
+    @apply text-lg md:text-xl lg:text-2xl font-medium tracking-normal leading-normal;
+  }
+
+  h6, .h6 {
+    @apply text-base md:text-lg lg:text-xl font-medium tracking-normal leading-normal;
+  }
+
+  /* Body Text Variants */
+  .text-body-lg {
+    @apply text-lg leading-relaxed font-normal;
+  }
+
+  .text-body {
+    @apply text-base leading-relaxed font-normal;
+  }
+
+  .text-body-sm {
+    @apply text-sm leading-relaxed font-normal;
+  }
+
+  /* Display Text - For Hero Sections */
+  .text-display {
+    @apply text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tighter leading-none;
+  }
+
+  .text-display-sm {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none;
+  }
+
+  /* Code & Mono Text */
+  code, .code {
+    @apply font-mono text-sm;
+  }
+
+  /* Improved Readability */
+  p {
+    @apply leading-relaxed;
+  }
+
+  /* Link Styles */
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  a:hover {
+    @apply text-primary;
+  }
 }
 
 /* ChainWise Modern Design System */
 @layer components {
+  /* Layout Containers */
+  .container-sm {
+    @apply max-w-2xl mx-auto px-4 sm:px-6;
+  }
+
+  .container-md {
+    @apply max-w-4xl mx-auto px-4 sm:px-6;
+  }
+
+  .container-lg {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-xl {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-full {
+    @apply w-full px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section Padding */
+  .section-py {
+    @apply py-12 sm:py-16 lg:py-24;
+  }
+
+  .section-py-sm {
+    @apply py-8 sm:py-12 lg:py-16;
+  }
+
+  .section-py-lg {
+    @apply py-16 sm:py-24 lg:py-32;
+  }
+
   /* Modern Gradients */
   .ai-gradient {
     @apply bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600;
