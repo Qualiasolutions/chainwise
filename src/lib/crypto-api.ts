@@ -68,6 +68,21 @@ export interface NewsArticle {
   category: string
 }
 
+export interface Exchange {
+  id: string
+  name: string
+  year_established: number | null
+  country: string | null
+  description: string | null
+  url: string
+  image: string
+  has_trading_incentive: boolean
+  trust_score: number
+  trust_score_rank: number
+  trade_volume_24h_btc: number
+  trade_volume_24h_btc_normalized: number
+}
+
 class CryptoAPI {
   private cache = new Map<string, { data: any; timestamp: number }>()
   private readonly CACHE_DURATION = 60000 // 1 minute cache
@@ -888,6 +903,51 @@ class CryptoAPI {
       if (index > -1) {
         callbacks.splice(index, 1)
       }
+    }
+  }
+
+  // Get exchanges (centralized and decentralized)
+  async getExchanges(perPage: number = 100): Promise<Exchange[]> {
+    try {
+      const endpoint = isBrowser
+        ? `/api/crypto/exchanges?per_page=${perPage}`
+        : `/exchanges?per_page=${perPage}`
+
+      const data = await this.fetchAPI(endpoint)
+      return data || []
+    } catch (error) {
+      console.error('Error fetching exchanges:', error)
+      // Return fallback exchange data
+      return [
+        {
+          id: 'binance',
+          name: 'Binance',
+          year_established: 2017,
+          country: 'Cayman Islands',
+          description: 'Binance is a global cryptocurrency exchange',
+          url: 'https://www.binance.com',
+          image: 'https://assets.coingecko.com/markets/images/52/small/binance.jpg',
+          has_trading_incentive: false,
+          trust_score: 10,
+          trust_score_rank: 1,
+          trade_volume_24h_btc: 65000,
+          trade_volume_24h_btc_normalized: 65000
+        },
+        {
+          id: 'coinbase-exchange',
+          name: 'Coinbase Exchange',
+          year_established: 2012,
+          country: 'United States',
+          description: 'Coinbase is a secure platform to buy, sell, and manage crypto',
+          url: 'https://www.coinbase.com',
+          image: 'https://assets.coingecko.com/markets/images/23/small/Coinbase.jpg',
+          has_trading_incentive: false,
+          trust_score: 10,
+          trust_score_rank: 2,
+          trade_volume_24h_btc: 45000,
+          trade_volume_24h_btc_normalized: 45000
+        }
+      ]
     }
   }
 

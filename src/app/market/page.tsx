@@ -38,7 +38,7 @@ import {
   Plus
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { cryptoAPI, CryptoData, MarketData, NewsArticle, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
+import { cryptoAPI, CryptoData, MarketData, NewsArticle, Exchange, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
 import { ColumnDef } from "@tanstack/react-table"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -72,6 +72,7 @@ export default function MarketPage() {
   const [portfolioId, setPortfolioId] = useState<string | null>(null)
   const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [exchangesData, setExchangesData] = useState<Exchange[]>([])
 
   // Fetch market data
   useEffect(() => {
@@ -81,17 +82,19 @@ export default function MarketPage() {
         setError(null)
 
         // Fetch all data in parallel
-        const [cryptos, global, trending, news] = await Promise.all([
+        const [cryptos, global, trending, news, exchanges] = await Promise.all([
           cryptoAPI.getTopCryptos(100),
           cryptoAPI.getGlobalData(),
           cryptoAPI.getTrendingCryptos(),
-          cryptoAPI.getCryptoNews(8)
+          cryptoAPI.getCryptoNews(8),
+          cryptoAPI.getExchanges(100)
         ])
 
         setCryptoData(cryptos)
         setGlobalData(global)
         setTrendingData(trending)
         setNewsData(news)
+        setExchangesData(exchanges)
 
         // Generate market chart data from top cryptocurrencies
         const chartData = cryptos.slice(0, 10).map((crypto, index) => ({
@@ -622,6 +625,10 @@ export default function MarketPage() {
                   <TabsTrigger value="news" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <Newspaper className="w-4 h-4 mr-1" />
                     News
+                  </TabsTrigger>
+                  <TabsTrigger value="exchanges" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    <BarChart3 className="w-4 h-4 mr-1" />
+                    Exchanges
                   </TabsTrigger>
                 </TabsList>
 
