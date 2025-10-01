@@ -1,11 +1,12 @@
 // Whale Tracker API Route
-// POST /api/tools/whale-tracker - Generate whale tracking report
+// POST /api/tools/whale-tracker - Generate whale tracking report with real Whale Alert data
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
+import { whaleAlertAPI, WhaleAlertAPIError } from '@/lib/whale-alert-api'
 
 interface WhaleTrackerRequest {
   walletAddresses: string[]
@@ -76,27 +77,117 @@ export async function POST(request: NextRequest) {
     }
 
 
-    // Generate the whale tracker report using database function
-    const { data: reportData, error: reportError } = await supabase
-      .rpc('generate_whale_tracker_report', {
-        p_user_id: profile.id,
-        p_whale_wallets: walletAddresses,
-        p_time_period: timePeriod,
-        p_report_type: reportType
-      })
-
-    if (reportError) {
-      console.error('Whale tracker report generation error:', reportError)
-      return NextResponse.json({
-        error: 'Failed to generate whale tracker report'
-      }, { status: 500 })
+    // Fetch real whale transaction data from Whale Alert API
+    let whaleData
+    try {
+      whaleData = await whaleAlertAPI.getMultiAddressTransactions(walletAddresses, timePeriod)
+    } catch (error) {
+      if (error instanceof WhaleAlertAPIError) {
+        console.error('Whale Alert API error:', error)
+        return NextResponse.json({
+          error: `Whale Alert API error: ${error.message}`,
+          fallback: true
+        }, { status: error.statusCode || 500 })
+      }
+      throw error
     }
 
-    const report = reportData[0]
-    if (!report) {
-      return NextResponse.json({
-        error: 'No report data generated'
-      }, { status: 500 })
+    // Process whale data into report format
+    const whaleWallets = walletAddresses.map(address => {
+      const addressData = whaleData[address]
+
+      if (!addressData || !addressData.transactions) {
+        return {
+          wallet_address: address,
+          wallet_label: `Whale ${address.slice(0, 8)}...${address.slice(-6)}`,
+          blockchain: 'unknown',
+          balance_btc: 0,
+          balance_eth: 0,
+          total_usd_value: 0,
+          recent_transactions: []
+        }
+      }
+
+      // Calculate balances from transactions
+      let balance_btc = 0
+      let balance_eth = 0
+      let total_usd_value = addressData.totalValue
+
+      // Format transactions for display
+      const recent_transactions = addressData.transactions
+        .slice(0, reportType === 'detailed' ? 200 : 50)
+        .map(tx => whaleAlertAPI.formatTransaction(tx))
+
+      // Calculate crypto balances from transaction amounts
+      addressData.transactions.forEach(tx => {
+        if (tx.symbol.toUpperCase() === 'BTC') {
+          if (tx.to.address.toLowerCase() === address.toLowerCase()) {
+            balance_btc += tx.amount
+          }
+          if (tx.from.address.toLowerCase() === address.toLowerCase()) {
+            balance_btc -= tx.amount
+          }
+        }
+        if (tx.symbol.toUpperCase() === 'ETH') {
+          if (tx.to.address.toLowerCase() === address.toLowerCase()) {
+            balance_eth += tx.amount
+          }
+          if (tx.from.address.toLowerCase() === address.toLowerCase()) {
+            balance_eth -= tx.amount
+          }
+        }
+      })
+
+      return {
+        wallet_address: address,
+        wallet_label: `${addressData.blockchain.charAt(0).toUpperCase() + addressData.blockchain.slice(1)} Whale ${address.slice(0, 8)}...`,
+        blockchain: addressData.blockchain,
+        balance_btc: Math.abs(balance_btc),
+        balance_eth: Math.abs(balance_eth),
+        total_usd_value,
+        recent_transactions
+      }
+    })
+
+    // Calculate summary statistics
+    const totalTransactions = whaleWallets.reduce((sum, w) => sum + w.recent_transactions.length, 0)
+    const totalVolumeUSD = whaleWallets.reduce((sum, w) => sum + w.total_usd_value, 0)
+
+    const reportData = {
+      whale_wallets: whaleWallets,
+      summary: {
+        total_transactions: totalTransactions,
+        total_volume_usd: totalVolumeUSD,
+        time_period: timePeriod,
+        report_type: reportType,
+        generated_at: new Date().toISOString()
+      }
+    }
+
+    // Store report in database
+    const reportId = `wtr_${Date.now()}_${profile.id.slice(0, 8)}`
+
+    const { error: insertError } = await supabase
+      .from('whale_tracker_reports')
+      .insert({
+        id: reportId,
+        user_id: profile.id,
+        report_data: reportData,
+        whale_wallets: walletAddresses,
+        time_period: timePeriod,
+        report_type: reportType,
+        credits_used: creditCost,
+        created_at: new Date().toISOString()
+      })
+
+    if (insertError) {
+      console.error('Failed to store whale tracker report:', insertError)
+      // Continue anyway - user still gets the report
+    }
+
+    const report = {
+      report_id: reportId,
+      report_data: reportData
     }
 
     // Deduct credits and record transaction

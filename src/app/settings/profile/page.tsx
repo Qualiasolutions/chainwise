@@ -16,6 +16,8 @@ export default function ProfilePage() {
   const { user: authUser, profile, loading: authLoading, refreshProfile } = useSupabaseAuth();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -33,6 +35,10 @@ export default function ProfilePage() {
         location: profile.location || "",
         website: profile.website || ""
       });
+      // Set avatar preview from profile if exists
+      if (profile.avatar_url) {
+        setAvatarPreview(profile.avatar_url);
+      }
     }
   }, [profile]);
 
@@ -71,6 +77,91 @@ export default function ProfilePage() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size must be less than 5MB");
+      return;
+    }
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Only JPEG, PNG, WebP, and GIF images are allowed");
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setAvatarPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload avatar
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await fetch('/api/profile/avatar', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload avatar');
+      }
+
+      const result = await response.json();
+      toast.success("Avatar updated successfully!");
+
+      // Refresh profile to get new avatar URL
+      await refreshProfile();
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error);
+      toast.error(error.message || "Failed to upload avatar");
+      // Reset preview on error
+      setAvatarPreview(profile?.avatar_url || null);
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!profile?.avatar_url) return;
+
+    const confirmed = confirm("Are you sure you want to remove your profile picture?");
+    if (!confirmed) return;
+
+    setUploadingAvatar(true);
+    try {
+      const response = await fetch('/api/profile/avatar', {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to remove avatar');
+      }
+
+      toast.success("Avatar removed successfully!");
+      setAvatarPreview(null);
+
+      // Refresh profile
+      await refreshProfile();
+    } catch (error: any) {
+      console.error("Error removing avatar:", error);
+      toast.error(error.message || "Failed to remove avatar");
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const getSubscriptionBadge = (tier: string) => {
@@ -113,15 +204,48 @@ export default function ProfilePage() {
             {/* Avatar Section */}
             <div className="flex flex-col items-center gap-3">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={authUser?.user_metadata?.avatar_url} alt={profile.full_name || authUser?.email} />
+                <AvatarImage
+                  src={avatarPreview || authUser?.user_metadata?.avatar_url}
+                  alt={profile.full_name || authUser?.email}
+                />
                 <AvatarFallback className="text-lg">
                   {profile.full_name?.split(' ').map(n => n[0]).join('') || authUser?.email?.[0]?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <Button variant="outline" size="sm" className="text-xs">
-                <Camera className="w-3 h-3 mr-1" />
-                Change Photo
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  disabled={uploadingAvatar}
+                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                >
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Camera className="w-3 h-3 mr-1" />
+                  )}
+                  {uploadingAvatar ? 'Uploading...' : 'Change Photo'}
+                </Button>
+                {avatarPreview && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    disabled={uploadingAvatar}
+                    onClick={handleRemoveAvatar}
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
             </div>
 
             {/* User Info */}

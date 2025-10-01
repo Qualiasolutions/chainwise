@@ -248,6 +248,38 @@ export default function AccountPage() {
     }
   };
 
+  const handleDisconnectAccount = async (accountId: string, provider: string) => {
+    const confirmed = confirm(
+      `Are you sure you want to disconnect your ${provider} account? You may lose access if this is your only login method.`
+    );
+    if (!confirmed) return;
+
+    setActionLoading(`account-${accountId}`);
+    try {
+      const response = await fetch('/api/settings/connected-accounts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account_id: accountId, provider })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to disconnect account');
+      }
+
+      const result = await response.json();
+      toast.success(result.message);
+
+      // Refresh account data
+      await fetchAccountData();
+    } catch (error: any) {
+      console.error("Error disconnecting account:", error);
+      toast.error(error.message || "Failed to disconnect account");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     const confirmationText = prompt(
       'To confirm account deletion, please type "DELETE MY ACCOUNT" (case sensitive):'
@@ -541,12 +573,26 @@ export default function AccountPage() {
                       </span>
                     </div>
                     <div>
-                      <div className="font-medium text-sm">{account.provider}</div>
-                      <div className="text-xs text-muted-foreground">{account.email}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm capitalize">{account.provider}</span>
+                        {account.is_primary && (
+                          <Badge variant="secondary" className="text-xs">Primary</Badge>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{account.email || account.display_name}</div>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Disconnect
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDisconnectAccount(account.id, account.provider)}
+                    disabled={actionLoading === `account-${account.id}`}
+                  >
+                    {actionLoading === `account-${account.id}` ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      'Disconnect'
+                    )}
                   </Button>
                 </div>
               ))

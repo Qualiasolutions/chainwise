@@ -25,7 +25,10 @@ import {
   DollarSign,
   Clock,
   Users,
-  Zap
+  Zap,
+  ExternalLink,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react'
 
 interface WhaleWallet {
@@ -41,8 +44,13 @@ interface WhaleTransaction {
   token_symbol: string
   amount: number
   usd_value: number
-  exchange: string
+  from_address: string
+  from_owner: string
+  to_address: string
+  to_owner: string
+  exchange: string | null
   timestamp: string
+  blockchain: string
 }
 
 interface WhaleReport {
@@ -214,6 +222,24 @@ export default function WhaleTrackerPage() {
       notation: num > 1000 ? 'compact' : 'standard',
       maximumFractionDigits: 8
     }).format(num)
+  }
+
+  const getBlockExplorerUrl = (blockchain: string, hash: string) => {
+    const explorers: Record<string, string> = {
+      'bitcoin': `https://blockchain.com/btc/tx/${hash}`,
+      'ethereum': `https://etherscan.io/tx/${hash}`,
+      'tron': `https://tronscan.org/#/transaction/${hash}`
+    }
+    return explorers[blockchain.toLowerCase()] || '#'
+  }
+
+  const getAddressExplorerUrl = (blockchain: string, address: string) => {
+    const explorers: Record<string, string> = {
+      'bitcoin': `https://blockchain.com/btc/address/${address}`,
+      'ethereum': `https://etherscan.io/address/${address}`,
+      'tron': `https://tronscan.org/#/address/${address}`
+    }
+    return explorers[blockchain.toLowerCase()] || '#'
   }
 
   if (loading) {
@@ -498,24 +524,73 @@ export default function WhaleTrackerPage() {
                             <Clock className="w-4 h-4" />
                             Recent Transactions
                           </h4>
-                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                          <div className="space-y-2 max-h-96 overflow-y-auto">
                             {wallet.recent_transactions.map((tx, txIndex) => (
-                              <div
+                              <motion.div
                                 key={tx.transaction_hash}
-                                className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: txIndex * 0.02 }}
+                                className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all"
                               >
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">
-                                    {tx.transaction_type.toUpperCase()} {formatNumber(tx.amount)} {tx.token_symbol}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {tx.exchange && `via ${tx.exchange}`} • {new Date(tx.timestamp).toLocaleString()}
-                                  </p>
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      {tx.from_address.toLowerCase() === wallet.wallet_address.toLowerCase() ? (
+                                        <ArrowUpRight className="w-4 h-4 text-red-500" />
+                                      ) : (
+                                        <ArrowDownRight className="w-4 h-4 text-green-500" />
+                                      )}
+                                      <p className="text-sm font-semibold">
+                                        {tx.transaction_type.toUpperCase()} {formatNumber(tx.amount)} {tx.token_symbol}
+                                      </p>
+                                      <Badge variant="outline" className="text-xs">
+                                        {tx.blockchain}
+                                      </Badge>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                                      <div>
+                                        <span className="font-medium">From:</span> {tx.from_owner || `${tx.from_address.slice(0, 8)}...`}
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">To:</span> {tx.to_owner || `${tx.to_address.slice(0, 8)}...`}
+                                      </div>
+                                    </div>
+
+                                    {tx.exchange && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        <DollarSign className="w-3 h-3 mr-1" />
+                                        via {tx.exchange}
+                                      </Badge>
+                                    )}
+
+                                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                                      <span>{new Date(tx.timestamp).toLocaleString()}</span>
+                                      <a
+                                        href={getBlockExplorerUrl(tx.blockchain, tx.transaction_hash)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
+                                      >
+                                        <ExternalLink className="w-3 h-3" />
+                                        View on Explorer
+                                      </a>
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right">
+                                    <p className={`text-sm font-bold ${
+                                      tx.from_address.toLowerCase() === wallet.wallet_address.toLowerCase()
+                                        ? 'text-red-600'
+                                        : 'text-green-600'
+                                    }`}>
+                                      {tx.from_address.toLowerCase() === wallet.wallet_address.toLowerCase() ? '-' : '+'}
+                                      {formatCurrency(tx.usd_value)}
+                                    </p>
+                                  </div>
                                 </div>
-                                <p className="text-sm font-semibold text-green-600">
-                                  {formatCurrency(tx.usd_value)}
-                                </p>
-                              </div>
+                              </motion.div>
                             ))}
                           </div>
                         </div>

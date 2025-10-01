@@ -130,18 +130,36 @@ export default function BillingPage() {
   };
 
   const handleUpdatePayment = async () => {
-    toast.info("Payment method update will open Stripe checkout");
-    // TODO: Integrate with Stripe checkout for payment method updates
-    // This would typically open a Stripe Elements form or redirect to Stripe checkout
     setLoading(true);
     try {
-      // In a real implementation, this would integrate with Stripe
-      // For now, we'll show a placeholder message
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.info("Stripe payment method update will be implemented soon");
-    } catch (error) {
+      const response = await fetch('/api/settings/payment-method', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+
+        // Handle Stripe not configured
+        if (errorData.action === 'configure_stripe') {
+          toast.error('Payment processing is not yet configured. Please contact support.');
+          return;
+        }
+
+        throw new Error(errorData.error || 'Failed to create payment method session');
+      }
+
+      const result = await response.json();
+
+      // Redirect to Stripe checkout
+      if (result.checkout_url) {
+        window.location.href = result.checkout_url;
+      } else {
+        toast.error('Failed to create checkout session');
+      }
+    } catch (error: any) {
       console.error("Error updating payment:", error);
-      toast.error("Failed to update payment method");
+      toast.error(error.message || "Failed to update payment method");
     } finally {
       setLoading(false);
     }
