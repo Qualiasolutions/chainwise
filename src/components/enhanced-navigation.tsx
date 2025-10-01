@@ -179,15 +179,14 @@ export function EnhancedNavigation() {
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger className="bg-transparent hover:bg-accent/50 p-2">
-                      <Avatar className="w-8 h-8 border-2 border-primary/20 mr-2">
+                      <Avatar className="w-8 h-8 border-2 border-primary/20">
                         <AvatarImage src={user.user_metadata?.avatar_url} />
                         <AvatarFallback className="bg-gradient-to-br from-violet-600 to-blue-600 text-white text-sm">
                           {user.email?.charAt(0).toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <ChevronDown className="w-3 h-3" />
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent>
+                    <NavigationMenuContent className="right-0" align="end">
                       <div className="w-64 p-2">
                         {/* User Info Header */}
                         <div className="px-3 py-3 border-b border-border/50">

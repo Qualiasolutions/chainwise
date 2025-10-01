@@ -601,20 +601,20 @@ export default function DashboardPage() {
                   <AreaChart data={portfolioChartData}>
                     <defs>
                       <linearGradient id="gradientTotal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.05}/>
+                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
                       </linearGradient>
                       {Object.keys(chartConfig).map((key, index) => (
                         <linearGradient key={key} id={`color${key}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0}/>
+                          <stop offset="5%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.6}/>
+                          <stop offset="95%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.1}/>
                         </linearGradient>
                       ))}
                     </defs>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       stroke="hsl(var(--muted-foreground))"
-                      opacity={0.2}
+                      opacity={0.3}
                     />
                     <XAxis
                       dataKey="time"
@@ -662,7 +662,7 @@ export default function DashboardPage() {
                       type="monotone"
                       dataKey="total"
                       stroke="hsl(var(--chart-1))"
-                      strokeWidth={3}
+                      strokeWidth={4}
                       fill="url(#gradientTotal)"
                       fillOpacity={1}
                       name="Total Portfolio"

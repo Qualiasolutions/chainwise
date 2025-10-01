@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { LoadingScreen } from "./loading-screen";
 
 interface PageWrapperProps {
   children: React.ReactNode;
@@ -9,6 +11,7 @@ interface PageWrapperProps {
 
 export default function PageWrapper({ children }: PageWrapperProps) {
   const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Pages that need special treatment
   const isHomePage = pathname === '/';
@@ -24,6 +27,20 @@ export default function PageWrapper({ children }: PageWrapperProps) {
     if (isDashboard) return "pt-16";
     return "pt-16 pb-8";
   };
+
+  // Show loading screen on route change
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [pathname]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <motion.div
