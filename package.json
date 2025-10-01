@@ -55,6 +55,7 @@
     "recharts": "^2.15.4",
     "socket.io-client": "^4.8.1",
     "sonner": "^2.0.7",
+    "stripe": "^19.0.0",
     "tailwind-merge": "^3.3.1",
     "three": "^0.180.0",
     "ws": "^8.18.3",
