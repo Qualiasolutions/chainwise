@@ -46,13 +46,15 @@ export async function GET(
 
     const holdings = portfolio.portfolio_holdings || [];
 
-    // Calculate enhanced metrics
+    // Calculate enhanced metrics with null safety
     const totalValue = holdings.reduce((sum, h) => {
-      return sum + (h.amount * h.current_price);
+      const value = (h.amount || 0) * (h.current_price || 0);
+      return sum + (isNaN(value) ? 0 : value);
     }, 0);
 
     const totalCost = holdings.reduce((sum, h) => {
-      return sum + (h.amount * h.purchase_price);
+      const cost = (h.amount || 0) * (h.purchase_price || 0);
+      return sum + (isNaN(cost) ? 0 : cost);
     }, 0);
 
     const totalPnL = totalValue - totalCost;
@@ -149,7 +151,16 @@ function calculateRiskScore(holdings: any[]): number {
 function calculateVolatility(holdings: any[]): number {
   if (holdings.length === 0) return 0;
 
-  const returns = holdings.map(h => {
+  // Filter out holdings with invalid prices
+  const validHoldings = holdings.filter(h =>
+    h.current_price != null &&
+    h.purchase_price != null &&
+    h.purchase_price > 0
+  );
+
+  if (validHoldings.length === 0) return 0;
+
+  const returns = validHoldings.map(h => {
     return ((h.current_price - h.purchase_price) / h.purchase_price) * 100;
   });
 
@@ -158,5 +169,6 @@ function calculateVolatility(holdings: any[]): number {
   const variance = returns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / returns.length;
   const stdDev = Math.sqrt(variance);
 
-  return stdDev;
+  // Return 0 if result is NaN
+  return isNaN(stdDev) ? 0 : stdDev;
 }

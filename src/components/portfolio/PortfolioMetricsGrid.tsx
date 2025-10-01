@@ -229,7 +229,7 @@ export function PortfolioMetricsGrid({ portfolioId, onMetricsLoaded }: Props) {
               {getRiskLabel(metrics.riskScore)}
             </Badge>
             <div className="text-xs text-slate-500 dark:text-slate-400">
-              Volatility: {metrics.volatility.toFixed(1)}%
+              Volatility: {metrics.volatility != null ? metrics.volatility.toFixed(1) : '0.0'}%
             </div>
           </div>
         </MetricsCard>
