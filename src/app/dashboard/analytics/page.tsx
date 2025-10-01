@@ -75,10 +75,16 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
 
-  // Color palette for charts
+  // Color palette for charts - Professional vibrant colors
   const CHART_COLORS = [
-    '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b',
-    '#ef4444', '#8b5cf6', '#6366f1', '#84cc16'
+    'hsl(262.1, 83.3%, 57.8%)', // Purple
+    'hsl(199, 89%, 48%)',        // Cyan
+    'hsl(142, 76%, 36%)',        // Green
+    'hsl(38, 92%, 50%)',         // Orange
+    'hsl(346, 77%, 50%)',        // Pink
+    'hsl(221, 83%, 53%)',        // Blue
+    'hsl(280, 65%, 60%)',        // Violet
+    'hsl(84, 65%, 50%)'          // Lime
   ]
 
   // Extract coin IDs from all portfolios for real-time prices
@@ -411,19 +417,20 @@ export default function AnalyticsPage() {
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                 />
                 <Tooltip content={<CustomTooltip />} />
+                <defs>
+                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(262.1, 83.3%, 57.8%)" stopOpacity={0.8}/>
+                    <stop offset="50%" stopColor="hsl(220, 90%, 56%)" stopOpacity={0.4}/>
+                    <stop offset="100%" stopColor="hsl(262.1, 83.3%, 57.8%)" stopOpacity={0.05}/>
+                  </linearGradient>
+                </defs>
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(var(--chart-1))"
+                  stroke="hsl(262.1, 83.3%, 57.8%)"
                   fill="url(#colorValue)"
-                  strokeWidth={2}
+                  strokeWidth={3}
                 />
-                <defs>
-                  <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>

@@ -41,14 +41,16 @@ import { AnimatedLoader } from "@/components/ui/animated-loader"
 import { ProfessionalCard, MetricsCard, ChartCard, DataCard } from "@/components/ui/professional-card"
 import { MicroInteraction } from "@/components/ui/micro-interaction"
 
-// Color palette for different coins in charts
+// Color palette for different coins in charts - Professional vibrant colors
 const coinColors = [
-  "hsl(var(--chart-1))", // Blue
-  "hsl(var(--chart-2))", // Green
-  "hsl(var(--chart-3))", // Orange
-  "hsl(var(--chart-4))", // Purple
-  "hsl(var(--chart-5))", // Red
-  "#8884d8", "#82ca9d", "#ffc658", "#ff7c7c", "#8dd1e1"
+  "hsl(262.1, 83.3%, 57.8%)", // Purple
+  "hsl(199, 89%, 48%)",        // Cyan
+  "hsl(142, 76%, 36%)",        // Green
+  "hsl(38, 92%, 50%)",         // Orange
+  "hsl(346, 77%, 50%)",        // Pink
+  "hsl(221, 83%, 53%)",        // Blue
+  "hsl(280, 65%, 60%)",        // Violet
+  "hsl(84, 65%, 50%)"          // Lime
 ]
 
 // Top cryptocurrencies with real images from CoinGecko
@@ -601,13 +603,14 @@ export default function DashboardPage() {
                   <AreaChart data={portfolioChartData}>
                     <defs>
                       <linearGradient id="gradientTotal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
+                        <stop offset="0%" stopColor="hsl(262.1, 83.3%, 57.8%)" stopOpacity={0.8}/>
+                        <stop offset="50%" stopColor="hsl(220, 90%, 56%)" stopOpacity={0.5}/>
+                        <stop offset="100%" stopColor="hsl(262.1, 83.3%, 57.8%)" stopOpacity={0.1}/>
                       </linearGradient>
                       {Object.keys(chartConfig).map((key, index) => (
                         <linearGradient key={key} id={`color${key}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.6}/>
-                          <stop offset="95%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.1}/>
+                          <stop offset="0%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.6}/>
+                          <stop offset="100%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.1}/>
                         </linearGradient>
                       ))}
                     </defs>
@@ -661,8 +664,8 @@ export default function DashboardPage() {
                     <Area
                       type="monotone"
                       dataKey="total"
-                      stroke="hsl(var(--chart-1))"
-                      strokeWidth={4}
+                      stroke="hsl(262.1, 83.3%, 57.8%)"
+                      strokeWidth={3}
                       fill="url(#gradientTotal)"
                       fillOpacity={1}
                       name="Total Portfolio"
