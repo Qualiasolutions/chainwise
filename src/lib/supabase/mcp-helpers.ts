@@ -699,6 +699,307 @@ export class MCPSupabaseClient {
       return null
     }
   }
+
+  // ============================
+  // AI Chat Session Operations
+  // ============================
+
+  /**
+   * Get all chat sessions for a user
+   */
+  async getChatSessions(userId: string, options?: {
+    includeArchived?: boolean,
+    limit?: number,
+    offset?: number
+  }): Promise<AiChatSession[]> {
+    try {
+      const supabase = await this.getSupabaseClient()
+      const { includeArchived = false, limit = 20, offset = 0 } = options || {}
+
+      let query = supabase
+        .from('ai_chat_sessions')
+        .select('*')
+        .eq('user_id', userId)
+
+      if (!includeArchived) {
+        query = query.eq('is_archived', false)
+      }
+
+      const { data, error } = await query
+        .order('updated_at', { ascending: false })
+        .range(offset, offset + limit - 1)
+
+      if (error) throw error
+      return data || []
+    } catch (error: any) {
+      console.error('Error fetching chat sessions:', error)
+      return []
+    }
+  }
+
+  /**
+   * Get a single chat session with full messages
+   */
+  async getChatSession(sessionId: string, userId: string): Promise<AiChatSession | null> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      const { data, error } = await supabase
+        .from('ai_chat_sessions')
+        .select('*')
+        .eq('id', sessionId)
+        .eq('user_id', userId)
+        .eq('is_archived', false)
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error: any) {
+      console.error('Error fetching chat session:', error)
+      return null
+    }
+  }
+
+  /**
+   * Search chat sessions by text query
+   */
+  async searchChatSessions(
+    userId: string,
+    searchQuery: string,
+    options?: { limit?: number, offset?: number }
+  ): Promise<AiChatSession[]> {
+    try {
+      const supabase = await this.getSupabaseClient()
+      const { limit = 20, offset = 0 } = options || {}
+
+      const { data, error } = await supabase
+        .rpc('search_chat_sessions', {
+          p_user_id: userId,
+          p_search_query: searchQuery,
+          p_limit: limit,
+          p_offset: offset
+        })
+
+      if (error) throw error
+      return data || []
+    } catch (error: any) {
+      console.error('Error searching chat sessions:', error)
+      // Fallback to client-side search if function doesn't exist
+      const sessions = await this.getChatSessions(userId, { limit: 100 })
+      const query = searchQuery.toLowerCase()
+      return sessions.filter(s =>
+        s.title?.toLowerCase().includes(query) ||
+        s.last_message_preview?.toLowerCase().includes(query)
+      ).slice(offset, offset + limit)
+    }
+  }
+
+  /**
+   * Create a new chat session
+   */
+  async createChatSession(sessionData: AiChatSessionInsert): Promise<AiChatSession> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      const { data, error } = await supabase
+        .from('ai_chat_sessions')
+        .insert(sessionData)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error: any) {
+      console.error('Error creating chat session:', error)
+      throw new Error(`Failed to create chat session: ${error.message}`)
+    }
+  }
+
+  /**
+   * Update an existing chat session
+   */
+  async updateChatSession(
+    sessionId: string,
+    userId: string,
+    updates: Partial<AiChatSession>
+  ): Promise<AiChatSession | null> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      const { data, error } = await supabase
+        .from('ai_chat_sessions')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', sessionId)
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    } catch (error: any) {
+      console.error('Error updating chat session:', error)
+      return null
+    }
+  }
+
+  /**
+   * Add messages to an existing chat session
+   */
+  async addMessagesToSession(
+    sessionId: string,
+    userId: string,
+    newMessages: any[]
+  ): Promise<AiChatSession | null> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      // Get current session
+      const session = await this.getChatSession(sessionId, userId)
+      if (!session) return null
+
+      // Append new messages
+      const currentMessages = Array.isArray(session.messages) ? session.messages : []
+      const updatedMessages = [...currentMessages, ...newMessages]
+
+      // Update session with new messages
+      return await this.updateChatSession(sessionId, userId, {
+        messages: updatedMessages as any
+      })
+    } catch (error: any) {
+      console.error('Error adding messages to session:', error)
+      return null
+    }
+  }
+
+  /**
+   * Delete a chat session (permanent delete)
+   */
+  async deleteChatSession(sessionId: string, userId: string): Promise<boolean> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      const { error } = await supabase
+        .from('ai_chat_sessions')
+        .delete()
+        .eq('id', sessionId)
+        .eq('user_id', userId)
+
+      if (error) throw error
+      return true
+    } catch (error: any) {
+      console.error('Error deleting chat session:', error)
+      return false
+    }
+  }
+
+  /**
+   * Archive a chat session (soft delete)
+   */
+  async archiveChatSession(sessionId: string, userId: string): Promise<boolean> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      const { error } = await supabase
+        .rpc('archive_chat_session', {
+          p_session_id: sessionId,
+          p_user_id: userId
+        })
+
+      if (error) throw error
+      return true
+    } catch (error: any) {
+      console.error('Error archiving chat session:', error)
+      // Fallback to direct update
+      try {
+        await this.updateChatSession(sessionId, userId, { is_archived: true })
+        return true
+      } catch {
+        return false
+      }
+    }
+  }
+
+  /**
+   * Toggle favorite status of a chat session
+   */
+  async toggleChatFavorite(sessionId: string, userId: string): Promise<boolean> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      const { error } = await supabase
+        .rpc('toggle_chat_favorite', {
+          p_session_id: sessionId,
+          p_user_id: userId
+        })
+
+      if (error) throw error
+      return true
+    } catch (error: any) {
+      console.error('Error toggling chat favorite:', error)
+      // Fallback to manual toggle
+      try {
+        const session = await this.getChatSession(sessionId, userId)
+        if (!session) return false
+        await this.updateChatSession(sessionId, userId, {
+          is_favorite: !session.is_favorite
+        })
+        return true
+      } catch {
+        return false
+      }
+    }
+  }
+
+  /**
+   * Get favorite chat sessions
+   */
+  async getFavoriteChatSessions(userId: string, limit: number = 10): Promise<AiChatSession[]> {
+    try {
+      const supabase = await this.getSupabaseClient()
+
+      const { data, error } = await supabase
+        .from('ai_chat_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('is_favorite', true)
+        .eq('is_archived', false)
+        .order('updated_at', { ascending: false })
+        .limit(limit)
+
+      if (error) throw error
+      return data || []
+    } catch (error: any) {
+      console.error('Error fetching favorite chat sessions:', error)
+      return []
+    }
+  }
+
+  /**
+   * Get recent chat sessions grouped by persona
+   */
+  async getChatSessionsByPersona(userId: string): Promise<Record<string, AiChatSession[]>> {
+    try {
+      const sessions = await this.getChatSessions(userId, { limit: 50 })
+
+      const grouped: Record<string, AiChatSession[]> = {
+        buddy: [],
+        professor: [],
+        trader: []
+      }
+
+      sessions.forEach(session => {
+        const persona = session.persona?.toLowerCase() || 'buddy'
+        if (grouped[persona]) {
+          grouped[persona].push(session)
+        }
+      })
+
+      return grouped
+    } catch (error: any) {
+      console.error('Error grouping chat sessions by persona:', error)
+      return { buddy: [], professor: [], trader: [] }
+    }
+  }
 }
 
 // Export singleton instance
