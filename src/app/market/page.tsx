@@ -301,6 +301,15 @@ export default function MarketPage() {
     crypto.symbol.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  // Get top gainers and losers
+  const topGainers = [...cryptoData]
+    .sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
+    .slice(0, 5)
+
+  const topLosers = [...cryptoData]
+    .sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h)
+    .slice(0, 5)
+
   return (
     <div className="h-full w-full overflow-auto bg-slate-50/50 dark:bg-slate-950/50">
       <div className="container mx-auto px-4 pb-6 pt-1 space-y-6 max-w-none">
@@ -419,6 +428,121 @@ export default function MarketPage() {
             </MetricsCard>
           </div>
         )}
+
+        {/* Top Gainers & Losers */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Top Gainers */}
+          <DataCard>
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-sm bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                    <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Top Gainers (24h)</h3>
+                </div>
+                <Badge variant="secondary" className="text-xs rounded-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                  🚀 Hot
+                </Badge>
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              {topGainers.map((crypto, index) => (
+                <Link key={crypto.id} href={`/market/${crypto.id}`}>
+                  <div className="flex items-center justify-between p-3 rounded-sm border border-slate-200 dark:border-slate-700 hover:border-green-300 dark:hover:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <img
+                          src={crypto.image}
+                          alt={crypto.name}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-bold text-white" style={{ fontSize: '9px' }}>{index + 1}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">
+                          {crypto.name}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-medium">
+                          {crypto.symbol}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1">
+                        {formatPrice(crypto.current_price)}
+                      </div>
+                      <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                        <TrendingUp className="h-3 w-3" />
+                        <span className="text-xs font-bold">
+                          +{formatPercentage(crypto.price_change_percentage_24h)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </DataCard>
+
+          {/* Top Losers */}
+          <DataCard>
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 rounded-sm bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                    <TrendingDown className="h-3 w-3 text-red-600 dark:text-red-400" />
+                  </div>
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Top Losers (24h)</h3>
+                </div>
+                <Badge variant="secondary" className="text-xs rounded-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                  📉 Watch
+                </Badge>
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              {topLosers.map((crypto, index) => (
+                <Link key={crypto.id} href={`/market/${crypto.id}`}>
+                  <div className="flex items-center justify-between p-3 rounded-sm border border-slate-200 dark:border-slate-700 hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <img
+                          src={crypto.image}
+                          alt={crypto.name}
+                          className="w-10 h-10 rounded-full"
+                        />
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-bold text-white" style={{ fontSize: '9px' }}>{index + 1}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-red-700 dark:group-hover:text-red-400 transition-colors">
+                          {crypto.name}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-medium">
+                          {crypto.symbol}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-1">
+                        {formatPrice(crypto.current_price)}
+                      </div>
+                      <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
+                        <TrendingDown className="h-3 w-3" />
+                        <span className="text-xs font-bold">
+                          {formatPercentage(crypto.price_change_percentage_24h)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </DataCard>
+        </div>
 
         {/* Professional Tabs Section */}
         <div className="space-y-4">

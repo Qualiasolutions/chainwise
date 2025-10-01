@@ -941,8 +941,8 @@ export default function PortfolioPage() {
                       <AreaChart data={performanceData}>
                         <defs>
                           <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.6}/>
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid
@@ -997,9 +997,9 @@ export default function PortfolioPage() {
                         <Area
                           type="monotone"
                           dataKey="value"
-                          stroke="hsl(var(--chart-1))"
+                          stroke="#8b5cf6"
                           fill="url(#colorValue)"
-                          strokeWidth={2}
+                          strokeWidth={3}
                         />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -1063,10 +1063,10 @@ export default function PortfolioPage() {
                         <Line
                           type="monotone"
                           dataKey="pnl"
-                          stroke="hsl(var(--chart-2))"
-                          strokeWidth={2}
-                          dot={{ fill: "hsl(var(--chart-2))", strokeWidth: 2, r: 4 }}
-                          activeDot={{ r: 6, stroke: "hsl(var(--chart-2))", strokeWidth: 2 }}
+                          stroke="#10b981"
+                          strokeWidth={3}
+                          dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
