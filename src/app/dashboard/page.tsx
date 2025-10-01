@@ -683,7 +683,7 @@ export default function DashboardPage() {
                         />
                       )
                     })}
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </ChartContainer>
             )}

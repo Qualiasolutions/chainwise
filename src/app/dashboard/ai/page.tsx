@@ -45,6 +45,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { VisuallyHidden } from "@/components/ui/visually-hidden"
+import {
   Bot,
   GraduationCap,
   TrendingUp,
@@ -1089,6 +1094,10 @@ export default function AIPage() {
 
           {/* Command Palette */}
           <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+            <VisuallyHidden>
+              <DialogTitle>AI Persona Selection</DialogTitle>
+              <DialogDescription>Search and select your preferred AI assistant persona</DialogDescription>
+            </VisuallyHidden>
             <CommandInput placeholder="Search or change AI persona..." />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
