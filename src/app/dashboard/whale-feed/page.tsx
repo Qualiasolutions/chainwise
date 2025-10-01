@@ -45,10 +45,12 @@ export default function WhaleFeedPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/auth/signin');
-    } else if (user) {
+      return;
+    }
+    if (user) {
       fetchTransactions();
     }
-  }, [user, authLoading, blockchain, minValue]);
+  }, [user, authLoading, blockchain, minValue, router]);
 
   const fetchTransactions = async () => {
     try {
@@ -67,6 +69,8 @@ export default function WhaleFeedPage() {
         const data = await response.json();
         setTransactions(data.transactions);
         setHasMore(data.pagination.has_more);
+      } else if (response.status === 401) {
+        router.push('/auth/signin');
       }
     } catch (error) {
       console.error('Failed to fetch transactions:', error);

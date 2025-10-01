@@ -58,7 +58,7 @@ export default function WhaleAlertsSettings() {
     } else if (user) {
       fetchSubscription();
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, router]);
 
   const fetchSubscription = async () => {
     try {
@@ -68,6 +68,9 @@ export default function WhaleAlertsSettings() {
         setSubscription(data.subscription);
         setIsActive(data.subscription.is_active);
         setPreferences(data.subscription.notification_preferences);
+      } else if (response.status === 401) {
+        // Unauthorized - redirect to signin
+        router.push('/auth/signin');
       }
     } catch (error) {
       console.error('Failed to fetch subscription:', error);
