@@ -182,70 +182,60 @@ export default function HighlightsPage() {
     return null;
   }
 
-  const renderCoinCard = (coin: CoinData, index: number) => (
-    <Card key={coin.id} className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <img
-                src={coin.image}
-                alt={coin.name}
-                className="w-12 h-12 rounded-full"
-              />
-              <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs">
-                #{index + 1}
-              </Badge>
-            </div>
-            <div>
-              <CardTitle className="text-lg">{coin.name}</CardTitle>
-              <CardDescription className="uppercase">{coin.symbol}</CardDescription>
-            </div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Price</span>
-          <span className="font-semibold">{formatPrice(coin.current_price)}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">24h Change</span>
-          <span
-            className={
-              coin.price_change_percentage_24h >= 0
-                ? 'text-green-600 dark:text-green-400 font-semibold'
-                : 'text-red-600 dark:text-red-400 font-semibold'
-            }
-          >
-            {formatPercentage(coin.price_change_percentage_24h)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Market Cap</span>
-          <span className="text-sm font-medium">{formatMarketCap(coin.market_cap)}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Volume (24h)</span>
-          <span className="text-sm font-medium">{formatMarketCap(coin.total_volume)}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Rank</span>
-          <Badge variant="secondary">#{coin.market_cap_rank}</Badge>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full mt-2"
-          onClick={() =>
-            window.open(`https://www.coingecko.com/en/coins/${coin.id}`, '_blank')
-          }
-        >
-          <ExternalLink className="h-4 w-4 mr-2" />
-          View on CoinGecko
-        </Button>
-      </CardContent>
-    </Card>
+  const renderCoinTable = (coins: CoinData[]) => (
+    <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
+      <table className="w-full">
+        <thead className="bg-slate-100 dark:bg-slate-800">
+          <tr>
+            <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
+            <th className="px-3 py-2 text-left text-xs font-semibold">Coin</th>
+            <th className="px-3 py-2 text-right text-xs font-semibold">Price</th>
+            <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
+            <th className="px-3 py-2 text-right text-xs font-semibold">Market Cap</th>
+            <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+          {coins.map((coin, index) => (
+            <tr key={coin.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+              <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
+              <td className="px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <img src={coin.image} alt={coin.name} className="w-6 h-6 rounded-full" />
+                  <div>
+                    <div className="text-xs font-semibold">{coin.name}</div>
+                    <div className="text-xs text-muted-foreground uppercase">{coin.symbol}</div>
+                  </div>
+                </div>
+              </td>
+              <td className="px-3 py-2 text-right text-xs font-semibold">
+                {formatPrice(coin.current_price)}
+              </td>
+              <td className={`px-3 py-2 text-right text-xs font-bold ${
+                coin.price_change_percentage_24h >= 0
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
+              }`}>
+                {formatPercentage(coin.price_change_percentage_24h)}
+              </td>
+              <td className="px-3 py-2 text-right text-xs">
+                {formatMarketCap(coin.market_cap)}
+              </td>
+              <td className="px-3 py-2 text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.id}`, '_blank')}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 
   return (
@@ -271,275 +261,235 @@ export default function HighlightsPage() {
 
       {/* 1. Trending Coins */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <Flame className="h-6 w-6 text-orange-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <Flame className="h-5 w-5 text-orange-500" />
           Trending Coins
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.trending.coins.map((coin, index) => (
-            <Card key={coin.item.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <img
-                        src={coin.item.large}
-                        alt={coin.item.name}
-                        className="w-12 h-12 rounded-full"
-                      />
-                      <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs">
-                        #{index + 1}
-                      </Badge>
+        <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
+          <table className="w-full">
+            <thead className="bg-slate-100 dark:bg-slate-800">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold">Coin</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">Price</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">Market Cap</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {data.trending.coins.map((coin, index) => (
+                <tr key={coin.item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <img src={coin.item.large} alt={coin.item.name} className="w-6 h-6 rounded-full" />
+                      <div>
+                        <div className="text-xs font-semibold">{coin.item.name}</div>
+                        <div className="text-xs text-muted-foreground uppercase">{coin.item.symbol}</div>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{coin.item.name}</CardTitle>
-                      <CardDescription className="uppercase">{coin.item.symbol}</CardDescription>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Price</span>
-                  <span className="font-semibold">{formatPrice(coin.item.data.price)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">24h Change</span>
-                  <span
-                    className={
-                      coin.item.data.price_change_percentage_24h.usd >= 0
-                        ? 'text-green-600 dark:text-green-400 font-semibold'
-                        : 'text-red-600 dark:text-red-400 font-semibold'
-                    }
-                  >
+                  </td>
+                  <td className="px-3 py-2 text-right text-xs font-semibold">
+                    {formatPrice(coin.item.data.price)}
+                  </td>
+                  <td className={`px-3 py-2 text-right text-xs font-bold ${
+                    coin.item.data.price_change_percentage_24h.usd >= 0
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
                     {formatPercentage(coin.item.data.price_change_percentage_24h.usd)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Market Cap</span>
-                  <span className="text-sm font-medium">{coin.item.data.market_cap}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Rank</span>
-                  <Badge variant="secondary">#{coin.item.market_cap_rank}</Badge>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-2"
-                  onClick={() =>
-                    window.open(`https://www.coingecko.com/en/coins/${coin.item.id}`, '_blank')
-                  }
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View on CoinGecko
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  </td>
+                  <td className="px-3 py-2 text-right text-xs">
+                    {coin.item.data.market_cap}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.item.id}`, '_blank')}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
       {/* 2. Top Gainers (24h) */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <TrendingUp className="h-6 w-6 text-green-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <TrendingUp className="h-5 w-5 text-green-500" />
           Top Gainers (24h)
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.topGainers.map((coin, index) => renderCoinCard(coin, index))}
-        </div>
+        {renderCoinTable(data.topGainers)}
       </section>
 
       {/* 3. Top Losers (24h) */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <TrendingDown className="h-6 w-6 text-red-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <TrendingDown className="h-5 w-5 text-red-500" />
           Top Losers (24h)
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.topLosers.map((coin, index) => renderCoinCard(coin, index))}
-        </div>
+        {renderCoinTable(data.topLosers)}
       </section>
 
       {/* 4. Most Visited */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <Eye className="h-6 w-6 text-blue-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <Eye className="h-5 w-5 text-blue-500" />
           Most Visited
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.mostVisited.map((coin, index) => renderCoinCard(coin, index))}
-        </div>
+        {renderCoinTable(data.mostVisited)}
       </section>
 
       {/* 5. Highest Volume */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <Volume2 className="h-6 w-6 text-cyan-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <Volume2 className="h-5 w-5 text-cyan-500" />
           Highest Volume (24h)
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.highVolume.map((coin, index) => renderCoinCard(coin, index))}
-        </div>
+        {renderCoinTable(data.highVolume)}
       </section>
 
       {/* 6. Large Cap Coins */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <Crown className="h-6 w-6 text-yellow-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <Crown className="h-5 w-5 text-yellow-500" />
           Large Cap Leaders
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.largeCap.map((coin, index) => renderCoinCard(coin, index))}
-        </div>
+        {renderCoinTable(data.largeCap)}
       </section>
 
       {/* 7. Small Cap Gems */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <Gem className="h-6 w-6 text-purple-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <Gem className="h-5 w-5 text-purple-500" />
           Small Cap Gems
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.smallCapGems.map((coin, index) => renderCoinCard(coin, index))}
-        </div>
+        {renderCoinTable(data.smallCapGems)}
       </section>
 
       {/* 8. Trending NFTs */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <Star className="h-6 w-6 text-purple-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <Star className="h-5 w-5 text-purple-500" />
           Trending NFTs
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.trending.nfts.map((nft, index) => (
-            <Card key={nft.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <img src={nft.thumb} alt={nft.name} className="w-12 h-12 rounded-lg" />
-                      <Badge className="absolute -top-2 -right-2 bg-purple-500 text-white text-xs">
-                        #{index + 1}
-                      </Badge>
+        <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
+          <table className="w-full">
+            <thead className="bg-slate-100 dark:bg-slate-800">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold">NFT</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">Floor Price</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">24h Volume</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {data.trending.nfts.map((nft, index) => (
+                <tr key={nft.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <img src={nft.thumb} alt={nft.name} className="w-6 h-6 rounded-lg" />
+                      <div>
+                        <div className="text-xs font-semibold">{nft.name}</div>
+                        <div className="text-xs text-muted-foreground uppercase">{nft.symbol}</div>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{nft.name}</CardTitle>
-                      <CardDescription className="uppercase">{nft.symbol}</CardDescription>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Floor Price</span>
-                  <span className="font-semibold">{nft.data.floor_price}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">24h Change</span>
-                  <span
-                    className={
-                      parseFloat(nft.data.floor_price_in_usd_24h_percentage_change) >= 0
-                        ? 'text-green-600 dark:text-green-400 font-semibold'
-                        : 'text-red-600 dark:text-red-400 font-semibold'
-                    }
-                  >
+                  </td>
+                  <td className="px-3 py-2 text-right text-xs font-semibold">{nft.data.floor_price}</td>
+                  <td className={`px-3 py-2 text-right text-xs font-bold ${
+                    parseFloat(nft.data.floor_price_in_usd_24h_percentage_change) >= 0
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
                     {formatPercentage(parseFloat(nft.data.floor_price_in_usd_24h_percentage_change))}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">24h Volume</span>
-                  <span className="text-sm font-medium">{nft.data.h24_volume}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Avg Sale Price</span>
-                  <span className="text-sm font-medium">{nft.data.h24_average_sale_price}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-2"
-                  onClick={() => window.open(`https://www.coingecko.com/en/nft/${nft.id}`, '_blank')}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View on CoinGecko
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  </td>
+                  <td className="px-3 py-2 text-right text-xs">{nft.data.h24_volume}</td>
+                  <td className="px-3 py-2 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => window.open(`https://www.coingecko.com/en/nft/${nft.id}`, '_blank')}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
       {/* 9. Trending Categories */}
       <section>
-        <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-          <BarChart3 className="h-6 w-6 text-indigo-500" />
+        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
+          <BarChart3 className="h-5 w-5 text-indigo-500" />
           Trending Categories
         </h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {data.trending.categories.map((category, index) => (
-            <Card key={category.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <Badge className="bg-orange-500 text-white text-lg px-3 py-1">
-                      #{index + 1}
-                    </Badge>
+        <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
+          <table className="w-full">
+            <thead className="bg-slate-100 dark:bg-slate-800">
+              <tr>
+                <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold">Category</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">Market Cap</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">1h %</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
+                <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {data.trending.categories.map((category, index) => (
+                <tr key={category.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
+                  <td className="px-3 py-2">
                     <div>
-                      <CardTitle className="text-lg">{category.name}</CardTitle>
-                      <CardDescription>{category.coins_count} coins</CardDescription>
+                      <div className="text-xs font-semibold">{category.name}</div>
+                      <div className="text-xs text-muted-foreground">{category.coins_count} coins</div>
                     </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Market Cap</span>
-                  <span className="font-semibold">{formatMarketCap(category.data.market_cap)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">1h Change</span>
-                  <span
-                    className={
-                      category.market_cap_1h_change >= 0
-                        ? 'text-green-600 dark:text-green-400 font-semibold'
-                        : 'text-red-600 dark:text-red-400 font-semibold'
-                    }
-                  >
+                  </td>
+                  <td className="px-3 py-2 text-right text-xs font-semibold">
+                    {formatMarketCap(category.data.market_cap)}
+                  </td>
+                  <td className={`px-3 py-2 text-right text-xs font-bold ${
+                    category.market_cap_1h_change >= 0
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
                     {formatPercentage(category.market_cap_1h_change)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">24h Change</span>
-                  <span
-                    className={
-                      category.data.market_cap_change_percentage_24h.usd >= 0
-                        ? 'text-green-600 dark:text-green-400 font-semibold'
-                        : 'text-red-600 dark:text-red-400 font-semibold'
-                    }
-                  >
+                  </td>
+                  <td className={`px-3 py-2 text-right text-xs font-bold ${
+                    category.data.market_cap_change_percentage_24h.usd >= 0
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
                     {formatPercentage(category.data.market_cap_change_percentage_24h.usd)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">24h Volume</span>
-                  <span className="text-sm font-medium">{formatMarketCap(category.data.total_volume)}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full mt-2"
-                  onClick={() =>
-                    window.open(`https://www.coingecko.com/en/categories/${category.slug}`, '_blank')
-                  }
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View on CoinGecko
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => window.open(`https://www.coingecko.com/en/categories/${category.slug}`, '_blank')}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
