@@ -28,6 +28,32 @@ export function middleware(request: NextRequest) {
     response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
   }
 
+  // Add caching headers for static pages (aggressive caching for marketing/public pages)
+  const pathname = request.nextUrl.pathname
+  const isStaticPage = pathname === '/' ||
+                       pathname.startsWith('/terms') ||
+                       pathname.startsWith('/privacy') ||
+                       pathname.startsWith('/contact')
+
+  const isAuthPage = pathname.startsWith('/auth')
+  const isDashboard = pathname.startsWith('/dashboard') ||
+                      pathname.startsWith('/portfolio') ||
+                      pathname.startsWith('/settings')
+
+  if (isStaticPage) {
+    // Cache static marketing pages for 1 hour
+    response.headers.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400')
+  } else if (isAuthPage) {
+    // Never cache auth pages
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+  } else if (isDashboard) {
+    // Cache dashboard pages briefly (5 minutes) with stale-while-revalidate
+    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600')
+  } else {
+    // Default: cache for 5 minutes with revalidation
+    response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
+  }
+
   return response
 }
 
