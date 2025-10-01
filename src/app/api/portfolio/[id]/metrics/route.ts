@@ -69,16 +69,19 @@ export async function GET(
     // Calculate volatility (simplified)
     const volatility = calculateVolatility(holdings);
 
-    // Find best and worst performers
-    const performanceData = holdings.map(h => ({
-      symbol: h.symbol,
-      name: h.name,
-      pnlPercentage: ((h.current_price - h.purchase_price) / h.purchase_price) * 100,
-      value: h.amount * h.current_price
-    })).sort((a, b) => b.pnlPercentage - a.pnlPercentage);
+    // Find best and worst performers with null safety
+    const performanceData = holdings
+      .filter(h => h.current_price != null && h.purchase_price != null && h.purchase_price > 0)
+      .map(h => ({
+        symbol: h.symbol,
+        name: h.name,
+        pnlPercentage: ((h.current_price - h.purchase_price) / h.purchase_price) * 100,
+        value: h.amount * h.current_price
+      }))
+      .sort((a, b) => b.pnlPercentage - a.pnlPercentage);
 
-    const bestPerformer = performanceData[0] || null;
-    const worstPerformer = performanceData[performanceData.length - 1] || null;
+    const bestPerformer = performanceData.length > 0 ? performanceData[0] : null;
+    const worstPerformer = performanceData.length > 0 ? performanceData[performanceData.length - 1] : null;
 
     // Calculate realized vs unrealized gains (all unrealized for now)
     const unrealizedGains = totalPnL;

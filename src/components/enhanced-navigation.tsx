@@ -17,7 +17,8 @@ import {
   Sparkles,
   CreditCard,
   User,
-  ChevronDown
+  ChevronDown,
+  Flame
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -60,6 +61,12 @@ const navItems: NavItem[] = [
     label: "Market",
     icon: TrendingUp,
     description: "Real-time cryptocurrency market data and trends"
+  },
+  {
+    href: "/highlights",
+    label: "Highlights",
+    icon: Flame,
+    description: "Top trending cryptocurrencies and market highlights"
   },
   {
     href: "/portfolio",
