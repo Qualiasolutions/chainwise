@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
     const creditSuccess = await mcpSupabase.recordCreditUsage(
       profile.id,
       creditCost,
-      `Narrative Deep Scan (${scanType}, ${timePeriod})`,
+      `Narrative Deep Scan (${scanType}, ${timeframe})`,
       'narrative_scan',
       scan.scan_id
     )

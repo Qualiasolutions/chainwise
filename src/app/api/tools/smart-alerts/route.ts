@@ -7,6 +7,15 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/lib/supabase/types'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
+import {
+  handleAPIError,
+  validateAuth,
+  validateProfile,
+  validateRequired,
+  validateCredits,
+  validateEnum,
+  checkRateLimit
+} from '@/lib/api-error-handler'
 
 interface SmartAlertRequest {
   alertName: string
@@ -20,23 +29,21 @@ interface SmartAlertRequest {
 }
 
 export async function POST(request: NextRequest) {
+  const path = '/api/tools/smart-alerts'
   try {
     const cookieStore = await cookies()
     const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
+    validateAuth(session)
 
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Rate limiting
+    checkRateLimit(`smart-alerts:${session!.user.id}`, 20, 60000)
 
     // Get user profile
-    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
-
-    if (!profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
-    }
+    const profile = await mcpSupabase.getUserByAuthId(session!.user.id)
+    validateProfile(profile)
 
     const body: SmartAlertRequest = await request.json()
     const {
@@ -50,29 +57,16 @@ export async function POST(request: NextRequest) {
       alertFrequency = 'once'
     } = body
 
-    if (!alertName || !coinSymbol || !alertType || conditionValue == null) {
-      return NextResponse.json({
-        error: 'Alert name, coin symbol, alert type, and condition value are required'
-      }, { status: 400 })
-    }
+    // Validate required fields
+    validateRequired(body, ['alertName', 'coinSymbol', 'alertType', 'conditionValue'])
 
     // Validate alert type
     const validAlertTypes = ['price_above', 'price_below', 'volume_spike', 'price_change_percent', 'technical_indicator', 'whale_activity']
-    if (!validAlertTypes.includes(alertType)) {
-      return NextResponse.json({
-        error: 'Invalid alert type'
-      }, { status: 400 })
-    }
+    validateEnum(alertType, validAlertTypes, 'alert type')
 
     // Check if user has sufficient credits
     const creditCost = 2 // Smart Alerts cost 2 credits
-    if (profile.credits < creditCost) {
-      return NextResponse.json({
-        error: 'Insufficient credits',
-        credits_required: creditCost,
-        credits_available: profile.credits
-      }, { status: 402 })
-    }
+    validateCredits(profile!.credits, creditCost)
 
 
     // Create the smart alert using our database function
@@ -137,32 +131,23 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Smart alerts API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleAPIError(error, path)
   }
 }
 
 export async function GET(request: NextRequest) {
+  const path = '/api/tools/smart-alerts'
   try {
     const cookieStore = await cookies()
     const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    validateAuth(session)
 
     // Get user profile
-    const profile = await mcpSupabase.getUserByAuthId(session.user.id)
-
-    if (!profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
-    }
+    const profile = await mcpSupabase.getUserByAuthId(session!.user.id)
+    validateProfile(profile)
 
     // Get user's smart alerts using our database function
     const { data: alerts, error } = await supabase
@@ -186,11 +171,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Smart alerts GET API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleAPIError(error, path)
   }
 }
 
