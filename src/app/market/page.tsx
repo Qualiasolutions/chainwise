@@ -858,6 +858,118 @@ export default function MarketPage() {
                   </div>
                 </DataCard>
               </TabsContent>
+
+              <TabsContent value="exchanges" className="mt-4">
+                <TableCard>
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <BarChart3 className="w-4 h-4 text-purple-500" />
+                        <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">Cryptocurrency Exchanges</h3>
+                      </div>
+                      <Badge variant="secondary" className="text-xs rounded-sm">
+                        {exchangesData.length} exchanges
+                      </Badge>
+                    </div>
+                  </div>
+                  {exchangesData.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-slate-50 dark:bg-slate-900/50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">#</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Exchange</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Trust Score</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">24h Volume (BTC)</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Country</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">Established</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                          {exchangesData.map((exchange, index) => (
+                            <tr key={exchange.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                              <td className="px-4 py-4 text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {exchange.trust_score_rank}
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex items-center space-x-3">
+                                  <img
+                                    src={exchange.image}
+                                    alt={exchange.name}
+                                    className="w-8 h-8 rounded-full"
+                                    onError={(e) => {
+                                      const target = e.target as HTMLImageElement
+                                      target.src = `https://via.placeholder.com/32x32/6366f1/ffffff?text=${exchange.name.substring(0, 2)}`
+                                    }}
+                                  />
+                                  <div>
+                                    <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                      {exchange.name}
+                                    </div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">
+                                      {exchange.id}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4">
+                                <div className="flex items-center space-x-2">
+                                  <div className="flex">
+                                    {[...Array(10)].map((_, i) => (
+                                      <div
+                                        key={i}
+                                        className={cn(
+                                          "w-2 h-2 rounded-full mr-0.5",
+                                          i < exchange.trust_score
+                                            ? "bg-green-500"
+                                            : "bg-slate-300 dark:bg-slate-600"
+                                        )}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                                    {exchange.trust_score}/10
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-4 text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {exchange.trade_volume_24h_btc.toLocaleString(undefined, {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0
+                                })} BTC
+                              </td>
+                              <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                {exchange.country || 'N/A'}
+                              </td>
+                              <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                {exchange.year_established || 'N/A'}
+                              </td>
+                              <td className="px-4 py-4">
+                                <a
+                                  href={exchange.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors inline-flex items-center"
+                                >
+                                  Visit
+                                  <ExternalLink className="w-3 h-3 ml-1" />
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <BarChart3 className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+                      <h3 className="text-base font-medium mb-2 text-slate-900 dark:text-slate-100">No exchanges available</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Unable to load exchange data at the moment</p>
+                    </div>
+                  )}
+                </TableCard>
+              </TabsContent>
             </Tabs>
         </div>
       </div>
