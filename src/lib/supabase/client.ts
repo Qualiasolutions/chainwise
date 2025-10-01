@@ -40,31 +40,34 @@ const createStorage = () => {
   }
 }
 
-export const supabase = createClientComponentClient<Database>({
-  options: {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      flowType: 'pkce',
-      storage: createStorage(),
-      storageKey: 'chainwise-auth-token',
-      // Enhanced token refresh settings
-      refreshTokenThreshold: 60, // Refresh token 60 seconds before expiry
-      refreshTokenRetryAttempts: 3
-    },
-    global: {
-      // Add retry logic for network failures
-      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-        return fetch(input, {
-          ...init,
-          // Add timeout to prevent hanging requests
-          signal: AbortSignal.timeout(30000), // 30 second timeout
-        })
+// Only create client in browser environment
+export const supabase = typeof window !== 'undefined'
+  ? createClientComponentClient<Database>({
+      options: {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          flowType: 'pkce',
+          storage: createStorage(),
+          storageKey: 'chainwise-auth-token',
+          // Enhanced token refresh settings
+          refreshTokenThreshold: 60, // Refresh token 60 seconds before expiry
+          refreshTokenRetryAttempts: 3
+        },
+        global: {
+          // Add retry logic for network failures
+          fetch: (input: RequestInfo | URL, init?: RequestInit) => {
+            return fetch(input, {
+              ...init,
+              // Add timeout to prevent hanging requests
+              signal: AbortSignal.timeout(30000), // 30 second timeout
+            })
+          }
+        }
       }
-    }
-  }
-})
+    })
+  : null as any // Server-side will use createRouteHandlerClient instead
 
 // Server-side client for API routes
 export { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'

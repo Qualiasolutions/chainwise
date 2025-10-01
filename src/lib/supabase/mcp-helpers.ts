@@ -2,7 +2,9 @@
 // This module provides abstracted database operations using Supabase MCP tools
 // Replaces direct supabase client calls with MCP-based operations
 
-import { SUPABASE_PROJECT_ID } from './client'
+// Use environment variable directly to avoid client initialization
+const SUPABASE_PROJECT_ID = 'vmnuzwoocympormyizsc'
+
 import type {
   User,
   Portfolio,
