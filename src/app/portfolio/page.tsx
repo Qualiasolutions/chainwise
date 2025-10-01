@@ -1043,6 +1043,32 @@ export default function PortfolioPage() {
             </div>
           </TabsContent>
 
+          <TabsContent value="treemap">
+            <ChartCard title="Portfolio Allocation Map">
+              <div className="mb-4">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Visual representation of your portfolio allocation. Larger areas represent bigger positions. Colors indicate profit (green) and loss (red).
+                </p>
+              </div>
+              <PortfolioTreemap
+                data={holdings.map(h => ({
+                  name: h.name,
+                  symbol: h.symbol,
+                  size: h.value,
+                  pnl: h.pnl,
+                  pnlPercentage: h.pnlPercentage
+                }))}
+              />
+            </ChartCard>
+          </TabsContent>
+
+          <TabsContent value="insights">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <MarketInsightsWidget portfolioId={portfolioId} />
+              <AIRecommendationsPanel portfolioId={portfolioId} />
+            </div>
+          </TabsContent>
+
           <TabsContent value="history">
             <DataCard title="Transaction History">
                 <div className="text-center text-muted-foreground py-8">
