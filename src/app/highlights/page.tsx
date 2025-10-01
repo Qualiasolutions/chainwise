@@ -182,55 +182,84 @@ export default function HighlightsPage() {
     return null;
   }
 
-  const renderCoinTable = (coins: CoinData[]) => (
-    <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
-      <div className="min-w-[640px]">
+  const renderCoinTable = (coins: CoinData[], limit: number = 10) => (
+    <div className="border-2 border-purple-500/30 rounded-lg overflow-hidden h-full flex flex-col">
+      <div className="overflow-auto flex-1">
         <table className="w-full">
-          <thead className="bg-slate-100 dark:bg-slate-800">
+          <thead className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 sticky top-0">
             <tr>
-              <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">#</th>
-              <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">Coin</th>
-              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Price</th>
-              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">24h %</th>
-              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold hidden sm:table-cell">Market Cap</th>
-              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Actions</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold">#</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold">Coin</th>
+              <th className="px-2 py-2 text-right text-xs font-semibold">Price</th>
+              <th className="px-2 py-2 text-right text-xs font-semibold">24h %</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-            {coins.map((coin, index) => (
-              <tr key={coin.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="px-2 sm:px-3 py-2 text-xs font-medium">#{index + 1}</td>
-                <td className="px-2 sm:px-3 py-2">
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <img src={coin.image} alt={coin.name} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0" />
+            {coins.slice(0, limit).map((coin, index) => (
+              <tr key={coin.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer" onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.id}`, '_blank')}>
+                <td className="px-2 py-2 text-xs font-medium">#{index + 1}</td>
+                <td className="px-2 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <img src={coin.image} alt={coin.name} className="w-5 h-5 rounded-full flex-shrink-0" />
                     <div className="min-w-0">
                       <div className="text-xs font-semibold truncate">{coin.name}</div>
                       <div className="text-xs text-muted-foreground uppercase">{coin.symbol}</div>
                     </div>
                   </div>
                 </td>
-                <td className="px-2 sm:px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">
+                <td className="px-2 py-2 text-right text-xs font-semibold whitespace-nowrap">
                   {formatPrice(coin.current_price)}
                 </td>
-                <td className={`px-2 sm:px-3 py-2 text-right text-xs font-bold whitespace-nowrap ${
+                <td className={`px-2 py-2 text-right text-xs font-bold whitespace-nowrap ${
                   coin.price_change_percentage_24h >= 0
                     ? 'text-green-600 dark:text-green-400'
                     : 'text-red-600 dark:text-red-400'
                 }`}>
                   {formatPercentage(coin.price_change_percentage_24h)}
                 </td>
-                <td className="px-2 sm:px-3 py-2 text-right text-xs hidden sm:table-cell whitespace-nowrap">
-                  {formatMarketCap(coin.market_cap)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  // Helper function to render trending coins table
+  const renderTrendingCoinsTable = (coins: TrendingCoin[], limit: number = 10) => (
+    <div className="border-2 border-purple-500/30 rounded-lg overflow-hidden h-full flex flex-col">
+      <div className="overflow-auto flex-1">
+        <table className="w-full">
+          <thead className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 sticky top-0">
+            <tr>
+              <th className="px-2 py-2 text-left text-xs font-semibold">#</th>
+              <th className="px-2 py-2 text-left text-xs font-semibold">Coin</th>
+              <th className="px-2 py-2 text-right text-xs font-semibold">Price</th>
+              <th className="px-2 py-2 text-right text-xs font-semibold">24h %</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+            {coins.slice(0, limit).map((coin, index) => (
+              <tr key={coin.item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer" onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.item.id}`, '_blank')}>
+                <td className="px-2 py-2 text-xs font-medium">#{index + 1}</td>
+                <td className="px-2 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <img src={coin.item.large} alt={coin.item.name} className="w-5 h-5 rounded-full flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold truncate">{coin.item.name}</div>
+                      <div className="text-xs text-muted-foreground uppercase">{coin.item.symbol}</div>
+                    </div>
+                  </div>
                 </td>
-                <td className="px-2 sm:px-3 py-2 text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.id}`, '_blank')}
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                  </Button>
+                <td className="px-2 py-2 text-right text-xs font-semibold whitespace-nowrap">
+                  {formatPrice(coin.item.data.price)}
+                </td>
+                <td className={`px-2 py-2 text-right text-xs font-bold whitespace-nowrap ${
+                  coin.item.data.price_change_percentage_24h.usd >= 0
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {formatPercentage(coin.item.data.price_change_percentage_24h.usd)}
                 </td>
               </tr>
             ))}
@@ -241,310 +270,162 @@ export default function HighlightsPage() {
   );
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl space-y-12">
+    <div className="container mx-auto py-8 px-4 max-w-[1800px]">
       {/* Header */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-              <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Flame className="h-8 w-8 text-orange-500" />
               Market Highlights
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2">
               Comprehensive cryptocurrency market data and trends from CoinGecko
             </p>
           </div>
-          <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm" className="self-start sm:self-auto">
+          <Button onClick={handleRefresh} disabled={refreshing} variant="outline">
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* 1. Trending Coins */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Flame className="h-5 w-5 text-orange-500" />
-          Trending Coins
-        </h2>
-        <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
-          <div className="min-w-[640px]">
-            <table className="w-full">
-              <thead className="bg-slate-100 dark:bg-slate-800">
-                <tr>
-                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">#</th>
-                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">Coin</th>
-                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Price</th>
-                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">24h %</th>
-                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold hidden sm:table-cell">Market Cap</th>
-                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                {data.trending.coins.map((coin, index) => (
-                  <tr key={coin.item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td className="px-2 sm:px-3 py-2 text-xs font-medium">#{index + 1}</td>
-                    <td className="px-2 sm:px-3 py-2">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <img src={coin.item.large} alt={coin.item.name} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0" />
-                        <div className="min-w-0">
-                          <div className="text-xs font-semibold truncate">{coin.item.name}</div>
-                          <div className="text-xs text-muted-foreground uppercase">{coin.item.symbol}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-2 sm:px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">
-                      {formatPrice(coin.item.data.price)}
-                    </td>
-                    <td className={`px-2 sm:px-3 py-2 text-right text-xs font-bold whitespace-nowrap ${
-                      coin.item.data.price_change_percentage_24h.usd >= 0
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {formatPercentage(coin.item.data.price_change_percentage_24h.usd)}
-                    </td>
-                    <td className="px-2 sm:px-3 py-2 text-right text-xs hidden sm:table-cell truncate max-w-[120px]">
-                      {coin.item.data.market_cap}
-                    </td>
-                    <td className="px-2 sm:px-3 py-2 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 px-2 text-xs"
-                        onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.item.id}`, '_blank')}
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Top Gainers (24h) */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <TrendingUp className="h-5 w-5 text-green-500" />
-          Top Gainers (24h)
-        </h2>
-        {renderCoinTable(data.topGainers)}
-      </section>
-
-      {/* 3. Top Losers (24h) */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <TrendingDown className="h-5 w-5 text-red-500" />
-          Top Losers (24h)
-        </h2>
-        {renderCoinTable(data.topLosers)}
-      </section>
-
-      {/* 4. Most Visited */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Eye className="h-5 w-5 text-blue-500" />
-          Most Visited
-        </h2>
-        {renderCoinTable(data.mostVisited)}
-      </section>
-
-      {/* 5. Highest Volume */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Volume2 className="h-5 w-5 text-cyan-500" />
-          Highest Volume (24h)
-        </h2>
-        {renderCoinTable(data.highVolume)}
-      </section>
-
-      {/* 6. Large Cap Coins */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Crown className="h-5 w-5 text-yellow-500" />
-          Large Cap Leaders
-        </h2>
-        {renderCoinTable(data.largeCap)}
-      </section>
-
-      {/* 7. Small Cap Gems */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Gem className="h-5 w-5 text-purple-500" />
-          Small Cap Gems
-        </h2>
-        {renderCoinTable(data.smallCapGems)}
-      </section>
-
-      {/* 8. Trending NFTs */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <Star className="h-5 w-5 text-purple-500" />
-          Trending NFTs
-        </h2>
-        <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
-          <table className="w-full">
-            <thead className="bg-slate-100 dark:bg-slate-800">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold">NFT</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">Floor Price</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">24h Volume</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {data.trending.nfts.map((nft, index) => (
-                <tr key={nft.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
-                  <td className="px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <img src={nft.thumb} alt={nft.name} className="w-6 h-6 rounded-lg" />
-                      <div>
-                        <div className="text-xs font-semibold">{nft.name}</div>
-                        <div className="text-xs text-muted-foreground uppercase">{nft.symbol}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 text-right text-xs font-semibold">{nft.data.floor_price}</td>
-                  <td className={`px-3 py-2 text-right text-xs font-bold ${
-                    parseFloat(nft.data.floor_price_in_usd_24h_percentage_change) >= 0
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {formatPercentage(parseFloat(nft.data.floor_price_in_usd_24h_percentage_change))}
-                  </td>
-                  <td className="px-3 py-2 text-right text-xs">{nft.data.h24_volume}</td>
-                  <td className="px-3 py-2 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => window.open(`https://www.coingecko.com/en/nft/${nft.id}`, '_blank')}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 9. Trending Categories */}
-      <section>
-        <h2 className="text-xl font-bold flex items-center gap-2 mb-4">
-          <BarChart3 className="h-5 w-5 text-indigo-500" />
-          Trending Categories
-        </h2>
-        <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
-          <table className="w-full">
-            <thead className="bg-slate-100 dark:bg-slate-800">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold">Category</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">Market Cap</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">1h %</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {data.trending.categories.map((category, index) => (
-                <tr key={category.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
-                  <td className="px-3 py-2">
-                    <div>
-                      <div className="text-xs font-semibold">{category.name}</div>
-                      <div className="text-xs text-muted-foreground">{category.coins_count} coins</div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 text-right text-xs font-semibold">
-                    {formatMarketCap(category.data.market_cap)}
-                  </td>
-                  <td className={`px-3 py-2 text-right text-xs font-bold ${
-                    category.market_cap_1h_change >= 0
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {formatPercentage(category.market_cap_1h_change)}
-                  </td>
-                  <td className={`px-3 py-2 text-right text-xs font-bold ${
-                    category.data.market_cap_change_percentage_24h.usd >= 0
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {formatPercentage(category.data.market_cap_change_percentage_24h.usd)}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => window.open(`https://www.coingecko.com/en/categories/${category.slug}`, '_blank')}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 10. Global Market Stats */}
+      {/* Global Market Stats - Full Width */}
       {data.global && (
-        <section>
-          <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
-            <Activity className="h-6 w-6 text-green-500" />
-            Global Market Statistics
-          </h2>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Total Market Cap</p>
-                  <p className="text-2xl font-bold">
-                    {formatMarketCap(data.global.total_market_cap?.usd || 0)}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-green-500" />
+              Global Market Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 grid-cols-2 md:grid-cols-4">
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Total Market Cap</p>
+                <p className="text-2xl font-bold">
+                  {formatMarketCap(data.global.total_market_cap?.usd || 0)}
+                </p>
+                {data.global.market_cap_change_percentage_24h_usd !== undefined && (
+                  <p className={data.global.market_cap_change_percentage_24h_usd >= 0 ? 'text-green-600 dark:text-green-400 text-sm font-medium' : 'text-red-600 dark:text-red-400 text-sm font-medium'}>
+                    {formatPercentage(data.global.market_cap_change_percentage_24h_usd)}
                   </p>
-                  {data.global.market_cap_change_percentage_24h_usd !== undefined && (
-                    <p
-                      className={
-                        data.global.market_cap_change_percentage_24h_usd >= 0
-                          ? 'text-green-600 dark:text-green-400 text-sm font-medium'
-                          : 'text-red-600 dark:text-red-400 text-sm font-medium'
-                      }
-                    >
-                      {formatPercentage(data.global.market_cap_change_percentage_24h_usd)}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">24h Volume</p>
-                  <p className="text-2xl font-bold">
-                    {formatMarketCap(data.global.total_volume?.usd || 0)}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">BTC Dominance</p>
-                  <p className="text-2xl font-bold">
-                    {data.global.market_cap_percentage?.btc?.toFixed(1) || 0}%
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Active Cryptocurrencies</p>
-                  <p className="text-2xl font-bold">{data.global.active_cryptocurrencies?.toLocaleString() || 0}</p>
-                </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </section>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">24h Volume</p>
+                <p className="text-2xl font-bold">
+                  {formatMarketCap(data.global.total_volume?.usd || 0)}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">BTC Dominance</p>
+                <p className="text-2xl font-bold">
+                  {data.global.market_cap_percentage?.btc?.toFixed(1) || 0}%
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Active Cryptocurrencies</p>
+                <p className="text-2xl font-bold">{data.global.active_cryptocurrencies?.toLocaleString() || 0}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
+
+      {/* 3-Column Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
+        {/* 1. Trending Coins */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Flame className="h-5 w-5 text-orange-500" />
+              Trending Coins
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden pt-0">
+            {renderTrendingCoinsTable(data.trending.coins, 10)}
+          </CardContent>
+        </Card>
+
+        {/* 2. Top Gainers */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              Top Gainers (24h)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden pt-0">
+            {renderCoinTable(data.topGainers, 10)}
+          </CardContent>
+        </Card>
+
+        {/* 3. Top Losers */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <TrendingDown className="h-5 w-5 text-red-500" />
+              Top Losers (24h)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden pt-0">
+            {renderCoinTable(data.topLosers, 10)}
+          </CardContent>
+        </Card>
+
+        {/* 4. Most Visited */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Eye className="h-5 w-5 text-blue-500" />
+              Most Visited
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden pt-0">
+            {renderCoinTable(data.mostVisited, 10)}
+          </CardContent>
+        </Card>
+
+        {/* 5. Highest Volume */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Volume2 className="h-5 w-5 text-cyan-500" />
+              Highest Volume (24h)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden pt-0">
+            {renderCoinTable(data.highVolume, 10)}
+          </CardContent>
+        </Card>
+
+        {/* 6. Large Cap Leaders */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Crown className="h-5 w-5 text-yellow-500" />
+              Large Cap Leaders
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden pt-0">
+            {renderCoinTable(data.largeCap, 10)}
+          </CardContent>
+        </Card>
+
+        {/* 7. Small Cap Gems */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Gem className="h-5 w-5 text-purple-500" />
+              Small Cap Gems
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-hidden pt-0">
+            {renderCoinTable(data.smallCapGems, 10)}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
