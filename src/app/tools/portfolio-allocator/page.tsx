@@ -15,6 +15,7 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
 import { useToast } from '@/hooks/use-toast'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { RequireFeature } from '@/components/auth/RequireFeature'
 
 interface AllocationRequest {
   totalAmount: number
@@ -150,7 +151,8 @@ export default function PortfolioAllocator() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <RequireFeature feature="portfolio_allocator">
+      <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <motion.div
@@ -543,5 +545,6 @@ export default function PortfolioAllocator() {
         </Tabs>
       </div>
     </div>
+    </RequireFeature>
   )
 }

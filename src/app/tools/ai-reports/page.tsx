@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
+import { RequireFeature } from '@/components/auth/RequireFeature'
 
 interface AIReport {
   id: string
@@ -213,12 +214,13 @@ export default function AIReportsPage() {
   }
 
   return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <RequireFeature feature="ai_reports">
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -611,5 +613,6 @@ export default function AIReportsPage() {
         </div>
       )}
     </motion.div>
+    </RequireFeature>
   )
 }

@@ -36,6 +36,7 @@ import {
 } from "lucide-react"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
+import { RequireFeature } from '@/components/auth/RequireFeature'
 
 interface AltcoinScanRequest {
   scanName: string
@@ -245,7 +246,8 @@ export default function AltcoinDetectorPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <RequireFeature feature="altcoin_detector">
+      <div className="container mx-auto py-8 space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -844,5 +846,6 @@ export default function AltcoinDetectorPage() {
         </Dialog>
       )}
     </div>
+    </RequireFeature>
   )
 }

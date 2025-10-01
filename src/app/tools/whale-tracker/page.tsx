@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
+import { RequireFeature } from '@/components/auth/RequireFeature'
 import {
   Activity,
   TrendingUp,
@@ -226,7 +227,8 @@ export default function WhaleTrackerPage() {
   if (!user) return null
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <RequireFeature feature="whale_tracker">
+      <div className="container mx-auto px-4 py-8 space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -584,5 +586,6 @@ export default function WhaleTrackerPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </RequireFeature>
   )
 }

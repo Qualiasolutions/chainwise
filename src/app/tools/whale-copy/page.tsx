@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth'
+import { RequireFeature } from '@/components/auth/RequireFeature'
 import {
   Copy,
   TrendingUp,
@@ -305,7 +306,8 @@ export default function WhaleCopyPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <RequireFeature feature="whale_copy">
+      <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -743,5 +745,6 @@ export default function WhaleCopyPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </RequireFeature>
   )
 }
