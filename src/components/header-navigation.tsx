@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Bot, User, LogIn, UserPlus, ChevronDown, Wrench, FileText, TrendingUp, Zap, Bell, Brain, Gem, Activity, Waves } from "lucide-react"
+import { Bot, User, LogIn, UserPlus, ChevronDown, Wrench, FileText, TrendingUp, Zap, Bell, Brain, Gem, Activity, Waves, Flame } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -98,6 +98,18 @@ export function HeaderNavigation() {
                     )}
                   >
                     Market
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link
+                    href="/highlights"
+                    className={cn(
+                      pathname === "/highlights" && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    Highlights
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
@@ -388,6 +400,16 @@ export function HeaderNavigation() {
               >
                 <User className="h-5 w-5 mb-1" />
                 Portfolio
+              </Link>
+              <Link
+                href="/highlights"
+                className={cn(
+                  "flex flex-col items-center py-2 px-3 text-xs",
+                  pathname === "/highlights" ? "text-purple-300" : "text-white/70"
+                )}
+              >
+                <Flame className="h-5 w-5 mb-1" />
+                Highlights
               </Link>
               <Link
                 href="/dashboard/ai"

@@ -62,7 +62,11 @@ import { AddAssetModal } from "@/components/AddAssetModal"
 import { PortfolioManager } from "@/components/PortfolioManager"
 import { toast } from "sonner"
 import { useRealTimePrices } from "@/hooks/useRealTimePrices"
-import { Activity } from "lucide-react"
+import { Activity, Map, Sparkles } from "lucide-react"
+import { PortfolioMetricsGrid } from "@/components/portfolio/PortfolioMetricsGrid"
+import { PortfolioTreemap } from "@/components/portfolio/PortfolioTreemap"
+import { MarketInsightsWidget } from "@/components/portfolio/MarketInsightsWidget"
+import { AIRecommendationsPanel } from "@/components/portfolio/AIRecommendationsPanel"
 
 interface PortfolioHolding {
   id: string
@@ -734,59 +738,8 @@ export default function PortfolioPage() {
           </div>
         </div>
 
-      {/* Portfolio Metrics */}
-      {metrics && (
-        <motion.div
-          className="grid gap-4 md:grid-cols-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          <PriceCard
-            title="Total Value"
-            price={metrics.totalValue}
-            subtitle="Portfolio Worth"
-          />
-          <PriceCard
-            title="Total P&L"
-            price={Math.abs(metrics.totalPnL)}
-            change={metrics.totalPnLPercentage}
-            subtitle={metrics.totalPnL >= 0 ? "Profit" : "Loss"}
-          />
-          <MetricsCard>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">Best Performer</span>
-              <TrendingUp className="h-4 w-4 text-green-500" />
-            </div>
-            {metrics.topGainer ? (
-              <>
-                <div className="text-xl font-semibold">{metrics.topGainer.symbol}</div>
-                <p className="text-xs text-green-600 dark:text-green-400">
-                  {formatPercentage(metrics.topGainer.pnlPercentage)}
-                </p>
-              </>
-            ) : (
-              <div className="text-muted-foreground">No data</div>
-            )}
-          </MetricsCard>
-          <MetricsCard>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-muted-foreground">Worst Performer</span>
-              <TrendingDown className="h-4 w-4 text-red-500" />
-            </div>
-            {metrics.topLoser ? (
-              <>
-                <div className="text-xl font-semibold">{metrics.topLoser.symbol}</div>
-                <p className="text-xs text-red-600 dark:text-red-400">
-                  {formatPercentage(metrics.topLoser.pnlPercentage)}
-                </p>
-              </>
-            ) : (
-              <div className="text-muted-foreground">No data</div>
-            )}
-          </MetricsCard>
-        </motion.div>
-      )}
+      {/* Enhanced Portfolio Metrics Grid */}
+      <PortfolioMetricsGrid portfolioId={portfolioId} />
 
         {/* Portfolio Content */}
         <motion.div
@@ -795,10 +748,18 @@ export default function PortfolioPage() {
           transition={{ duration: 0.4, delay: 0.2 }}
         >
           <Tabs defaultValue="holdings" className="space-y-4">
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
             <TabsTrigger value="holdings">Holdings</TabsTrigger>
             <TabsTrigger value="allocation">Allocation</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="treemap">
+              <Map className="h-3 w-3 mr-1" />
+              Map
+            </TabsTrigger>
+            <TabsTrigger value="insights">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Insights
+            </TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
