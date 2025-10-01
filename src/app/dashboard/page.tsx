@@ -598,8 +598,12 @@ export default function DashboardPage() {
             ) : (
               <ChartContainer config={chartConfig} className="h-[350px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={portfolioChartData}>
+                  <AreaChart data={portfolioChartData}>
                     <defs>
+                      <linearGradient id="gradientTotal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.05}/>
+                      </linearGradient>
                       {Object.keys(chartConfig).map((key, index) => (
                         <linearGradient key={key} id={`color${key}`} x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor={coinColors[index] || chartConfig[key as keyof typeof chartConfig]?.color} stopOpacity={0.3}/>
@@ -610,7 +614,7 @@ export default function DashboardPage() {
                     <CartesianGrid
                       strokeDasharray="3 3"
                       stroke="hsl(var(--muted-foreground))"
-                      opacity={0.3}
+                      opacity={0.2}
                     />
                     <XAxis
                       dataKey="time"
@@ -634,16 +638,18 @@ export default function DashboardPage() {
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white dark:bg-gray-800 border rounded-lg p-3 shadow-lg">
-                              <p className="text-sm font-medium mb-2">{label}</p>
+                            <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-xl">
+                              <p className="text-sm font-semibold mb-2 text-foreground">{label}</p>
                               {payload.map((entry, index) => (
-                                <div key={index} className="flex items-center space-x-2 text-sm">
-                                  <div
-                                    className="w-3 h-3 rounded-full"
-                                    style={{ backgroundColor: entry.color }}
-                                  />
-                                  <span className="font-medium">{entry.name}:</span>
-                                  <span>${entry.value?.toLocaleString()}</span>
+                                <div key={index} className="flex items-center justify-between gap-3 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className="w-3 h-3 rounded-full"
+                                      style={{ backgroundColor: entry.color }}
+                                    />
+                                    <span className="font-medium text-muted-foreground">{entry.name}:</span>
+                                  </div>
+                                  <span className="font-semibold text-foreground">${entry.value?.toLocaleString()}</span>
                                 </div>
                               ))}
                             </div>
@@ -652,12 +658,13 @@ export default function DashboardPage() {
                         return null
                       }}
                     />
-                    <Line
+                    <Area
                       type="monotone"
                       dataKey="total"
-                      stroke={chartConfig.total.color}
+                      stroke="hsl(var(--chart-1))"
                       strokeWidth={3}
-                      dot={false}
+                      fill="url(#gradientTotal)"
+                      fillOpacity={1}
                       name="Total Portfolio"
                     />
                     {/* Render lines for actual portfolio holdings */}
