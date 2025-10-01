@@ -80,7 +80,6 @@ export interface Exchange {
   trust_score: number
   trust_score_rank: number
   trade_volume_24h_btc: number
-  trade_volume_24h_btc_normalized: number
 }
 
 class CryptoAPI {
@@ -930,8 +929,7 @@ class CryptoAPI {
           has_trading_incentive: false,
           trust_score: 10,
           trust_score_rank: 1,
-          trade_volume_24h_btc: 65000,
-          trade_volume_24h_btc_normalized: 65000
+          trade_volume_24h_btc: 65000
         },
         {
           id: 'coinbase-exchange',
@@ -944,8 +942,7 @@ class CryptoAPI {
           has_trading_incentive: false,
           trust_score: 10,
           trust_score_rank: 2,
-          trade_volume_24h_btc: 45000,
-          trade_volume_24h_btc_normalized: 45000
+          trade_volume_24h_btc: 45000
         }
       ]
     }
