@@ -98,26 +98,26 @@ export default function DashboardPage() {
         transition={{ duration: 0.4 }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Here's what's happening with your portfolio today
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none">
               <Link href="/dashboard/analytics">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analytics
+                <BarChart3 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Analytics</span>
               </Link>
             </Button>
-            <Button size="sm" asChild>
+            <Button size="sm" asChild className="flex-1 sm:flex-none">
               <Link href="/dashboard/ai">
-                <Bot className="h-4 w-4 mr-2" />
-                AI Assistant
+                <Bot className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">AI Assistant</span>
               </Link>
             </Button>
           </div>

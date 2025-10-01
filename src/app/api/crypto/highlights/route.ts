@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCacheHeaders, CACHE_PRESETS } from '@/lib/api-cache';
 
 const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
 
@@ -70,7 +71,10 @@ export async function GET(request: NextRequest) {
       smallCapGems: smallCapData,
     };
 
-    return NextResponse.json(comprehensiveData);
+    // Return response with caching headers for better performance
+    return NextResponse.json(comprehensiveData, {
+      headers: getCacheHeaders(CACHE_PRESETS.TRENDING_DATA)
+    });
   } catch (error) {
     console.error('Highlights API error:', error);
     return NextResponse.json(

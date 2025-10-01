@@ -184,57 +184,59 @@ export default function HighlightsPage() {
 
   const renderCoinTable = (coins: CoinData[]) => (
     <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
-      <table className="w-full">
-        <thead className="bg-slate-100 dark:bg-slate-800">
-          <tr>
-            <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
-            <th className="px-3 py-2 text-left text-xs font-semibold">Coin</th>
-            <th className="px-3 py-2 text-right text-xs font-semibold">Price</th>
-            <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
-            <th className="px-3 py-2 text-right text-xs font-semibold">Market Cap</th>
-            <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-          {coins.map((coin, index) => (
-            <tr key={coin.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-              <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
-              <td className="px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <img src={coin.image} alt={coin.name} className="w-6 h-6 rounded-full" />
-                  <div>
-                    <div className="text-xs font-semibold">{coin.name}</div>
-                    <div className="text-xs text-muted-foreground uppercase">{coin.symbol}</div>
-                  </div>
-                </div>
-              </td>
-              <td className="px-3 py-2 text-right text-xs font-semibold">
-                {formatPrice(coin.current_price)}
-              </td>
-              <td className={`px-3 py-2 text-right text-xs font-bold ${
-                coin.price_change_percentage_24h >= 0
-                  ? 'text-green-600 dark:text-green-400'
-                  : 'text-red-600 dark:text-red-400'
-              }`}>
-                {formatPercentage(coin.price_change_percentage_24h)}
-              </td>
-              <td className="px-3 py-2 text-right text-xs">
-                {formatMarketCap(coin.market_cap)}
-              </td>
-              <td className="px-3 py-2 text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.id}`, '_blank')}
-                >
-                  <ExternalLink className="h-3 w-3" />
-                </Button>
-              </td>
+      <div className="min-w-[640px]">
+        <table className="w-full">
+          <thead className="bg-slate-100 dark:bg-slate-800">
+            <tr>
+              <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">#</th>
+              <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">Coin</th>
+              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Price</th>
+              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">24h %</th>
+              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold hidden sm:table-cell">Market Cap</th>
+              <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+            {coins.map((coin, index) => (
+              <tr key={coin.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td className="px-2 sm:px-3 py-2 text-xs font-medium">#{index + 1}</td>
+                <td className="px-2 sm:px-3 py-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <img src={coin.image} alt={coin.name} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold truncate">{coin.name}</div>
+                      <div className="text-xs text-muted-foreground uppercase">{coin.symbol}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-2 sm:px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">
+                  {formatPrice(coin.current_price)}
+                </td>
+                <td className={`px-2 sm:px-3 py-2 text-right text-xs font-bold whitespace-nowrap ${
+                  coin.price_change_percentage_24h >= 0
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {formatPercentage(coin.price_change_percentage_24h)}
+                </td>
+                <td className="px-2 sm:px-3 py-2 text-right text-xs hidden sm:table-cell whitespace-nowrap">
+                  {formatMarketCap(coin.market_cap)}
+                </td>
+                <td className="px-2 sm:px-3 py-2 text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.id}`, '_blank')}
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 
@@ -242,17 +244,17 @@ export default function HighlightsPage() {
     <div className="container mx-auto py-8 px-4 max-w-7xl space-y-12">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Flame className="h-8 w-8 text-orange-500" />
+            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+              <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-orange-500" />
               Market Highlights
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm sm:text-base text-muted-foreground mt-2">
               Comprehensive cryptocurrency market data and trends from CoinGecko
             </p>
           </div>
-          <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm">
+          <Button onClick={handleRefresh} disabled={refreshing} variant="outline" size="sm" className="self-start sm:self-auto">
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -266,57 +268,59 @@ export default function HighlightsPage() {
           Trending Coins
         </h2>
         <div className="overflow-x-auto border-2 border-purple-500/50 rounded-lg">
-          <table className="w-full">
-            <thead className="bg-slate-100 dark:bg-slate-800">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold">#</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold">Coin</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">Price</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">24h %</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">Market Cap</th>
-                <th className="px-3 py-2 text-right text-xs font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {data.trending.coins.map((coin, index) => (
-                <tr key={coin.item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="px-3 py-2 text-xs font-medium">#{index + 1}</td>
-                  <td className="px-3 py-2">
-                    <div className="flex items-center gap-2">
-                      <img src={coin.item.large} alt={coin.item.name} className="w-6 h-6 rounded-full" />
-                      <div>
-                        <div className="text-xs font-semibold">{coin.item.name}</div>
-                        <div className="text-xs text-muted-foreground uppercase">{coin.item.symbol}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 text-right text-xs font-semibold">
-                    {formatPrice(coin.item.data.price)}
-                  </td>
-                  <td className={`px-3 py-2 text-right text-xs font-bold ${
-                    coin.item.data.price_change_percentage_24h.usd >= 0
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  }`}>
-                    {formatPercentage(coin.item.data.price_change_percentage_24h.usd)}
-                  </td>
-                  <td className="px-3 py-2 text-right text-xs">
-                    {coin.item.data.market_cap}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.item.id}`, '_blank')}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  </td>
+          <div className="min-w-[640px]">
+            <table className="w-full">
+              <thead className="bg-slate-100 dark:bg-slate-800">
+                <tr>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">#</th>
+                  <th className="px-2 sm:px-3 py-2 text-left text-xs font-semibold">Coin</th>
+                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Price</th>
+                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">24h %</th>
+                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold hidden sm:table-cell">Market Cap</th>
+                  <th className="px-2 sm:px-3 py-2 text-right text-xs font-semibold">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                {data.trending.coins.map((coin, index) => (
+                  <tr key={coin.item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <td className="px-2 sm:px-3 py-2 text-xs font-medium">#{index + 1}</td>
+                    <td className="px-2 sm:px-3 py-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <img src={coin.item.large} alt={coin.item.name} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-xs font-semibold truncate">{coin.item.name}</div>
+                          <div className="text-xs text-muted-foreground uppercase">{coin.item.symbol}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-2 sm:px-3 py-2 text-right text-xs font-semibold whitespace-nowrap">
+                      {formatPrice(coin.item.data.price)}
+                    </td>
+                    <td className={`px-2 sm:px-3 py-2 text-right text-xs font-bold whitespace-nowrap ${
+                      coin.item.data.price_change_percentage_24h.usd >= 0
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {formatPercentage(coin.item.data.price_change_percentage_24h.usd)}
+                    </td>
+                    <td className="px-2 sm:px-3 py-2 text-right text-xs hidden sm:table-cell truncate max-w-[120px]">
+                      {coin.item.data.market_cap}
+                    </td>
+                    <td className="px-2 sm:px-3 py-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => window.open(`https://www.coingecko.com/en/coins/${coin.item.id}`, '_blank')}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
