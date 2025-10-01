@@ -617,6 +617,140 @@
     @apply border-success;
   }
 
+  /* Data Visualization Enhancements */
+
+  /* Price Display Improvements */
+  .price-positive {
+    @apply text-success;
+  }
+
+  .price-negative {
+    @apply text-error;
+  }
+
+  .price-glow-positive {
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  }
+
+  .price-glow-negative {
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+  }
+
+  .price-flash {
+    animation: price-flash 0.5s ease-out;
+  }
+
+  @keyframes price-flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; transform: scale(1.05); }
+  }
+
+  /* Chart Enhancements */
+  .chart-gradient-positive {
+    fill: url(#gradientPositive);
+  }
+
+  .chart-gradient-negative {
+    fill: url(#gradientNegative);
+  }
+
+  .chart-tooltip {
+    @apply bg-card/95 backdrop-blur-sm border rounded-lg p-3 shadow-xl;
+  }
+
+  .chart-grid {
+    @apply stroke-muted-foreground/20;
+  }
+
+  /* Table Enhancements */
+  .table-zebra tbody tr:nth-child(even) {
+    @apply bg-muted/30;
+  }
+
+  .table-hover tbody tr:hover {
+    @apply bg-muted/50 transition-colors duration-150;
+  }
+
+  .table-sticky-header thead {
+    @apply sticky top-0 z-10 bg-background/95 backdrop-blur-sm;
+  }
+
+  .table-cell-number {
+    @apply font-mono tabular-nums;
+  }
+
+  /* Metric Card Improvements */
+  .metric-increase {
+    @apply inline-flex items-center gap-1 text-success text-sm font-medium;
+  }
+
+  .metric-decrease {
+    @apply inline-flex items-center gap-1 text-error text-sm font-medium;
+  }
+
+  .metric-badge {
+    @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium;
+  }
+
+  .metric-badge-success {
+    @apply metric-badge bg-success/10 text-success border border-success/20;
+  }
+
+  .metric-badge-error {
+    @apply metric-badge bg-error/10 text-error border border-error/20;
+  }
+
+  .metric-badge-warning {
+    @apply metric-badge bg-warning/10 text-warning border border-warning/20;
+  }
+
+  .metric-badge-info {
+    @apply metric-badge bg-info/10 text-info border border-info/20;
+  }
+
+  /* Percentage Badges */
+  .percentage-positive {
+    @apply inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-medium bg-success/10 text-success;
+  }
+
+  .percentage-negative {
+    @apply inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-medium bg-error/10 text-error;
+  }
+
+  /* Sparkline Styles */
+  .sparkline-positive {
+    @apply stroke-success fill-success/10;
+  }
+
+  .sparkline-negative {
+    @apply stroke-error fill-error/10;
+  }
+
+  /* Progress Bar Variations */
+  .progress-success {
+    @apply bg-success/20;
+  }
+
+  .progress-success [role="progressbar"] {
+    @apply bg-success;
+  }
+
+  .progress-warning {
+    @apply bg-warning/20;
+  }
+
+  .progress-warning [role="progressbar"] {
+    @apply bg-warning;
+  }
+
+  .progress-error {
+    @apply bg-error/20;
+  }
+
+  .progress-error [role="progressbar"] {
+    @apply bg-error;
+  }
+
   /* Mobile-Optimized Tables */
   @media (max-width: 768px) {
     /* Stack table for mobile */
