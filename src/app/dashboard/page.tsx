@@ -381,7 +381,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-slate-50 via-blue-50/20 to-purple-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+    <div className="h-full w-full bg-gradient-to-br from-white via-blue-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="flex h-full">
 
         {/* LEFT SIDEBAR - Navigation & Portfolio Summary */}
@@ -499,11 +499,11 @@ export default function DashboardPage() {
         </AnimatePresence>
 
         {/* MAIN CONTENT AREA */}
-        <main className="flex-1 overflow-auto">
-          <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
+        <main className="flex-1 overflow-auto bg-gradient-to-b from-slate-50/50 to-white dark:from-slate-900 dark:to-slate-950">
+          <div className="container mx-auto px-3 sm:px-4 pt-3 sm:pt-4 max-w-7xl">
 
             {/* Mobile Header with Menu */}
-            <div className="lg:hidden mb-4 flex items-center justify-between">
+            <div className="lg:hidden mb-3 flex items-center justify-between bg-white dark:bg-slate-800 p-3 rounded-lg shadow-sm">
               <Button variant="outline" size="sm" onClick={() => setSidebarOpen(true)}>
                 <Menu className="h-5 w-5" />
               </Button>
@@ -515,12 +515,12 @@ export default function DashboardPage() {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
+              className="mb-4 bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-xl shadow-md border border-slate-200 dark:border-slate-700"
             >
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
                 Trading Command Center
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
             </motion.div>
@@ -543,13 +543,13 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <Card className="border-0 shadow-lg h-full">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
+                <Card className="border-2 border-slate-200 dark:border-slate-700 shadow-xl h-full bg-white dark:bg-slate-800">
+                  <CardHeader className="pb-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30">
+                    <CardTitle className="text-base flex items-center gap-2 text-slate-900 dark:text-white">
+                      <BarChart3 className="h-4 w-4 text-blue-600" />
                       Portfolio Performance
                     </CardTitle>
-                    <CardDescription>30-day trend with P&L</CardDescription>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">30-day trend with P&L</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {chartData.length > 0 ? (
@@ -586,13 +586,13 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <Card className="border-0 shadow-lg h-full">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <PieChart className="h-4 w-4" />
+                <Card className="border-2 border-slate-200 dark:border-slate-700 shadow-xl h-full bg-white dark:bg-slate-800">
+                  <CardHeader className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
+                    <CardTitle className="text-base flex items-center gap-2 text-slate-900 dark:text-white">
+                      <PieChart className="h-4 w-4 text-purple-600" />
                       Asset Allocation
                     </CardTitle>
-                    <CardDescription>Current portfolio distribution</CardDescription>
+                    <CardDescription className="text-slate-600 dark:text-slate-400">Current portfolio distribution</CardDescription>
                   </CardHeader>
                   <CardContent>
                     {allocationData.length > 0 ? (
@@ -645,13 +645,13 @@ export default function DashboardPage() {
               transition={{ delay: 0.3 }}
               className="mb-6"
             >
-              <Card className="border-0 shadow-lg">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Activity className="h-4 w-4" />
+              <Card className="border-2 border-slate-200 dark:border-slate-700 shadow-xl bg-white dark:bg-slate-800">
+                <CardHeader className="pb-3 bg-gradient-to-r from-green-50 to-cyan-50 dark:from-green-950/30 dark:to-cyan-950/30">
+                  <CardTitle className="text-base flex items-center gap-2 text-slate-900 dark:text-white">
+                    <Activity className="h-4 w-4 text-green-600" />
                     Top 6 Coins by 24h Volume
                   </CardTitle>
-                  <CardDescription>Real-time trading volume comparison</CardDescription>
+                  <CardDescription className="text-slate-600 dark:text-slate-400">Real-time trading volume comparison</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {volumeData.length > 0 ? (
@@ -704,14 +704,14 @@ export default function DashboardPage() {
                     transition={{ delay: 0.4 + index * 0.05 }}
                   >
                     <Link href={tool.path}>
-                      <Card className="group h-full border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 relative overflow-hidden">
+                      <Card className="group h-full border-2 border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:border-purple-400 dark:hover:border-purple-600 cursor-pointer bg-white dark:from-slate-800 dark:to-slate-900 relative overflow-hidden">
                         <div className="absolute top-2 right-2 z-10">
                           {getTierBadge(tool.tier)}
                         </div>
                         <CardContent className="p-4">
                           <div className="flex flex-col items-center text-center gap-3">
                             <div className={cn(
-                              "w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform",
+                              "w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-md",
                               tool.bgColor
                             )}>
                               <tool.icon className={cn("h-6 w-6", tool.color)} />
@@ -744,17 +744,17 @@ export default function DashboardPage() {
             <div className="p-4 space-y-6">
 
               {/* Live Market Feed */}
-              <div>
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-4 rounded-xl border border-green-200 dark:border-green-800">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-green-500 animate-pulse" />
+                    <Activity className="h-4 w-4 text-green-600 animate-pulse" />
                     Live Markets
                   </h3>
-                  <Badge variant="outline" className="text-xs">Live</Badge>
+                  <Badge className="text-xs bg-green-600">Live</Badge>
                 </div>
                 <div className="space-y-2">
                   {marketData.slice(0, 8).map((coin) => (
-                    <div key={coin.symbol} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div key={coin.symbol} className="flex items-center justify-between p-2 rounded-lg bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 transition-colors border border-slate-200/50 dark:border-slate-700/50">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {coin.image && (
                           <img src={coin.image} alt={coin.name} className="w-6 h-6 rounded-full flex-shrink-0" />
@@ -778,23 +778,23 @@ export default function DashboardPage() {
               <Separator />
 
               {/* Trending Coins */}
-              <div>
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 p-4 rounded-xl border border-orange-200 dark:border-orange-800">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <Flame className="h-4 w-4 text-orange-500" />
+                    <Flame className="h-4 w-4 text-orange-600" />
                     Trending
                   </h3>
                 </div>
                 <div className="space-y-2">
                   {trendingCoins.map((coin, index) => (
-                    <div key={coin.id} className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                      <span className="text-xs font-bold text-muted-foreground w-4">#{index + 1}</span>
+                    <div key={coin.id} className="flex items-center gap-2 p-2 rounded-lg bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 transition-colors border border-slate-200/50 dark:border-slate-700/50">
+                      <span className="text-xs font-bold text-orange-600 w-4">#{index + 1}</span>
                       <img src={coin.image} alt={coin.name} className="w-6 h-6 rounded-full" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold truncate">{coin.name}</p>
                         <p className="text-xs text-muted-foreground">{coin.symbol}</p>
                       </div>
-                      <TrendingUp className="h-3 w-3 text-green-500" />
+                      <TrendingUp className="h-3 w-3 text-green-600" />
                     </div>
                   ))}
                 </div>
@@ -803,16 +803,16 @@ export default function DashboardPage() {
               <Separator />
 
               {/* Recent Activity */}
-              <div>
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-4 w-4 text-blue-600" />
                     Recent Activity
                   </h3>
                 </div>
                 <div className="space-y-3">
                   {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg bg-white/60 dark:bg-slate-800/60 hover:bg-white dark:hover:bg-slate-800 transition-colors border border-slate-200/50 dark:border-slate-700/50">
                       <div className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
                         activity.type === 'buy' && "bg-green-100 dark:bg-green-900/30",
@@ -834,23 +834,26 @@ export default function DashboardPage() {
               <Separator />
 
               {/* Market Sentiment */}
-              <div>
-                <h3 className="font-semibold text-sm mb-3">Market Sentiment</h3>
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
+                <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-purple-600" />
+                  Market Sentiment
+                </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">Fear & Greed Index</span>
-                    <Badge className="bg-green-500">68 - Greed</Badge>
+                    <Badge className="bg-green-600">68 - Greed</Badge>
                   </div>
                   <Progress value={68} className="h-2" />
                   <div className="grid grid-cols-2 gap-2 mt-3">
-                    <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20">
+                    <div className="p-3 rounded-lg bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800">
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingUp className="h-3 w-3 text-green-600" />
                         <span className="text-xs font-medium">Bullish</span>
                       </div>
                       <p className="text-lg font-bold text-green-600">62%</p>
                     </div>
-                    <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+                    <div className="p-3 rounded-lg bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingDown className="h-3 w-3 text-red-600" />
                         <span className="text-xs font-medium">Bearish</span>
