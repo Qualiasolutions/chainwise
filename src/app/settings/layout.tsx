@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedCard } from "@/components/ui/enhanced-card";
 import { RippleButton } from "@/components/ui/ripple-button";
 import { Button } from "@/components/ui/button";
-import { User, Settings, CreditCard, Bell, Shield, HelpCircle } from "lucide-react";
+import { User, Settings, CreditCard, Bell, Shield, HelpCircle, Waves } from "lucide-react";
 import Link from "next/link";
 
 const settingsNavItems = [
@@ -30,6 +30,12 @@ const settingsNavItems = [
     href: "/settings/notifications",
     icon: Bell,
     description: "Configure email and push notifications"
+  },
+  {
+    title: "Whale Alerts",
+    href: "/settings/whale-alerts",
+    icon: Waves,
+    description: "Real-time notifications for significant transactions"
   },
   {
     title: "Privacy",

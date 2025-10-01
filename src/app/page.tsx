@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import HeroSection from "@/components/hero-section";
+import CryptoChartHero from "@/components/crypto-chart-hero";
 import ChainWisePricing from "@/components/chainwise-pricing";
 import { CyberneticBentoGrid } from "@/components/ui/cybernetic-bento-grid";
 import { Footer } from "@/components/ui/footer";
@@ -11,8 +11,8 @@ import { SectionDivider } from "@/components/ui/section-divider";
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Hero Section with 3D Globe */}
-      <HeroSection />
+      {/* Hero Section with Animated Chart */}
+      <CryptoChartHero />
 
       {/* Elegant transition from hero to features */}
       <SectionDivider variant="wave" />

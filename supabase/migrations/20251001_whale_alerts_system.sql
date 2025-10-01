@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS public.whale_transactions_feed (
     to_owner TEXT,
     to_owner_type TEXT,
     transaction_type TEXT NOT NULL,
-    timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    transaction_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
     is_significant BOOLEAN DEFAULT true,
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -90,7 +90,7 @@ CREATE INDEX IF NOT EXISTS idx_whale_subscriptions_user_active
 ON public.whale_alert_subscriptions(user_id, is_active);
 
 CREATE INDEX IF NOT EXISTS idx_whale_feed_timestamp
-ON public.whale_transactions_feed(timestamp DESC);
+ON public.whale_transactions_feed(transaction_timestamp DESC);
 
 CREATE INDEX IF NOT EXISTS idx_whale_feed_blockchain_value
 ON public.whale_transactions_feed(blockchain, amount_usd DESC);
@@ -286,7 +286,7 @@ RETURNS TABLE (
     to_owner TEXT,
     to_owner_type TEXT,
     transaction_type TEXT,
-    timestamp TIMESTAMP WITH TIME ZONE,
+    transaction_timestamp TIMESTAMP WITH TIME ZONE,
     minutes_ago INTEGER
 )
 LANGUAGE plpgsql
@@ -309,14 +309,14 @@ BEGIN
         f.to_owner,
         f.to_owner_type,
         f.transaction_type,
-        f.timestamp,
-        EXTRACT(EPOCH FROM (NOW() - f.timestamp))::INTEGER / 60 as minutes_ago
+        f.transaction_timestamp,
+        EXTRACT(EPOCH FROM (NOW() - f.transaction_timestamp))::INTEGER / 60 as minutes_ago
     FROM public.whale_transactions_feed f
     WHERE
         f.is_significant = true
         AND f.amount_usd >= p_min_usd_value
         AND (p_blockchain IS NULL OR f.blockchain = p_blockchain)
-    ORDER BY f.timestamp DESC
+    ORDER BY f.transaction_timestamp DESC
     LIMIT p_limit
     OFFSET p_offset;
 END;

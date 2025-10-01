@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Bot, User, LogIn, UserPlus, ChevronDown, Wrench, FileText, TrendingUp, Zap, Bell, Brain, Gem, Activity } from "lucide-react"
+import { Bot, User, LogIn, UserPlus, ChevronDown, Wrench, FileText, TrendingUp, Zap, Bell, Brain, Gem, Activity, Waves } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { cn } from "@/lib/utils"
 
@@ -156,6 +157,20 @@ export function HeaderNavigation() {
                           </div>
                           <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
                             Track whale wallets and analyze their trading patterns
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/dashboard/whale-feed"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Waves className="h-4 w-4 text-purple-500" />
+                            <div className="text-sm font-medium leading-none">Whale Feed <Badge className="ml-1 bg-purple-500 text-xs">Elite</Badge></div>
+                          </div>
+                          <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                            Real-time feed of significant crypto transactions
                           </p>
                         </Link>
                       </NavigationMenuLink>
