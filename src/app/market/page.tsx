@@ -34,7 +34,8 @@ import {
   Newspaper,
   ExternalLink,
   Clock,
-  Tag
+  Tag,
+  Plus
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { cryptoAPI, CryptoData, MarketData, NewsArticle, formatPrice, formatPercentage, formatMarketCap } from "@/lib/crypto-api"
@@ -46,12 +47,17 @@ import { AnimatedLoader } from "@/components/ui/animated-loader"
 import { MicroInteraction } from "@/components/ui/micro-interaction"
 import { DashboardGlassCard, GlassmorphismCard } from "@/components/ui/glassmorphism-card"
 import { ProfessionalCard, MetricsCard, ChartCard, DataCard, TableCard } from "@/components/ui/professional-card"
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
+import { supabase } from "@/lib/supabase/client"
+import { toast } from "sonner"
+import { AddAssetModal } from "@/components/AddAssetModal"
 
 interface CryptoTableRow extends CryptoData {
   watchlisted?: boolean
 }
 
 export default function MarketPage() {
+  const { user, profile } = useSupabaseAuth()
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([])
   const [globalData, setGlobalData] = useState<MarketData | null>(null)
   const [trendingData, setTrendingData] = useState<any[]>([])
@@ -63,6 +69,9 @@ export default function MarketPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [watchlist, setWatchlist] = useState<string[]>([])
   const [selectedTimeframe, setSelectedTimeframe] = useState<'24h' | '7d' | '30d'>('7d')
+  const [portfolioId, setPortfolioId] = useState<string | null>(null)
+  const [selectedCrypto, setSelectedCrypto] = useState<CryptoData | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
 
   // Fetch market data
   useEffect(() => {
@@ -109,6 +118,32 @@ export default function MarketPage() {
     return () => clearInterval(interval)
   }, [])
 
+  // Fetch user's default portfolio
+  useEffect(() => {
+    const fetchPortfolio = async () => {
+      if (!user || !profile) return
+
+      try {
+        const { data: portfolios, error } = await supabase
+          .from('portfolios')
+          .select('id')
+          .eq('user_id', profile.id)
+          .eq('is_default', true)
+          .limit(1)
+
+        if (error) throw error
+
+        if (portfolios && portfolios.length > 0) {
+          setPortfolioId(portfolios[0].id)
+        }
+      } catch (err) {
+        console.error('Error fetching portfolio:', err)
+      }
+    }
+
+    fetchPortfolio()
+  }, [user, profile])
+
   // Toggle watchlist
   const toggleWatchlist = (cryptoId: string) => {
     setWatchlist(prev =>
@@ -116,6 +151,22 @@ export default function MarketPage() {
         ? prev.filter(id => id !== cryptoId)
         : [...prev, cryptoId]
     )
+  }
+
+  // Handle add to portfolio
+  const handleAddToPortfolio = (crypto: CryptoData) => {
+    if (!user) {
+      toast.error('Please sign in to add to portfolio')
+      return
+    }
+
+    if (!portfolioId) {
+      toast.error('No portfolio found. Please create a portfolio first.')
+      return
+    }
+
+    setSelectedCrypto(crypto)
+    setShowAddModal(true)
   }
 
   // Refresh news data
@@ -227,8 +278,19 @@ export default function MarketPage() {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => handleAddToPortfolio(row.original)}
+            className="h-8 px-3"
+            title="Add to Portfolio"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            <span className="text-xs">Add</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => toggleWatchlist(row.original.id)}
             className="h-8 w-8 p-0"
+            title="Add to Watchlist"
           >
             <Star
               className={cn(
@@ -239,12 +301,9 @@ export default function MarketPage() {
               )}
             />
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </Button>
         </div>
       ),
-      size: 100
+      size: 150
     }
   ]
 
@@ -795,6 +854,29 @@ export default function MarketPage() {
             </Tabs>
         </div>
       </div>
+
+      {/* Add Asset Modal */}
+      {selectedCrypto && portfolioId && (
+        <AddAssetModal
+          portfolioId={portfolioId}
+          onAssetAdded={() => {
+            setShowAddModal(false)
+            setSelectedCrypto(null)
+            toast.success(`${selectedCrypto.symbol.toUpperCase()} added to portfolio!`)
+          }}
+          open={showAddModal}
+          onOpenChange={(open) => {
+            setShowAddModal(open)
+            if (!open) setSelectedCrypto(null)
+          }}
+          prefilledCrypto={{
+            id: selectedCrypto.id,
+            symbol: selectedCrypto.symbol,
+            name: selectedCrypto.name,
+            currentPrice: selectedCrypto.current_price
+          }}
+        />
+      )}
     </div>
   )
 }
