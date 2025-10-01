@@ -59,6 +59,7 @@ import { cryptoAPI, formatPrice, formatPercentage, formatMarketCap } from "@/lib
 import { ColumnDef } from "@tanstack/react-table"
 import { motion } from "framer-motion"
 import { AddAssetModal } from "@/components/AddAssetModal"
+import { PortfolioManager } from "@/components/PortfolioManager"
 import { toast } from "sonner"
 import { useRealTimePrices } from "@/hooks/useRealTimePrices"
 import { Activity } from "lucide-react"
@@ -698,7 +699,7 @@ export default function PortfolioPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-                My Portfolio
+                Portfolio
               </h1>
               {holdings.length > 0 && (
                 <Badge
@@ -719,9 +720,18 @@ export default function PortfolioPage() {
               Track your cryptocurrency investments and performance
             </p>
           </div>
-          {portfolioId && (
-            <AddAssetModal portfolioId={portfolioId} onAssetAdded={handleAddHolding} />
-          )}
+          <div className="flex items-center gap-2">
+            <PortfolioManager
+              currentPortfolioId={portfolioId}
+              onPortfolioChange={(newPortfolioId) => {
+                setPortfolioId(newPortfolioId)
+                fetchPortfolioData()
+              }}
+            />
+            {portfolioId && (
+              <AddAssetModal portfolioId={portfolioId} onAssetAdded={handleAddHolding} />
+            )}
+          </div>
         </div>
 
       {/* Portfolio Metrics */}
