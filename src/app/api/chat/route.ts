@@ -9,64 +9,49 @@ import { Database } from '@/lib/supabase/types'
 import { OpenAIService } from '@/lib/openai/service'
 import { AI_PERSONAS, PersonaId } from '@/lib/openai/personas'
 import { mcpSupabase } from '@/lib/supabase/mcp-helpers'
+import {
+  handleAPIError,
+  validateAuth,
+  validateProfile,
+  validateRequired,
+  validateCredits,
+  validateTier,
+  validateEnum,
+  checkRateLimit
+} from '@/lib/api-error-handler'
 
 export async function POST(request: NextRequest) {
+  const path = '/api/chat'
   try {
     const cookieStore = await cookies()
     const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
+    validateAuth(session)
 
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Rate limiting - AI chat is resource-intensive
+    checkRateLimit(`chat:${session!.user.id}`, 30, 60000) // 30 requests per minute
 
-    // Get user profile using MCP helpers with error handling
-    let profile;
-    try {
-      profile = await mcpSupabase.getUserByAuthId(session.user.id)
-    } catch (error) {
-      console.error('MCP getUserByAuthId error:', error)
-      return NextResponse.json({ error: 'Failed to fetch user profile' }, { status: 500 })
-    }
-
-    if (!profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
-    }
+    // Get user profile
+    const profile = await mcpSupabase.getUserByAuthId(session!.user.id)
+    validateProfile(profile)
 
     const body = await request.json()
     const { message, persona, sessionId } = body
 
-    if (!message || !persona) {
-      return NextResponse.json({
-        error: 'Message and persona are required'
-      }, { status: 400 })
-    }
+    // Validate required fields
+    validateRequired(body, ['message', 'persona'])
 
+    // Validate persona exists
     const personaConfig = AI_PERSONAS[persona as keyof typeof AI_PERSONAS]
-    if (!personaConfig) {
-      return NextResponse.json({ error: 'Invalid persona' }, { status: 400 })
-    }
+    validateEnum(persona, Object.keys(AI_PERSONAS), 'persona')
 
     // Check tier access
-    const tierHierarchy = { free: 0, pro: 1, elite: 2 }
-    const requiredTier = personaConfig.tier
-    const userTierLevel = tierHierarchy[profile.tier as keyof typeof tierHierarchy] || 0
-    const requiredTierLevel = tierHierarchy[requiredTier as keyof typeof tierHierarchy] || 0
-
-    if (userTierLevel < requiredTierLevel) {
-      return NextResponse.json({
-        error: `${personaConfig.name} persona requires ${requiredTier} tier or higher`
-      }, { status: 403 })
-    }
+    validateTier(profile!.tier, personaConfig.tier)
 
     // Check credits
-    if (profile.credits < personaConfig.creditCost) {
-      return NextResponse.json({
-        error: `Insufficient credits. ${personaConfig.name} requires ${personaConfig.creditCost} credits.`
-      }, { status: 402 })
-    }
+    validateCredits(profile!.credits, personaConfig.creditCost)
 
     // Get conversation history for context
     let conversationHistory: any[] = []
@@ -223,41 +208,33 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Chat API error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return handleAPIError(error, path)
   }
 }
 
 export async function GET() {
+  const path = '/api/chat'
   try {
     const cookieStore = await cookies()
     const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
 
     // Get current user
     const { data: { session }, error: authError } = await supabase.auth.getSession()
-
-    if (authError || !session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    validateAuth(session)
 
     // Get user profile from profiles table
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('auth_id', session.user.id)
+      .eq('auth_id', session!.user.id)
       .single()
 
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
-    }
+    validateProfile(profile)
 
     const { data: sessions, error } = await supabase
       .from('ai_chat_sessions')
       .select('*')
-      .eq('user_id', session.user.id)
+      .eq('user_id', session!.user.id)
       .order('updated_at', { ascending: false })
       .limit(20)
 
@@ -271,11 +248,7 @@ export async function GET() {
       success: true
     })
 
-  } catch (error: any) {
-    console.error('Chat sessions API error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
-    )
+  } catch (error) {
+    return handleAPIError(error, path)
   }
 }
