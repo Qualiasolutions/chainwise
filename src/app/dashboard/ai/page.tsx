@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChatContainer } from "@/components/chat/ChatContainer"
 import { ChatHeader, AI_PERSONAS } from "@/components/chat/ChatHeader"
 import { ChatMessages } from "@/components/chat/ChatMessages"
@@ -32,41 +32,70 @@ export default function AIPage() {
   const [selectedPersona, setSelectedPersona] = useState<keyof typeof AI_PERSONAS>('buddy')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [sessions, setSessions] = useState<ChatSession[]>([])
+  const [sessionsLoading, setSessionsLoading] = useState(false)
 
-  // Mock sessions - replace with real data from API
-  const [sessions, setSessions] = useState<ChatSession[]>([
-    {
-      id: '1',
-      title: 'Bitcoin Analysis',
-      persona: 'buddy',
-      last_message_preview: 'What do you think about BTC?',
-      message_count: 5,
-      is_favorite: true,
-      updated_at: new Date(Date.now() - 1000 * 60 * 30).toISOString()
-    },
-    {
-      id: '2',
-      title: 'Trading Strategy',
-      persona: 'trader',
-      last_message_preview: 'Show me some trading signals',
-      message_count: 12,
-      is_favorite: false,
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString()
-    }
-  ])
-
-  const [currentSessionId, setCurrentSessionId] = useState<string>('1')
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: `Hi! I'm ${AI_PERSONAS.buddy.name}, your crypto companion. How can I help you today?`,
-      sender: 'ai',
-      persona: 'buddy',
-      timestamp: new Date()
-    }
-  ])
-
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+
+  // Load chat sessions from API
+  useEffect(() => {
+    const loadSessions = async () => {
+      if (!profile) return
+
+      setSessionsLoading(true)
+      try {
+        const response = await fetch('/api/chat')
+        const data = await response.json()
+
+        if (data.success && data.sessions) {
+          // Transform API sessions to match our interface
+          const transformedSessions = data.sessions.map((session: any) => {
+            const messages = Array.isArray(session.messages) ? session.messages : []
+            const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null
+
+            return {
+              id: session.id,
+              title: session.title || 'New Chat',
+              persona: session.persona || 'buddy',
+              last_message_preview: lastMessage?.content?.slice(0, 50),
+              message_count: messages.length,
+              is_favorite: session.is_favorite || false,
+              updated_at: session.updated_at
+            }
+          })
+
+          setSessions(transformedSessions)
+
+          // Load first session if available
+          if (transformedSessions.length > 0 && !currentSessionId) {
+            const firstSession = data.sessions[0]
+            setCurrentSessionId(firstSession.id)
+            setSelectedPersona(firstSession.persona || 'buddy')
+
+            // Load messages for this session
+            if (Array.isArray(firstSession.messages)) {
+              const sessionMessages = firstSession.messages.map((msg: any) => ({
+                id: msg.id || crypto.randomUUID(),
+                content: msg.content,
+                sender: msg.sender,
+                persona: msg.persona,
+                timestamp: new Date(msg.timestamp)
+              }))
+              setMessages(sessionMessages)
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load chat sessions:', error)
+      } finally {
+        setSessionsLoading(false)
+      }
+    }
+
+    loadSessions()
+  }, [profile])
 
   // Check if user can use a persona based on their tier
   const canUsePersona = (persona: keyof typeof AI_PERSONAS) => {
@@ -152,6 +181,31 @@ export default function AIPage() {
         profile.credits = data.creditsRemaining
       }
 
+      // Update current session ID if new session was created
+      if (data.session && !currentSessionId) {
+        setCurrentSessionId(data.session.id)
+      }
+
+      // Reload sessions to update sidebar
+      const sessionsResponse = await fetch('/api/chat')
+      const sessionsData = await sessionsResponse.json()
+      if (sessionsData.success && sessionsData.sessions) {
+        const transformedSessions = sessionsData.sessions.map((session: any) => {
+          const msgs = Array.isArray(session.messages) ? session.messages : []
+          const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1] : null
+          return {
+            id: session.id,
+            title: session.title || 'New Chat',
+            persona: session.persona || 'buddy',
+            last_message_preview: lastMsg?.content?.slice(0, 50),
+            message_count: msgs.length,
+            is_favorite: session.is_favorite || false,
+            updated_at: session.updated_at
+          }
+        })
+        setSessions(transformedSessions)
+      }
+
     } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -167,44 +221,42 @@ export default function AIPage() {
   }
 
   const handleNewChat = () => {
-    const newSessionId = Date.now().toString()
-    const newSession: ChatSession = {
-      id: newSessionId,
-      title: 'New Chat',
-      persona: selectedPersona,
-      message_count: 1,
-      is_favorite: false,
-      updated_at: new Date().toISOString()
-    }
-
-    setSessions(prev => [newSession, ...prev])
-    setCurrentSessionId(newSessionId)
-    setMessages([{
-      id: Date.now().toString(),
-      content: `Hi! I'm ${AI_PERSONAS[selectedPersona].name}. How can I help you today?`,
-      sender: 'ai',
-      persona: selectedPersona,
-      timestamp: new Date()
-    }])
+    setCurrentSessionId(null)
+    setMessages([])
   }
 
-  const handleSessionSelect = (sessionId: string) => {
+  const handleSessionSelect = async (sessionId: string) => {
     setCurrentSessionId(sessionId)
-    // TODO: Load messages for this session from API
-    const session = sessions.find(s => s.id === sessionId)
-    if (session) {
-      setSelectedPersona(session.persona)
-      setMessages([{
-        id: Date.now().toString(),
-        content: `Loaded conversation. How can I help you?`,
-        sender: 'ai',
-        persona: session.persona,
-        timestamp: new Date()
-      }])
+
+    // Load messages from API
+    try {
+      const response = await fetch('/api/chat')
+      const data = await response.json()
+
+      if (data.success && data.sessions) {
+        const session = data.sessions.find((s: any) => s.id === sessionId)
+        if (session) {
+          setSelectedPersona(session.persona || 'buddy')
+
+          if (Array.isArray(session.messages)) {
+            const sessionMessages = session.messages.map((msg: any) => ({
+              id: msg.id || crypto.randomUUID(),
+              content: msg.content,
+              sender: msg.sender,
+              persona: msg.persona,
+              timestamp: new Date(msg.timestamp)
+            }))
+            setMessages(sessionMessages)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load session messages:', error)
     }
   }
 
-  const handleDeleteSession = (sessionId: string) => {
+  const handleDeleteSession = async (sessionId: string) => {
+    // TODO: Add API endpoint to delete session
     setSessions(prev => prev.filter(s => s.id !== sessionId))
     if (currentSessionId === sessionId) {
       handleNewChat()
@@ -218,11 +270,11 @@ export default function AIPage() {
   }
 
   return (
-    <>
-      <div className="flex h-screen overflow-hidden">
+    <div className="fixed inset-0 w-full h-screen overflow-hidden">
+      <div className="flex h-full w-full overflow-hidden">
         {/* Sidebar */}
         {sidebarOpen && (
-          <div className="w-80 flex-shrink-0">
+          <div className="w-80 flex-shrink-0 h-full overflow-hidden">
             <ChatSidebar
               sessions={sessions}
               currentSessionId={currentSessionId}
@@ -230,13 +282,13 @@ export default function AIPage() {
               onNewChat={handleNewChat}
               onDeleteSession={handleDeleteSession}
               onToggleFavorite={handleToggleFavorite}
-              isLoading={false}
+              isLoading={sessionsLoading}
             />
           </div>
         )}
 
         {/* Main Chat Area */}
-        <ChatContainer className="flex-1">
+        <ChatContainer className="flex-1 h-full overflow-hidden">
           <ChatHeader
             selectedPersona={selectedPersona}
             onPersonaChange={handlePersonaChange}
@@ -264,6 +316,6 @@ export default function AIPage() {
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
       />
-    </>
+    </div>
   )
 }
