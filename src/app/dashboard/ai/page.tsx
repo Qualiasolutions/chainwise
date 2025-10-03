@@ -270,7 +270,7 @@ export default function AIPage() {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-screen overflow-hidden">
+    <div className="h-[calc(100vh-8rem)] overflow-hidden">
       <div className="flex h-full w-full overflow-hidden">
         {/* Sidebar */}
         {sidebarOpen && (
