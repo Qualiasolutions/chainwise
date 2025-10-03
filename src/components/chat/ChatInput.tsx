@@ -2,189 +2,140 @@
 
 import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
+import { ArrowUp, Paperclip, Mic } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { ArrowUp, Paperclip, Mic, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { AI_PERSONAS } from "./ChatHeader"
 
 interface ChatInputProps {
-  value: string
-  onChange: (value: string) => void
-  onSubmit: () => void
-  isLoading?: boolean
+  onSend: (message: string) => void
+  isLoading: boolean
+  selectedPersona: keyof typeof AI_PERSONAS
   disabled?: boolean
-  placeholder?: string
-  persona?: string
-  creditCost?: number
-  maxLength?: number
 }
 
 export function ChatInput({
-  value,
-  onChange,
-  onSubmit,
-  isLoading = false,
-  disabled = false,
-  placeholder = "Type your message...",
-  persona = "Buddy",
-  creditCost = 1,
-  maxLength = 4000
+  onSend,
+  isLoading,
+  selectedPersona,
+  disabled
 }: ChatInputProps) {
+  const [message, setMessage] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [charCount, setCharCount] = useState(0)
+  const persona = AI_PERSONAS[selectedPersona]
 
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
     }
-    setCharCount(value.length)
-  }, [value])
+  }, [message])
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleSend = () => {
+    if (!message.trim() || isLoading || disabled) return
+    onSend(message)
+    setMessage('')
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (!isLoading && value.trim()) {
-        onSubmit()
-      }
+      handleSend()
     }
   }
 
-  const showCharCount = charCount > maxLength * 0.8
-
   return (
-    <TooltipProvider>
-      <div className="border-t border-slate-200/50 dark:border-slate-800/50 px-4 py-4 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-violet-500/5 via-transparent to-transparent pointer-events-none" />
+    <motion.div
+      className="border-t border-gray-100 dark:border-gray-800 px-4 md:px-6 lg:px-8 py-4 bg-white dark:bg-gray-950"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="max-w-4xl mx-auto">
+        <div className="relative flex items-end gap-2">
+          {/* Main textarea with floating send button */}
+          <div className="flex-1 relative">
+            <div className={cn(
+              "relative rounded-2xl border bg-white dark:bg-gray-900 transition-all duration-200",
+              "border-gray-200 dark:border-gray-700",
+              "focus-within:border-violet-400 dark:focus-within:border-violet-600",
+              "focus-within:shadow-lg focus-within:shadow-violet-100 dark:focus-within:shadow-violet-950/50"
+            )}>
+              <textarea
+                ref={textareaRef}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading || disabled}
+                placeholder={`Message ${persona.name}...`}
+                className={cn(
+                  "w-full px-4 py-3 pr-12 bg-transparent resize-none",
+                  "focus:outline-none focus:ring-0",
+                  "text-sm text-gray-900 dark:text-gray-100",
+                  "placeholder:text-gray-400",
+                  "min-h-[52px] max-h-[200px]",
+                  "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                )}
+                rows={1}
+              />
 
-        <div className="relative">
-          <div className="flex items-end gap-3">
-            <div className="flex-1 relative">
-              <motion.div
-                className="relative rounded-2xl border border-slate-200/50 dark:border-slate-700/50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm shadow-lg focus-within:shadow-xl transition-all duration-300 focus-within:border-violet-300 dark:focus-within:border-violet-600"
-                whileFocus={{ scale: 1.01 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              >
-                <textarea
-                  ref={textareaRef}
-                  placeholder={placeholder}
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={disabled || isLoading}
-                  maxLength={maxLength}
-                  className={cn(
-                    "w-full px-4 py-4 pr-32 resize-none bg-transparent border-none",
-                    "focus:ring-0 focus:outline-none",
-                    "text-sm placeholder:text-slate-500 dark:text-slate-100",
-                    "max-h-32 min-h-[52px]",
-                    "scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700"
-                  )}
-                  rows={1}
-                />
-
-                <div className="absolute bottom-2 right-2 flex items-center gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                        disabled
-                      >
-                        <Paperclip className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Attach file (coming soon)</TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-                        disabled
-                      >
-                        <Mic className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Voice message (coming soon)</TooltipContent>
-                  </Tooltip>
-
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              {/* Floating action buttons */}
+              <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  type="button"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  type="button"
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={handleSend}
+                    disabled={isLoading || !message.trim() || disabled}
+                    size="icon"
+                    className={cn(
+                      "h-8 w-8 rounded-lg",
+                      "bg-gradient-to-r from-violet-600 to-purple-600",
+                      "hover:from-violet-700 hover:to-purple-700",
+                      "text-white",
+                      "disabled:opacity-50 disabled:cursor-not-allowed"
+                    )}
                   >
-                    <Button
-                      onClick={onSubmit}
-                      disabled={isLoading || !value.trim() || disabled}
-                      size="sm"
-                      className={cn(
-                        "h-8 w-8 rounded-lg p-0",
-                        "bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700",
-                        "text-white shadow-md hover:shadow-lg",
-                        "disabled:opacity-50 disabled:cursor-not-allowed",
-                        "transition-all duration-300"
-                      )}
-                    >
-                      <motion.div
-                        animate={isLoading ? { rotate: 360 } : {}}
-                        transition={{ duration: 1, repeat: isLoading ? Infinity : 0, ease: "linear" }}
-                      >
-                        {isLoading ? (
-                          <Clock className="h-4 w-4" />
-                        ) : (
-                          <ArrowUp className="h-4 w-4" />
-                        )}
-                      </motion.div>
-                    </Button>
-                  </motion.div>
-                </div>
-              </motion.div>
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <motion.div
-            className="flex items-center justify-between mt-3 text-xs text-slate-500"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div className="flex items-center gap-3">
-              <motion.div
-                className="flex items-center gap-1"
-                whileHover={{ scale: 1.02 }}
-              >
-                <div className="w-2 h-2 rounded-full bg-violet-600" />
-                <span>
-                  Using {persona} • {creditCost} credit{creditCost > 1 ? 's' : ''} per message
-                </span>
-              </motion.div>
-              {showCharCount && (
-                <span className={cn(
-                  "transition-colors",
-                  charCount > maxLength * 0.95 && "text-red-500"
-                )}>
-                  {charCount}/{maxLength}
-                </span>
-              )}
-            </div>
-            <motion.kbd
-              className="px-2 py-1 bg-slate-100/80 dark:bg-slate-900/80 rounded text-xs border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm font-mono"
-              whileHover={{ scale: 1.02 }}
-            >
-              Enter to send
-            </motion.kbd>
-          </motion.div>
+        {/* Footer info */}
+        <div className="flex items-center justify-between mt-2 px-2">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className={cn(
+              "w-1.5 h-1.5 rounded-full bg-gradient-to-r",
+              persona.color
+            )} />
+            <span>{persona.name} • {persona.creditCost} credit{persona.creditCost > 1 ? 's' : ''}/msg</span>
+          </div>
+          <kbd className="px-2 py-0.5 text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded">
+            Enter to send
+          </kbd>
         </div>
       </div>
-    </TooltipProvider>
+    </motion.div>
   )
 }
