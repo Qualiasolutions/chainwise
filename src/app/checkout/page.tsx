@@ -7,6 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, CreditCard, Lock, ArrowLeft, Brain, Crown } from "lucide-react";
 import Link from "next/link";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import { StripeCheckoutForm } from "@/components/StripeCheckoutForm";
+
+// Initialize Stripe
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 const plans = {
   pro: {
@@ -187,17 +193,16 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {/* Stripe Integration Placeholder */}
+              {/* Stripe Checkout Form */}
               <div className="space-y-4">
-                <div className="p-6 border-2 border-dashed border-muted rounded-lg text-center">
-                  <CreditCard className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <div className="text-sm text-muted-foreground">
-                    Stripe payment form will be integrated here
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Secure payment processing with industry-standard encryption
-                  </div>
-                </div>
+                <Elements stripe={stripePromise}>
+                  <StripeCheckoutForm
+                    priceId={`price_${selectedPlan}_monthly`}
+                    planName={plan.name}
+                    amount={plan.price}
+                    onSuccess={() => router.push('/checkout/success')}
+                  />
+                </Elements>
               </div>
 
               {/* Terms */}
@@ -213,26 +218,6 @@ function CheckoutContent() {
                 . You will be charged ${plan.price} monthly until you cancel.
               </div>
 
-              {/* Subscribe Button */}
-              <Button
-                onClick={handleCheckout}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                size="lg"
-              >
-                {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Processing...
-                  </div>
-                ) : (
-                  `Subscribe to ${plan.name} - $${plan.price}/month`
-                )}
-              </Button>
-
-              <div className="text-center text-xs text-muted-foreground">
-                Cancel anytime in your account settings
-              </div>
             </CardContent>
           </Card>
         </div>
